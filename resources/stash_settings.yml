@@ -1,0 +1,79 @@
+# This stage names are used for stashing and un-stashing of files
+
+
+init:
+  unstash: []
+  stashes:
+  - name: "SOURCE"
+    includes: "**/*.*"
+    excludes: "'pipelines/**, .git/**"
+  - name: "PIPELINE"
+    includes: "'pipelines/**"
+    excludes: "'pipelines/.git/**"
+  - name: "REPORTS"
+    includes: "s4hana_pipeline/reports/**"
+  - name: "M2"
+    includes: "s4hana_pipeline/maven_local_repo/**"
+  - name: "TARGET"
+    includes: "**/target/**"
+
+buildBackend:
+  unstash: ['SOURCE','M2']
+  stashes:
+  - name: "M2"
+    includes: "s4hana_pipeline/maven_local_repo/**"
+  - name: "TARGET"
+    includes: "**/target/**"
+
+buildFrontend:
+  unstash: ['SOURCE']
+  stashes:
+  - name: "NODE_MODULES"
+    includes: "node_modules/**"
+
+unitTest:
+  unstash: ['SOURCE', 'M2', 'TARGET']
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
+
+integrationTest:
+  unstash: ['SOURCE', 'M2', 'TARGET']
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
+
+staticCodeChecks:
+  unstash: ['SOURCE', 'TARGET', 'REPORTS', 'PIPELINE', 'M2']
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
+
+frontendUnitTest:
+  unstash: ['SOURCE', 'NODE_MODULES']
+  stashes: []
+
+endToEndTests:
+  unstash: ['SOURCE', 'TARGET', 'NODE_MODULES']
+  stashes: []
+
+performanceTest:
+  unstash: ['SOURCE', 'TARGET']
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
+
+qualityChecks:
+  unstash: ['SOURCE', 'M2', 'TARGET',  'REPORTS']
+  stashes:
+  - name: "REPORTS"
+    includes: "s4hana_pipeline/reports/**"
+
+deploy:
+  unstash: ['SOURCE', 'TARGET']
+  stashes: []
+

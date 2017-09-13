@@ -1,0 +1,27 @@
+import com.sap.icd.jenkins.ConfigurationLoader
+import com.sap.icd.jenkins.ConfigurationMerger
+
+def call(Map parameters = [:], body) {
+
+    handleStepErrors(stepName: 'executeNpm', stepParameters: parameters) {
+        final script = parameters.script
+
+        final Map stepDefaults = [
+            dockerImage: 's4sdk/docker-node-chrome'
+        ]
+
+        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
+
+        List parameterKeys = [
+            'dockerImage',
+            'dockerOptions'
+        ]
+        List stepConfigurationKeys = ['dockerImage']
+
+        Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
+
+        executeDockerNative(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) { body() }
+    }
+}
+
+
