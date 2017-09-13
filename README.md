@@ -7,15 +7,13 @@
  
  ## Requirements
  
- It applies the same requirements as for the project [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline).
+ The project has the same requirements as for the project [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline). Please follow the instruction for the pipeline project.
  
  ## Download and Installation
  
- The pipeline library should be used together the [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline).
- Thus, you have to create a project using this library.
- A description how to achieve that can be found in the [Download and Installation](https://github.com/SAP/cloud-s4-sdk-pipeline) of the pipeline project. 
- 
- To setup the environment you can start a preconfigured Jenkins server using the cx-server script included in the archetypes of the SAP S/4HANA Cloud SDK.
+ The pipeline library should be used together with the [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline).
+ Thus, you have to create a project using this pipeline.
+ A description how to achieve that can be found in the [Download and Installation](https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/README.md#download-and-installation) of the pipeline project. 
 
 ## Known Issues
 Currently, there are no known issues.
