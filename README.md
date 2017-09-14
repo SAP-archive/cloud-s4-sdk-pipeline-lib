@@ -16,8 +16,7 @@
  
  To avoid the manual steps described in that documentation you can use the SAP S/4HANA Cloud SDK Cx Server.
  
- For instantiating the SAP S/4HANA Cloud SDK Cx Server, you need to provide a suitable host with a linux operating system and Docker installed. Please also ensure that the user with whom you start the Cx Server belongs to the
- docker group.
+ For instantiating the SAP S/4HANA Cloud SDK Cx Server, you need to provide a suitable host with a linux operating system and Docker installed. Please also ensure that the user with whom you start the Cx Server belongs to the [docker group](https://docs.docker.com/engine/installation/linux/linux-postinstall/).
  
  Your project source files need to be available on a git or github server, which is accessible from the Cx Server host.
  
