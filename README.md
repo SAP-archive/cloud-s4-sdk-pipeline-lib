@@ -4,7 +4,7 @@
 ## Description
 
  This pipeline library is used by [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline).
- It defines the common steps (functions) in a Jenkins pipeline to build, test and deploy and application.
+ It defines the common steps (functions) in a Jenkins pipeline to build, test and deploy applications.
   
  ## Requirements
  
