@@ -3,12 +3,12 @@
  
 ## Description
 
- This pipeline library is used by [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline).
- It defines the common steps (functions) in a Jenkins pipeline to build, test and deploy applications.
+ This pipeline library is used by [SAP S/4HANA Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline).
+ It defines the common steps (functions) in a Jenkins pipeline to build, test and deploy applications to the SAP Cloud Platform.
   
  ## Requirements
  
- To use the pipeline library you must have a git project which uses a pipeline, such as the [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline).
+ To use the pipeline library you must have a git project which uses a pipeline, such as the [SAP S/4HANA Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline).
  
  ## Download and Installation
  
@@ -20,8 +20,8 @@
  
  Your project source files need to be available on a git or github server, which is accessible from the Cx Server host.
  
- The lifecycle of the Cx Server is maintained by a script with called cxserver.
- It can be found in the same named folder on the root of each SAP S/4HANA Cloud SDK project archetype. Together with the server.cfg file, this is all you need for starting your instance of the SAP S/4HANA Cloud SDK Cx Server.
+ The lifecycle of the Cx Server is maintained by a script called `cx-server`.
+ It can be found in the same named folder on the root of each SAP S/4HANA Cloud SDK project archetype. Together with the `server.cfg` file, this is all you need for starting your instance of the SAP S/4HANA Cloud SDK Cx Server.
  
  To create a new project using the SDK execute the following command:
  
@@ -29,10 +29,10 @@
   mvn archetype:generate -DarchetypeGroupId=com.sap.cloud.s4hana.archetypes -DarchetypeArtifactId=scp-cf-tomee -DarchetypeVersion=1.0.0
  ```
  
- In the new project there is a folder called cx-server.
+ In the new project there is a folder called `cx-server`.
  This folder needs to be copied to the future host on which the Cx Server is intended to run.
  
- On the host machine execute the following command in the folder cx-server.
+ On the host machine execute the following command in the folder `cx-server`.
  This will start the Jenkins server.
  ```shell
   ./cx-server start
@@ -40,12 +40,12 @@
 
  In Jenkins click on "New Item" and create a new "Multibranch Pipeline" for your repository.
  
- Now you can use the pipeline in a Jenkinsfile by adding the following line on top of the file. 
+ Now you can use the pipeline in a `Jenkinsfile` by adding the following line on top of the file. 
   ```shell
  @Library(['s4sdk-pipeline-library']) _
   ```
   
- If you decide for [Pipeline for the SAP S/4HANA Cloud SDK](https://github.com/SAP/cloud-s4-sdk-pipeline), this is already done for you. 
+ If you decide for [SAP S/4HANA Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline), this is already done for you. 
  
 ## Known Issues
 Currently, there are no known issues.
