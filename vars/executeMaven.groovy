@@ -6,11 +6,9 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeMaven', stepParameters: parameters) {
         final script = parameters.script
 
-        final Map stepDefaults = [
-            dockerImage: 'maven:3.5-jdk-7-alpine'
-        ]
+        final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeMaven')
 
-        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeMaven')
+        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeMaven')
 
         List parameterKeys = [
             'dockerImage',

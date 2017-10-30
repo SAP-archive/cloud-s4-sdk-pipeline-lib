@@ -6,11 +6,9 @@ def call(Map parameters = [:], body) {
     handleStepErrors(stepName: 'executeNpm', stepParameters: parameters) {
         final script = parameters.script
 
-        final Map stepDefaults = [
-            dockerImage: 's4sdk/docker-node-chromium'
-        ]
+        final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeNpm')
 
-        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
+        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
 
         List parameterKeys = [
             'dockerImage',

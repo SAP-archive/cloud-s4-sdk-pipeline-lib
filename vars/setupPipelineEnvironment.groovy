@@ -6,7 +6,7 @@ def call(Map parameters = [:]) {
 
         def script = parameters.script
 
-        script.pipelineEnvironment.configuration = [:]
+        script.pipelineEnvironment.defaultConfiguration = readYaml (text: libraryResource('default_pipeline_environment.yml'))
 
         if(configFile.trim().length() == 0 && fileExists(defaultYmlConfigFile)) {
             configFile = defaultYmlConfigFile

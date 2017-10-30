@@ -16,6 +16,8 @@ init:
     includes: "s4hana_pipeline/maven_local_repo/**"
   - name: "TARGET"
     includes: "**/target/**"
+  - name: "NODE_MODULES"
+    includes: "node_modules/**"
 
 buildBackend:
   unstash: ['SOURCE','M2']
@@ -46,11 +48,23 @@ integrationTest:
     includes: "s4hana_pipeline/reports/**"
 
 staticCodeChecks:
-  unstash: ['SOURCE', 'TARGET', 'REPORTS', 'PIPELINE', 'M2']
+  unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']
   stashes:
   - name: "REPORTS"
     merge: true
     includes: "s4hana_pipeline/reports/**"
+
+checkmarxScan:
+  unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']
+  stashes: []
+
+whitesourceScan:
+  unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']
+  stashes: []
+
+nodeSecurityPlatform:
+  unstash: ['SOURCE', 'REPORTS']
+  stashes: []
 
 frontendUnitTest:
   unstash: ['SOURCE', 'NODE_MODULES']
@@ -74,6 +88,6 @@ qualityChecks:
     includes: "s4hana_pipeline/reports/**"
 
 deploy:
-  unstash: ['SOURCE', 'TARGET']
+  unstash: ['SOURCE', 'TARGET', 'NODE_MODULES']
   stashes: []
 
