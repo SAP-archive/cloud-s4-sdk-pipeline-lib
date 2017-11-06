@@ -12,8 +12,7 @@ def call(Map parameters = [:]) {
 
 
             if (stash?.merge == true) {
-                String project = env.JOB_NAME.tokenize('/').first()
-                String lockName = "${project}/stashFiles/${stash.name}"
+                String lockName = "${script.pipelineEnvironment.configuration.stashFiles}/${stash.name}"
                 lock(lockName) {
                     unstash stash.name
                     steps.stash name: name, includes: include, exclude: exclude, allowEmpty: true

@@ -6,10 +6,9 @@ import static com.xlson.groovycsv.CsvParser.parseCsv
 
 def call(Map parameters = [:]) {
     handleStepErrors (stepName: 'checkServices', stepParameters: parameters) {
-        Map stepDefaults = [nonErpDestinations: []]
         List parameterKeys = ['nonErpDestinations']
 
-        Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepDefaults)
+        final Map configuration = ConfigurationMerger.merge(parameters, parameterKeys)
 
         final Set<String> nonErpDestinations = configuration.nonErpDestinations
 
@@ -75,7 +74,7 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
 
     final Set<String> usedServiceNames = []
     for (line in reportAsCsv) {
-        if (!nonErpDestinations.contains(line.destination)) {
+        if (!nonErpDestinations?.contains(line.destination)) {
             usedServiceNames.add(line.serviceName)
         }
     }
@@ -111,7 +110,7 @@ private void checkODataServices(Set<String> nonErpDestinations) {
 
     final Set<String> usedServiceNames = []
     for (line in reportAsCsv) {
-        if (!nonErpDestinations.contains(line.destination)) {
+        if (!nonErpDestinations?.contains(line.destination)) {
             usedServiceNames.add(line.serviceUrl.tokenize('/').last())
         }
     }

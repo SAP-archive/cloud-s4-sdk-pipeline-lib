@@ -5,7 +5,7 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkPmd', stepParameters: parameters) {
         def script = parameters.script
 
-        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkPmd')
+        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkPmd')
 
         List parameterKeys = ['dockerImage', 'excludes']
         List stepConfigurationKeys = parameterKeys
@@ -35,6 +35,9 @@ def call(Map parameters = [:]) {
         catch (Exception ex){
             echo ex.getMessage()
         }
-        pmd(failedTotalHigh: '0', failedTotalNormal:'10', pattern: '**/target/pmd.xml')
+
+        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'PMD', errorMessage: "Build was ABORTED and marked as FAILURE, please examine the PMD reports.") {
+            pmd(failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/pmd.xml')
+        }
     }
 }

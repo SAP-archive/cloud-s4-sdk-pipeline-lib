@@ -2,7 +2,9 @@ import com.cloudbees.groovy.cps.NonCPS
 import com.sap.icd.jenkins.ConfigurationHelper
 import com.sap.icd.jenkins.ConfigurationLoader
 import com.sap.icd.jenkins.ConfigurationMerger
+import com.sap.icd.jenkins.DeploymentType
 import com.sap.icd.jenkins.ManifestUpdater
+import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 
 import java.util.regex.Matcher
 
@@ -12,13 +14,9 @@ def call(Map parameters = [:]) {
 
         final script = parameters.script
 
-        final Map stepDefaults = [
-            dockerImage: 's4sdk/docker-cf-cli',
-            smokeTestStatusCode: '200',
-            'deploymentType': 'standard',
-            'environmentVariables': ['destinations']]
+        final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'deployToCfWithCli')
 
-        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToCfWithCli')
+        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToCfWithCli')
 
         List parameterKeys = [
             'dockerImage',
@@ -29,8 +27,7 @@ def call(Map parameters = [:]) {
         ]
         List stepConfigurationKeys = [
             'dockerImage',
-            'smokeTestStatusCode',
-            'deploymentType'
+            'smokeTestStatusCode'
         ]
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
@@ -48,7 +45,7 @@ def call(Map parameters = [:]) {
                 withCredentials([
                     [$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.getConfigProperty('credentialsId'), passwordVariable: 'CF_PASSWORD', usernameVariable: 'CF_USERNAME']
                 ]) {
-                    deploy(configuration.dockerImage, configuration.deploymentType, env.CF_USERNAME, env.CF_PASSWORD, apiEndpoint, org, space, appName, manifest, configuration.smokeTestStatusCode,  configuration.environmentVariables)
+                    deploy(configuration.dockerImage, configuration.deploymentType, CF_USERNAME, BashUtils.escape(CF_PASSWORD), apiEndpoint, org, space, appName, manifest, configuration.smokeTestStatusCode,  configuration.environmentVariables)
                 }
             } else if (deploymentDescriptor.isPropertyDefined('username') && deploymentDescriptor.isPropertyDefined('password')) {
                 deploy(configuration.dockerImage, configuration.deploymentType, deploymentDescriptor.getConfigProperty('username'), deploymentDescriptor.getConfigProperty('password'), apiEndpoint, org, space, appName, manifest, configuration.smokeTestStatusCode, configuration.environmentVariables)
@@ -62,7 +59,7 @@ def call(Map parameters = [:]) {
 private deploy(dockerImage, deploymentType, username, password, apiEndpoint, org, space, appName, manifest, statusCode, environmentVariables){
     executeDockerNative(dockerImage: dockerImage) {
         lock("${apiEndpoint}/${org}/${space}/${appName}") {
-            if (deploymentType == 'blue-green') {
+            if (deploymentType == DeploymentType.BLUE_GREEN) {
                 withEnv(["STATUS_CODE=${statusCode}"]) {
                     def smokeTestScript = 'blue_green_check.sh'
                     writeFile file: smokeTestScript, text: libraryResource(smokeTestScript)

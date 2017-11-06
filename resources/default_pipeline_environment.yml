@@ -1,0 +1,44 @@
+#Project Setup
+general:
+  productiveBranch: 'master'
+
+#Steps Specific Configuration
+steps:
+  executeMaven:
+    dockerImage: 'maven:3.5-jdk-7-alpine'
+
+  executeNpm:
+    dockerImage: 's4sdk/docker-node-chromium'
+
+  executeGradle:
+    dockerImage: 'gradle:4.0.1-jdk8'
+
+  checkFindbugs:
+    includeFilterFile: 's4hana_findbugs_include_filter.xml'
+
+  checkJMeter:
+    dockerImage: 'famiko/jmeter-base'
+    testPlan: '*'
+    reportDirectory: '/jmeter-report'
+    failThreshold: 100
+    unstableThreshold: 90
+
+  deployToCfWithCli:
+    dockerImage: 's4sdk/docker-cf-cli'
+    smokeTestStatusCode: '200'
+    environmentVariables:
+      - 'destinations'
+
+#Stage Specific Configurations
+stages:
+  integrationTests:
+    retry: 1
+
+  checkmarxScan:
+    filterPattern: '!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, **/*.js, **/*.java, **/*.ts'
+    fullScansScheduled: false
+    generatePdfReport: true
+    incremental: true
+    preset: '36'
+    vulnerabilityThresholdLow: 99999
+    vulnerabilityThresholdMedium: 0

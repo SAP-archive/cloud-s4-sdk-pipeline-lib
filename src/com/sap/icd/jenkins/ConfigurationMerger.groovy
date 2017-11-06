@@ -4,15 +4,17 @@ import com.cloudbees.groovy.cps.NonCPS
 
 class ConfigurationMerger {
     @NonCPS
-    def static merge(Map parameters, List parameterKeys, Map defaults=[:]) {
-        return merge(parameters, parameterKeys, [:], [], defaults)
+    def static merge(Map configs, List configKeys, Map defaults=[:]) {
+        Map merged = [:]
+        merged.putAll(defaults)
+        merged.putAll(filterByKeyAndNull(configs, configKeys))
+
+        return merged
     }
 
     @NonCPS
     def static merge(Map parameters, List parameterKeys, Map configurationMap, List configurationKeys, Map defaults=[:]){
-        Map merged = [:]
-        merged.putAll(defaults)
-        merged.putAll(filterByKeyAndNull(configurationMap, configurationKeys))
+        Map merged = merge(configurationMap, configurationKeys, defaults)
         merged.putAll(filterByKeyAndNull(parameters, parameterKeys))
 
         return merged

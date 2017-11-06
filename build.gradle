@@ -12,6 +12,8 @@ repositories {
 configurations { ivy }
 
 dependencies {
+    // https://mvnrepository.com/artifact/org.eclipse.hudson/hudson-core
+    compile group: 'org.eclipse.hudson', name: 'hudson-core', version: '3.2.0'
     compile 'org.codehaus.groovy:groovy-all:2.4.10'
     compile 'org.jenkins-ci.plugins.workflow:workflow-cps:2.38'
     ivy 'org.apache.ivy:ivy:2.4.0'
@@ -20,13 +22,14 @@ dependencies {
 
 spotless {
     groovy {
-        excludeJava()
-        paddedCell()
+        excludeJava() // excludes all Java sources within the Groovy source dirs from formatting
+        paddedCell() // Avoid cyclic ambiguities
         greclipse().configFile('greclipse.properties')
     }
     groovyGradle {
+        // same as groovy, but for .gradle (defaults to '*.gradle')
         target '*.gradle'
-        paddedCell()
+        paddedCell() // Avoid cyclic ambiguities
         greclipse().configFile('greclipse.properties')
     }
 }

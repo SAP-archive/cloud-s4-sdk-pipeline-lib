@@ -1,24 +1,25 @@
 import com.sap.icd.jenkins.ConfigurationLoader
+import com.sap.icd.jenkins.EndToEndTestType
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'stageEndToEndTests', stepParameters: parameters) {
         final script = parameters.script
 
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'endToEndTests')
+        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'endToEndTests')
 
-        unstashFiles script: script, stage:'endToEndTests'
-        if (stageConfiguration?.cfTarget) {
-            deployToCfWithCli script: script, targets: [stageConfiguration.cfTarget], deploymentType: 'standard'
-            executeEndToEndTest(script: script, appUrl: stageConfiguration.appUrl)
-        }else if(stageConfiguration?.neoTarget){
-            def pom = readMavenPom file:'application/pom.xml'
-            def source = "application/target/${pom.getArtifactId()}.${pom.getPackaging()}"
+        unstashFiles script: script, stage: 'endToEndTests'
+        if (stageConfiguration) {
+            lock(script.pipelineEnvironment.configuration.endToEndTestLock) {
+                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets
+                executeEndToEndTest(script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.END_TO_END_TEST)
+            }
 
-            deployToNeoWithCli script: script,targets: [stageConfiguration.neoTarget], deploymentType: 'standard', source:source
-            executeEndToEndTest(script: script, appUrl: stageConfiguration.appUrl)
+            executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'End to End Tests', errorMessage: "Build was ABORTED and marked as FAILURE, please examine End to End Test reports.") {
+                step($class: 'CucumberTestResultArchiver', testResults: "${s4SdkGlobals.endToEndReports}/*.json")
+            }
         } else {
             echo "End to end tests skipped because no targets defined!"
         }
-        stashFiles script: script, stage:'endToEndTests'
+        stashFiles script: script, stage: 'endToEndTests'
     }
 }

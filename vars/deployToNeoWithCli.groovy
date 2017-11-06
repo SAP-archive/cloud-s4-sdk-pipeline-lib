@@ -1,6 +1,8 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 import com.sap.icd.jenkins.ConfigurationHelper
 import com.sap.icd.jenkins.ConfigurationLoader
 import com.sap.icd.jenkins.ConfigurationMerger
+import com.sap.icd.jenkins.DeploymentType
 import com.sap.icd.jenkins.NeoDeployCommandHelper
 
 def call(Map parameters = [:]) {
@@ -9,11 +11,9 @@ def call(Map parameters = [:]) {
 
         final script = parameters.script
 
-        final Map stepDefaults = [
-            'deploymentType': 'standard'
-        ]
+        final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'deployToNeoWithCli')
 
-        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToNeoWithCli')
+        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToNeoWithCli')
 
         List parameterKeys = [
             'dockerImage',
@@ -22,8 +22,7 @@ def call(Map parameters = [:]) {
             'source'
         ]
         List stepConfigurationKeys = [
-            'dockerImage',
-            'deploymentType'
+            'dockerImage'
         ]
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
@@ -41,7 +40,7 @@ def call(Map parameters = [:]) {
                 withCredentials([
                     [$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.getConfigProperty('credentialsId'), passwordVariable: 'NEO_PASSWORD', usernameVariable: 'NEO_USERNAME']
                 ]) {
-                    commandHelper = new NeoDeployCommandHelper(deploymentDescriptors[i], env.NEO_USERNAME, env.NEO_PASSWORD, source)
+                    commandHelper = new NeoDeployCommandHelper(deploymentDescriptors[i], NEO_USERNAME, BashUtils.escape(NEO_PASSWORD), source)
                     deploy(dockerImage, configuration.deploymentType, commandHelper)
                 }
             } else {
@@ -56,14 +55,14 @@ private deploy(dockerImage, deploymentType, NeoDeployCommandHelper commandHelper
     executeDockerNative(dockerImage: dockerImage) {
         lock("deployToNeoWithCli:${commandHelper.resourceLock()}") {
 
-            if (deploymentType == 'rolling-update') {
+            if (deploymentType == DeploymentType.ROLLING_UPDATE) {
                 if(!isAppRunning(commandHelper)){
-                    deploymentType = 'standard'
+                    deploymentType = DeploymentType.STANDARD
                     echo "Rolling update not possible because application is not running. Falling back to standard deployment."
                 }
             }
 
-            if (deploymentType == 'rolling-update') {
+            if (deploymentType == DeploymentType.ROLLING_UPDATE) {
                 sh commandHelper.rollingUpdateCommand()
             } else {
                 sh commandHelper.deployCommand()

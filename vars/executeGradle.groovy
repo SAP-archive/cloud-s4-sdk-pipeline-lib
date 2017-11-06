@@ -6,11 +6,9 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeGradle') {
         final script = parameters.script
 
-        final Map stepDefaults = [
-            dockerImage: 'gradle:4.0.1-jdk8'
-        ]
+        final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeGradle')
 
-        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeGradle')
+        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeGradle')
 
         List parameterKeys = [
             'dockerImage',
