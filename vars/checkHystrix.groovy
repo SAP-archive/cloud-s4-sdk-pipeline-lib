@@ -10,7 +10,6 @@ def call() {
 
         final List<String> violations = []
         for (line in reportAsCsv) {
-            echo "${line.uri} ${line.threadName}"
             if(!(line.threadName =~ /^hystrix-.+-\d+$/)) {
                 violations.add("   - HTTP access to '${line.uri}' outside of hystrix context (thread was '${line.threadName}')")
             }
