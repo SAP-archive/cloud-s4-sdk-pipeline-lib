@@ -29,6 +29,5 @@ def call(Map parameters = [:]) {
         } else {
             println("Can't deploy to nexus because the configuration is missing.")
         }
-
     }
 }
