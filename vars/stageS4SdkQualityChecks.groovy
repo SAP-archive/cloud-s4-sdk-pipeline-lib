@@ -16,5 +16,6 @@ def call(Map parameters = [:]) {
         checkServices script: script, nonErpDestinations: stageConfiguration.nonErpDestinations
 
         stashFiles script: script, stage: 'qualityChecks'
+        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

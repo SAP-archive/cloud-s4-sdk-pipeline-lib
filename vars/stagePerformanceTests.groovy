@@ -10,16 +10,21 @@ def call(Map parameters = [:]) {
         if (stageConfiguration) {
             lock(script.pipelineEnvironment.configuration.performanceTestLock) {
                 deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets
-                // Add JMeter performance tests
-                if (ConfigurationLoader.stepConfiguration(script, 'checkJMeter')) {
+                def jMeterConfig = ConfigurationLoader.stepConfiguration(script, 'checkJMeter')
+                if ( jMeterConfig && jMeterConfig.enabled!=false) {
                     def performanceTestReports = new File("${workspace}/${script.s4SdkGlobals.performanceReports}/JMeter")
                     performanceTestReports.mkdirs()
-                    checkJMeter script: script, testPlan: "./performance-tests/*", reportDirectory: performanceTestReports
+                    checkJMeter script: script, reportDirectory: performanceTestReports
+                }
+
+                if (ConfigurationLoader.stepConfiguration(script, 'checkGatling')?.enabled) {
+                    checkGatling script: script
                 }
             }
         } else {
             echo "Performance tests have not been enabled. Skipping the stage."
         }
         stashFiles script: script, stage: 'performanceTest'
+        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

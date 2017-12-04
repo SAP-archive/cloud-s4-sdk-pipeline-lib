@@ -10,8 +10,28 @@ def call(Map parameters = [:]) {
 
         if(appUrls) {
             for(def appUrl : appUrls) {
-                executeNpm(script: script) {
-                    sh E2ETestCommandHelper.generate(type, appUrl)
+
+                String shScript
+                List credentials = []
+
+                if(appUrl instanceof String){
+                    shScript = E2ETestCommandHelper.generate(type, appUrl)
+                }
+                else if(appUrl instanceof Map && appUrl.url && appUrl.credentialId) {
+                    String url = appUrl.url
+                    shScript = E2ETestCommandHelper.generate(type, url)
+
+                    String credentialId = appUrl.credentialId
+                    credentials.add([$class: 'UsernamePasswordMultiBinding', credentialsId: credentialId, passwordVariable: 'e2e_password', usernameVariable: 'e2e_username'])
+                }
+                else {
+                    error("Each appUrl in the configuration must be either a String or a Map containing a property url and a property credentialId.")
+                }
+
+                withCredentials(credentials) {
+                    executeNpm(script: script) {
+                        sh shScript
+                    }
                 }
             }
         } else {

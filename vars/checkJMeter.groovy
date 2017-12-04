@@ -9,17 +9,14 @@ def call(Map parameters = [:]) {
         final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'checkJMeter')
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkJMeter')
 
-        def stepConfigurationKeys = [
-            'options',
-            'dockerImage',
-            'failThreshold',
-            'unstableThreshold'
-        ]
+        def stepConfigurationKeys = ['options',
+                                     'testPlan',
+                                     'dockerImage',
+                                     'failThreshold',
+                                     'unstableThreshold']
 
-        def parameterKeys = [
-            'testPlan',
-            'reportDirectory'
-        ]
+        def parameterKeys = ['testPlan',
+                             'reportDirectory']
 
         def configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
         def defaultOptions = "-n -t ${configuration.testPlan} -l JMeter-report.jtl -e -o ${configuration.reportDirectory}"
@@ -28,13 +25,11 @@ def call(Map parameters = [:]) {
         executeDockerNative(dockerImage: configuration.dockerImage) { sh command }
 
         executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Check JMeter', errorMessage: "Build was ABORTED and marked as FAILURE, please examine Performance Test results.") {
-            performanceReport(parsers: [
-                [$class: 'JMeterParser', glob: "JMeter-report.jtl"]
-            ],
-            errorFailedThreshold: configuration.failThreshold,
-            errorUnstableThreshold: configuration.unstableThreshold,
-            ignoreUnstableBuild: false,
-            ignoreFailedBuild: false)
+            performanceReport(parsers: [[$class: 'JMeterParser', glob: "JMeter-report.jtl"]],
+                    errorFailedThreshold: configuration.failThreshold,
+                    errorUnstableThreshold: configuration.unstableThreshold,
+                    ignoreUnstableBuild: false,
+                    ignoreFailedBuild: false)
 
             step([$class: 'ArtifactArchiver', artifacts: "**/*.jtl,${configuration.reportDirectory}", fingerprint: true])
         }
