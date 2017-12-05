@@ -21,5 +21,6 @@ def call(Map parameters = [:]) {
             echo "End to end tests skipped because no targets defined!"
         }
         stashFiles script: script, stage: 'endToEndTests'
+        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

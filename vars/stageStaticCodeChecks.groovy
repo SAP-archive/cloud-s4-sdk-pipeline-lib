@@ -12,6 +12,7 @@ def call(Map parameters = [:]) {
             checkFindbugs script: script, excludeFilterFile: configuration.findbugsExcludesFile
 
             stashFiles script: script, stage: 'staticCodeChecks'
+            echo "currentBuild.result: ${script.currentBuild.result}"
         }
     }
 }

@@ -1,4 +1,5 @@
 import com.cloudbees.groovy.cps.NonCPS
+import com.sap.icd.jenkins.CfTarget
 import com.sap.icd.jenkins.ConfigurationHelper
 import com.sap.icd.jenkins.ConfigurationLoader
 import com.sap.icd.jenkins.ConfigurationMerger
@@ -23,32 +24,50 @@ def call(Map parameters = [:]) {
             'smokeTestStatusCode',
             'deploymentType',
             'targets',
-            'environmentVariables'
+            'environmentVariables',
+            'org',
+            'space',
+            'apiEndpoint',
+            'appName',
+            'manifest',
+            'credentialsId',
+            'username',
+            'password'
         ]
         List stepConfigurationKeys = [
             'dockerImage',
-            'smokeTestStatusCode'
+            'smokeTestStatusCode',
+            'org',
+            'space',
+            'apiEndpoint',
+            'appName',
+            'manifest',
+            'credentialsId',
+            'username',
+            'password'
         ]
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
         def deploymentDescriptors = new ConfigurationHelper(configuration).getMandatoryProperty('targets')
         for (def i = 0; i<deploymentDescriptors.size(); i++) {
-            ConfigurationHelper deploymentDescriptor = new ConfigurationHelper(deploymentDescriptors[i])
-            def apiEndpoint = deploymentDescriptor.getMandatoryProperty('apiEndpoint')
-            def org = deploymentDescriptor.getMandatoryProperty('org')
-            def space = deploymentDescriptor.getMandatoryProperty('space')
-            def appName = deploymentDescriptor.getMandatoryProperty('appName')
-            def manifest = deploymentDescriptor.getMandatoryProperty('manifest')
+            //default value
+            CfTarget cfTarget = new CfTarget(configuration)
+            //overwrite default value by using customized value from parameter: targets
+            cfTarget.loadNotNullFrom(deploymentDescriptors[i])
 
-            if (deploymentDescriptor.isPropertyDefined("credentialsId")) {
+            cfTarget.validate()
+
+            if (cfTarget.isCredentialsIdDefined()) {
                 withCredentials([
-                    [$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.getConfigProperty('credentialsId'), passwordVariable: 'CF_PASSWORD', usernameVariable: 'CF_USERNAME']
+                    [$class: 'UsernamePasswordMultiBinding', credentialsId: cfTarget.credentialsId, passwordVariable: 'CF_PASSWORD', usernameVariable: 'CF_USERNAME']
                 ]) {
-                    deploy(configuration.dockerImage, configuration.deploymentType, CF_USERNAME, BashUtils.escape(CF_PASSWORD), apiEndpoint, org, space, appName, manifest, configuration.smokeTestStatusCode,  configuration.environmentVariables)
+                    cfTarget.setUsername(CF_USERNAME)
+                    cfTarget.setPassword(BashUtils.escape(CF_PASSWORD))
+                    deploy(configuration.dockerImage, configuration.deploymentType, cfTarget, configuration.smokeTestStatusCode, configuration.environmentVariables)
                 }
-            } else if (deploymentDescriptor.isPropertyDefined('username') && deploymentDescriptor.isPropertyDefined('password')) {
-                deploy(configuration.dockerImage, configuration.deploymentType, deploymentDescriptor.getConfigProperty('username'), deploymentDescriptor.getConfigProperty('password'), apiEndpoint, org, space, appName, manifest, configuration.smokeTestStatusCode, configuration.environmentVariables)
+            } else if (cfTarget.isUsernameAndPasswordDefined()) {
+                deploy(configuration.dockerImage, configuration.deploymentType, cfTarget, configuration.smokeTestStatusCode, configuration.environmentVariables)
             } else {
                 throw new Exception("ERROR - EITHER SPECIFY credentialsId OR username and password")
             }
@@ -56,9 +75,9 @@ def call(Map parameters = [:]) {
     }
 }
 
-private deploy(dockerImage, deploymentType, username, password, apiEndpoint, org, space, appName, manifest, statusCode, environmentVariables){
+private deploy(dockerImage, deploymentType, cfTarget, statusCode, environmentVariables) {
     executeDockerNative(dockerImage: dockerImage) {
-        lock("${apiEndpoint}/${org}/${space}/${appName}") {
+        lock("${cfTarget.apiEndpoint}/${cfTarget.org}/${cfTarget.space}/${cfTarget.appName}") {
             if (deploymentType == DeploymentType.BLUE_GREEN) {
                 withEnv(["STATUS_CODE=${statusCode}"]) {
                     def smokeTestScript = 'blue_green_check.sh'
@@ -66,15 +85,15 @@ private deploy(dockerImage, deploymentType, username, password, apiEndpoint, org
                     def smokeTest = '--smoke-test $(pwd)/' + smokeTestScript
                     sh "chmod +x ${smokeTestScript}"
 
-                    sh "cf login -u ${username} -p ${password} -a ${apiEndpoint} -o ${org} -s ${space}"
-                    copyUserVariablesToManifest(appName, environmentVariables, manifest)
-                    sh "cf blue-green-deploy ${appName} -f ${manifest} ${smokeTest}"
+                    sh "cf login -u ${cfTarget.username} -p ${cfTarget.password} -a ${cfTarget.apiEndpoint} -o ${cfTarget.org} -s ${cfTarget.space}"
+                    copyUserVariablesToManifest(cfTarget.appName, environmentVariables, cfTarget.manifest)
+                    sh "cf blue-green-deploy ${cfTarget.appName} -f ${cfTarget.manifest} ${smokeTest}"
 
                     sh "cf logout"
                 }
             } else {
-                sh "cf login -u ${username} -p ${password} -a ${apiEndpoint} -o ${org} -s ${space} && " +
-                        "cf push ${appName} -f ${manifest} && " +
+                sh "cf login -u ${cfTarget.username} -p ${cfTarget.password} -a ${cfTarget.apiEndpoint} -o ${cfTarget.org} -s ${cfTarget.space} && " +
+                        "cf push ${cfTarget.appName} -f ${cfTarget.manifest} && " +
                         "cf logout"
             }
         }

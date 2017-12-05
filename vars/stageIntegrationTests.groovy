@@ -10,8 +10,8 @@ def call(Map parameters = [:]) {
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, 'integrationTests')
 
         List stageConfigurationKeys = [
-                'retry',
-                'credentials'
+            'retry',
+            'credentials'
         ]
 
         Map configuration = ConfigurationMerger.merge(parameters, [], stageConfiguration, stageConfigurationKeys, stageDefaults)
@@ -29,14 +29,15 @@ def call(Map parameters = [:]) {
 
             try {
                 int count
-                try{
+                try {
                     count = configuration.retry.toInteger()
-                } catch(Exception e){
-                    error ("retry: ${retry} must be an integer")
                 }
-                retry(count) {
-                    executeMaven script: script, flags: "-U -B", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage
+                catch(Exception e){
+                    error ("retry: ${configuration.retry} must be an integer")
                 }
+
+                executeMaven script: script, flags: "-B", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage, defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=1C"
+
             } catch(Exception e) {
                 executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Integration Tests', errorMessage: "Build was ABORTED and marked as FAILURE, please examine Backend Integration Tests report.") {
                     script.currentBuild.result = 'FAILURE'
@@ -58,5 +59,6 @@ def call(Map parameters = [:]) {
         ], target: 'integration-tests.exec'
 
         stashFiles script: script, stage: 'integrationTest'
+        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

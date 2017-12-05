@@ -27,5 +27,6 @@ def call(Map parameters = [:]) {
         }
 
         stashFiles script: script, stage: 'frontendUnitTest'
+        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

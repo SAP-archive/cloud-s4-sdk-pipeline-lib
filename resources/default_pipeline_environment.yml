@@ -18,7 +18,7 @@ steps:
 
   checkJMeter:
     dockerImage: 'famiko/jmeter-base'
-    testPlan: '*'
+    testPlan: './performance-tests/*'
     reportDirectory: '/jmeter-report'
     failThreshold: 100
     unstableThreshold: 90
@@ -28,6 +28,7 @@ steps:
     smokeTestStatusCode: '200'
     environmentVariables:
       - 'destinations'
+
 
 #Stage Specific Configurations
 stages:
