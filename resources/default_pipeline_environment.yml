@@ -5,7 +5,7 @@ general:
 #Steps Specific Configuration
 steps:
   executeMaven:
-    dockerImage: 'maven:3.5-jdk-7-alpine'
+    dockerImage: 'maven:3.5-jdk-8-alpine'
 
   executeNpm:
     dockerImage: 's4sdk/docker-node-chromium'
