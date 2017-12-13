@@ -11,7 +11,8 @@ def call(Map parameters = [:]) {
 
         List stageConfigurationKeys = [
             'retry',
-            'credentials'
+            'credentials',
+            'forkCount'
         ]
 
         Map configuration = ConfigurationMerger.merge(parameters, [], stageConfiguration, stageConfigurationKeys, stageDefaults)
@@ -35,8 +36,8 @@ def call(Map parameters = [:]) {
                 catch(Exception e){
                     error ("retry: ${configuration.retry} must be an integer")
                 }
-
-                executeMaven script: script, flags: "-B", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage, defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=1C"
+                def forkCount = configuration.forkCount
+                executeMaven script: script, flags: "-B", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage, defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
 
             } catch(Exception e) {
                 executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Integration Tests', errorMessage: "Please examine Backend Integration Tests report.") {
