@@ -39,7 +39,7 @@ def call(Map parameters = [:]) {
                 executeMaven script: script, flags: "-B", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage, defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=1C"
 
             } catch(Exception e) {
-                executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Integration Tests', errorMessage: "Build was ABORTED and marked as FAILURE, please examine Backend Integration Tests report.") {
+                executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Integration Tests', errorMessage: "Please examine Backend Integration Tests report.") {
                     script.currentBuild.result = 'FAILURE'
                 }
                 throw e

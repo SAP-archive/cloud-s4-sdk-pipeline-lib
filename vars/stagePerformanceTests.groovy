@@ -18,7 +18,7 @@ def call(Map parameters = [:]) {
                 }
 
                 if (ConfigurationLoader.stepConfiguration(script, 'checkGatling')?.enabled) {
-                    checkGatling script: script
+                    checkGatling script: script, appUrls: stageConfiguration.appUrls
                 }
             }
         } else {

@@ -28,10 +28,25 @@ def call(Map parameters = [:]) {
                     error("Each appUrl in the configuration must be either a String or a Map containing a property url and a property credentialId.")
                 }
 
-                withCredentials(credentials) {
-                    executeNpm(script: script) {
-                        sh shScript
+                try {
+                    withCredentials(credentials) {
+                        executeNpm(script: script) {
+                            sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
+                            withEnv(['DISPLAY=:99']) {
+                                sh shScript
+                            }
+                        }
                     }
+
+                } catch(Exception e) {
+                    executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'End to End Tests', errorMessage: "Please examine End to End Test reports.") {
+                        script.currentBuild.result = 'FAILURE'
+                    }
+                    throw e
+
+                } finally{
+                    archive includes: "${s4SdkGlobals.endToEndReports}/**"
+                    step($class: 'CucumberTestResultArchiver', testResults: "${s4SdkGlobals.endToEndReports}/*.json")
                 }
             }
         } else {

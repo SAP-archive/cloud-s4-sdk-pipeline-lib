@@ -53,7 +53,7 @@ class NeoDeployCommandHelper implements Serializable{
     }
 
     String restartCommand(){
-        return "${neoTool} restart ${mainArgs()}"
+        return "${neoTool} restart --synchronous ${mainArgs()}"
     }
 
     private String mainArgs(){
@@ -81,6 +81,10 @@ class NeoDeployCommandHelper implements Serializable{
 
         if(deploymentDescriptor.containsKey('vmArguments')){
             args += " --vm-arguments \"${deploymentDescriptor.vmArguments}\""
+        }
+
+        if(deploymentDescriptor.containsKey('size')){
+            args += " --size ${deploymentDescriptor.size}"
         }
 
         return args

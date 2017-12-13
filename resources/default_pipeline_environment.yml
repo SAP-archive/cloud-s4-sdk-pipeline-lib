@@ -29,7 +29,6 @@ steps:
     environmentVariables:
       - 'destinations'
 
-
 #Stage Specific Configurations
 stages:
   integrationTests:

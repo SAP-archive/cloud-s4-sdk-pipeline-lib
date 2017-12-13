@@ -1,4 +1,6 @@
 def call(Map parameters = [:]) {
+    final ERROR_MESSAGE_PREFIX = "Build was ABORTED and marked as FAILURE. "
+
     handleStepErrors(stepName: 'errorWhenCurrentBuildResultIsWorseOrEqualTo', stepParameters: parameters) {
         def script = parameters.script
         def errorStatus = parameters.errorStatus
@@ -10,7 +12,7 @@ def call(Map parameters = [:]) {
             if (errorHandler) {
                 errorHandler(errorHandlerParameter)
             }
-            error(errorMessage)
+            error(ERROR_MESSAGE_PREFIX + errorMessage)
         }
     }
 }

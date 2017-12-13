@@ -36,7 +36,7 @@ def call(Map parameters = [:]) {
             echo ex.getMessage()
         }
 
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'PMD', errorMessage: "Build was ABORTED and marked as FAILURE, please examine the PMD reports.") {
+        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'PMD', errorMessage: "Please examine the PMD reports.") {
             pmd(failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/pmd.xml')
         }
     }
