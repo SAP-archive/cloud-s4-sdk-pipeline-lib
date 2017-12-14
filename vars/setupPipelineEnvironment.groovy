@@ -1,22 +1,20 @@
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'setupPipelineEnvironment', stepParameters: parameters) {
-        String defaultYmlConfigFile = 'pipeline_config.yml'
-        String configFile = parameters.get('configFile', '')
-
         def script = parameters.script
 
         script.pipelineEnvironment.defaultConfiguration = readYaml (text: libraryResource('default_pipeline_environment.yml'))
 
-        if(configFile.trim().length() == 0 && fileExists(defaultYmlConfigFile)) {
-            configFile = defaultYmlConfigFile
+        String configFile = parameters.get('configFile') ?: 'pipeline_config.yml'
+
+        echo "Loading pipeline configuration from '${configFile}'"
+
+        try {
+            script.pipelineEnvironment.configuration = readYaml(file: configFile)
+        }
+        catch(e) {
+            throw new RuntimeException("Failed to load the pipeline configuration from location '${configFile}'.", e)
         }
 
-        echo "Loading configuration from ${configFile}"
-        if (fileExists(configFile) && configFile.endsWith(".yml")) {
-            script.pipelineEnvironment.configuration = readYaml(file: configFile)
-        } else {
-            throw new Exception("ERROR - CONFIG FILE MUST BE A .yml FILE")
-        }
     }
 }

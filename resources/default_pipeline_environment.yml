@@ -1,39 +1,39 @@
 #Project Setup
 general:
-  productiveBranch: 'master'
+  productiveBranch: master
 
 #Steps Specific Configuration
 steps:
   executeMaven:
-    dockerImage: 'maven:3.5-jdk-8-alpine'
+    dockerImage: maven:3.5-jdk-8-alpine
 
   executeNpm:
-    dockerImage: 's4sdk/docker-node-chromium'
+    dockerImage: s4sdk/docker-node-chromium
 
   executeGradle:
-    dockerImage: 'gradle:4.0.1-jdk8'
+    dockerImage: gradle:4.0.1-jdk8
 
   checkFindbugs:
-    includeFilterFile: 's4hana_findbugs_include_filter.xml'
+    includeFilterFile: s4hana_findbugs_include_filter.xml
 
   checkJMeter:
-    dockerImage: 'famiko/jmeter-base'
-    testPlan: './performance-tests/*'
-    reportDirectory: '/jmeter-report'
+    dockerImage: famiko/jmeter-base
+    testPlan: ./performance-tests/*
+    reportDirectory: /jmeter-report
     failThreshold: 100
     unstableThreshold: 90
 
   deployToCfWithCli:
-    dockerImage: 's4sdk/docker-cf-cli'
+    dockerImage: s4sdk/docker-cf-cli
     smokeTestStatusCode: '200'
     environmentVariables:
       - 'destinations'
-
 
 #Stage Specific Configurations
 stages:
   integrationTests:
     retry: 1
+    forkCount: 1C
 
   checkmarxScan:
     filterPattern: '!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, **/*.js, **/*.java, **/*.ts'

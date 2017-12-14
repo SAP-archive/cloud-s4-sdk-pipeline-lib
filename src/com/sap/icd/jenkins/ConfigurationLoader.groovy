@@ -14,6 +14,11 @@ class ConfigurationLoader implements Serializable {
     }
 
     @NonCPS
+    def static postActionConfiguration(script, String actionName){
+        return loadConfiguration(script, 'postActions', actionName, ConfigurationType.CUSTOM_CONFIGURATION)
+    }
+
+    @NonCPS
     def static defaultStepConfiguration(script, String stepName) {
         return loadConfiguration(script, 'steps', stepName, ConfigurationType.DEFAULT_CONFIGURATION)
     }

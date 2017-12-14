@@ -33,10 +33,9 @@ def call(Map parameters = [:]) {
         writeFile file: localIncludeFilerPath, text: libraryResource(includeFilterFile)
         filterOptions += "-Dfindbugs.includeFilterFile=${localIncludeFilerPath}"
 
-        String resultsXmlPath = "target/findbugsXml.xml"
         executeMaven script: script, flags: '-B -U', m2Path: s4SdkGlobals.m2Directory, goals: 'findbugs:findbugs', defines: filterOptions, dockerImage: configuration.dockerImage
 
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Build was ABORTED and marked as FAILURE, please examine the Findbugs reports.") {
+        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Please examine the Findbugs reports.") {
             findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', includePattern: includeFilterFile, pattern: '**/findbugsXml.xml'
         }
     }

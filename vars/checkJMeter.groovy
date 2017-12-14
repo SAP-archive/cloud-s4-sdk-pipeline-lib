@@ -24,7 +24,7 @@ def call(Map parameters = [:]) {
 
         executeDockerNative(dockerImage: configuration.dockerImage) { sh command }
 
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Check JMeter', errorMessage: "Build was ABORTED and marked as FAILURE, please examine Performance Test results.") {
+        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Check JMeter', errorMessage: "Please examine Performance Test results.") {
             performanceReport(parsers: [[$class: 'JMeterParser', glob: "JMeter-report.jtl"]],
                     errorFailedThreshold: configuration.failThreshold,
                     errorUnstableThreshold: configuration.unstableThreshold,

@@ -1,0 +1,3 @@
+general:
+  componentName: 'pipeline-lib'
+  productiveBranch: 'master'

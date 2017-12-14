@@ -4,13 +4,13 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'initS4SdkPipeline', stepParameters: parameters) {
         def script = parameters.script
 
-        def mavenLocalRepository = new File("${workspace}/${script.s4SdkGlobals.m2Directory}")
-        def reportsDirectory = new File("${workspace}/${script.s4SdkGlobals.reportsDirectory}")
+        def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
+        def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)
 
         mavenLocalRepository.mkdirs()
         reportsDirectory.mkdirs()
         if (!fileExists(mavenLocalRepository.absolutePath) || !fileExists(reportsDirectory.absolutePath)) {
-            errorWhenCurrentBuildResultIsWorseOrEqualTo(script: script, errorCurrentBuildStatus: 'FAILURE', errorMessage: "Build was ABORTED and marked as FAILURE, please check if the user can create report directory.")
+            errorWhenCurrentBuildResultIsWorseOrEqualTo(script: script, errorCurrentBuildStatus: 'FAILURE', errorMessage: "Please check if the user can create report directory.")
         }
 
         setupPipelineEnvironment(parameters)
@@ -32,54 +32,58 @@ def call(Map parameters = [:]) {
         initPipelineStageConfig(script)
         stashFiles script: script, stage: 'init'
     }
-    return parameters.script.pipelineEnvironment.stageConfiguration
 }
 
 def initPipelineStageConfig(def script) {
 
     if (fileExists('package.json')) {
-        script.pipelineEnvironment.stageConfiguration.FRONT_END_BUILD = true
-        script.pipelineEnvironment.stageConfiguration.FRONT_END_TESTS = true
+        script.pipelineEnvironment.skipConfiguration.FRONT_END_BUILD = true
+        script.pipelineEnvironment.skipConfiguration.FRONT_END_TESTS = true
     }
-    if (ConfigurationLoader.stageConfiguration(script, 'endToEndTests') && script.pipelineEnvironment.stageConfiguration.FRONT_END_BUILD) {
-        script.pipelineEnvironment.stageConfiguration.E2E_TESTS = true
+    if (ConfigurationLoader.stageConfiguration(script, 'endToEndTests') && script.pipelineEnvironment.skipConfiguration.FRONT_END_BUILD) {
+        script.pipelineEnvironment.skipConfiguration.E2E_TESTS = true
     }
     if (ConfigurationLoader.stageConfiguration(script, 'performanceTest')) {
-        script.pipelineEnvironment.stageConfiguration.PERFORMANCE_TESTS = true
+        script.pipelineEnvironment.skipConfiguration.PERFORMANCE_TESTS = true
     }
 
-    if (script.pipelineEnvironment.stageConfiguration.E2E_TESTS || script.pipelineEnvironment.stageConfiguration.PERFORMANCE_TESTS) {
-        script.pipelineEnvironment.stageConfiguration.REMOTE_TESTS = true
+    if (script.pipelineEnvironment.skipConfiguration.E2E_TESTS || script.pipelineEnvironment.skipConfiguration.PERFORMANCE_TESTS) {
+        script.pipelineEnvironment.skipConfiguration.REMOTE_TESTS = true
     }
     if (ConfigurationLoader.stageConfiguration(script, 'checkmarxScan')) {
-        script.pipelineEnvironment.stageConfiguration.CHECKMARX_SCAN = true
+        script.pipelineEnvironment.skipConfiguration.CHECKMARX_SCAN = true
     }
 
     if (ConfigurationLoader.stageConfiguration(script, 'whitesourceScan') || fileExists('whitesource.config.json')) {
-        script.pipelineEnvironment.stageConfiguration.WHITESOURCE_SCAN = true
+        script.pipelineEnvironment.skipConfiguration.WHITESOURCE_SCAN = true
     }
 
     if (ConfigurationLoader.stageConfiguration(script, 'nodeSecurityScan')?.enabled || fileExists('package.json')) {
-        script.pipelineEnvironment.stageConfiguration.NODE_SECURITY_SCAN = true
+        script.pipelineEnvironment.skipConfiguration.NODE_SECURITY_SCAN = true
     }
 
-    if (script.pipelineEnvironment.stageConfiguration.CHECKMARX_SCAN
-            || script.pipelineEnvironment.stageConfiguration.WHITESOURCE_SCAN
-            || script.pipelineEnvironment.stageConfiguration.NODE_SECURITY_SCAN) {
-        script.pipelineEnvironment.stageConfiguration.SECURITY_CHECKS = true
+    if (script.pipelineEnvironment.skipConfiguration.CHECKMARX_SCAN
+            || script.pipelineEnvironment.skipConfiguration.WHITESOURCE_SCAN
+            || script.pipelineEnvironment.skipConfiguration.NODE_SECURITY_SCAN) {
+        script.pipelineEnvironment.skipConfiguration.SECURITY_CHECKS = true
     }
 
     Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
     Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
-    Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'productionDeployment')
+    Map productionDeploymentConfiguration = ConfigurationLoader.stageConfiguration(script, 'productionDeployment')
 
     def productiveBranch = generalConfiguration.get('productiveBranch', defaultGeneralConfiguration.get('productiveBranch'))
-    if ((stageConfiguration.cfTargets || stageConfiguration.neoTargets) && env.BRANCH_NAME == productiveBranch) {
-        script.pipelineEnvironment.stageConfiguration.PRODUCTION_DEPLOYMENT = true
+    if ((productionDeploymentConfiguration.cfTargets || productionDeploymentConfiguration.neoTargets) && env.BRANCH_NAME == productiveBranch) {
+        script.pipelineEnvironment.skipConfiguration.PRODUCTION_DEPLOYMENT = true
     }
 
     if (ConfigurationLoader.stageConfiguration(script, 'artifactDeployment')) {
-        script.pipelineEnvironment.stageConfiguration.ARTIFACT_DEPLOYMENT = true
+        script.pipelineEnvironment.skipConfiguration.ARTIFACT_DEPLOYMENT = true
+    }
+
+    def sendNotification = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
+    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || BRANCH_NAME == productiveBranch)){
+        script.pipelineEnvironment.skipConfiguration.SEND_NOTIFICATION = true
     }
 
 }

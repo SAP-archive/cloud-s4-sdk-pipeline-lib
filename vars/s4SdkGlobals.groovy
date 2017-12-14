@@ -5,4 +5,5 @@ class s4SdkGlobals implements Serializable {
     final String endToEndReports = 's4hana_pipeline/reports/e2e'
     final String coverageReports = 's4hana_pipeline/reports/coverage-reports'
     final String performanceReports = 's4hana_pipeline/reports/performance'
+    final String frontendReports = 's4hana_pipeline/reports/frontend-unit/coverage/report-html/ut'
 }

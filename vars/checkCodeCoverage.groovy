@@ -11,7 +11,7 @@ def call(Map parameters = [:]) {
         def jacocoExcludes = parameters.jacocoExcludes
 
         jacocoExclusionPattern = jacocoExcludes == null ? '' : jacocoExcludes.join(',')
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Check Code Coverage', errorMessage: "Build was ABORTED and marked as FAILURE, please examine Code Coverage results.") {
+        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Check Code Coverage', errorMessage: "Please examine Code Coverage results.") {
 
             //when coverage >= max., SUCCESSFUL
             //when max. > coverage >= min. UNSTABLE

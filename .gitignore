@@ -1,0 +1,14 @@
+### Java template
+/.idea
+/.settings
+/logs
+/reports
+*.class
+*.iml
+.classpath
+.project
+*.DS_Store
+/target/
+/bin/
+build
+.gradle
