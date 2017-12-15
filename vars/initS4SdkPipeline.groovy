@@ -77,7 +77,7 @@ def initPipelineStageConfig(def script) {
         script.pipelineEnvironment.skipConfiguration.PRODUCTION_DEPLOYMENT = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'artifactDeployment')) {
+    if (ConfigurationLoader.stageConfiguration(script, 'artifactDeployment') && env.BRANCH_NAME == productiveBranch) {
         script.pipelineEnvironment.skipConfiguration.ARTIFACT_DEPLOYMENT = true
     }
 
