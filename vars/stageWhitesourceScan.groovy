@@ -2,9 +2,8 @@ import com.sap.icd.jenkins.ConfigurationHelper
 import com.sap.icd.jenkins.ConfigurationLoader
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'stageWhitesourceScan', stepParameters: parameters) {
-        def script = parameters.script
-
+    def script = parameters.script
+    runAsStage(stageName: 'whitesourceScan', script: script) {
         try {
             unstashFiles script: script, stage: 'whitesourceScan'
 

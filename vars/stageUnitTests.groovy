@@ -1,9 +1,8 @@
 import com.sap.icd.jenkins.ConfigurationLoader
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'executeUnitTests', stepParameters: parameters) {
-        def script = parameters.script
-
+    def script = parameters.script
+    runAsStage(stageName: 'unitTests', script: script) {
         unstashFiles script: script, stage: 'unitTest'
 
         Map configuration = ConfigurationLoader.stageConfiguration(script, 'unitTests')

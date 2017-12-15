@@ -3,8 +3,8 @@ import com.sap.icd.jenkins.ConfigurationMerger
 
 def call(Map parameters = [:]) {
 
-    handleStepErrors(stepName: 'stageCheckmarxScan', stepParameters: parameters) {
-        def script = parameters.script
+    def script = parameters.script
+    runAsStage(stageName: 'checkmarxScan', script: script) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'checkmarxScan')
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, 'checkmarxScan')
 

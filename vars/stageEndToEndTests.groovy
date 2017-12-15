@@ -2,9 +2,8 @@ import com.sap.icd.jenkins.ConfigurationLoader
 import com.sap.icd.jenkins.EndToEndTestType
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'stageEndToEndTests', stepParameters: parameters) {
-        final script = parameters.script
-
+    def script = parameters.script
+    runAsStage(stageName: 'endToEndTests', script: script) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'endToEndTests')
 
         unstashFiles script: script, stage: 'endToEndTests'

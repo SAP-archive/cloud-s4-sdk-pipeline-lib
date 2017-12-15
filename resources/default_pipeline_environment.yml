@@ -1,6 +1,7 @@
 #Project Setup
 general:
   productiveBranch: master
+  defaultNode: ''
 
 #Steps Specific Configuration
 steps:

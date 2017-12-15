@@ -2,9 +2,8 @@ import com.sap.icd.jenkins.ConfigurationLoader
 import com.sap.icd.jenkins.ConfigurationMerger
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'stageIntegrationTests', stepParameters: parameters) {
-        def script = parameters.script
-
+    def script = parameters.script
+    runAsStage(stageName: 'integrationTests', script: script) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'integrationTests')
 
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, 'integrationTests')

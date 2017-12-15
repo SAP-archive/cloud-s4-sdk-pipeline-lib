@@ -1,9 +1,9 @@
 import com.sap.icd.jenkins.ConfigurationLoader
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'stageArtifactDeployment', stepParameters: parameters) {
-        def script = parameters.script
+    def script = parameters.script
 
+    runAsStage(stageName: 'artifactDeployment', script: script) {
         Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'artifactDeployment')
         if (stageConfig.nexus) {
             String url = stageConfig.nexus.url

@@ -1,8 +1,8 @@
 import com.sap.icd.jenkins.ConfigurationLoader
 
 def call(Map parameters = [:]) {
-    handleStepErrors (stepName: 's4sdkQualityChecks', stepParameters: parameters) {
-        def script = parameters.script
+    def script = parameters.script
+    runAsStage (stageName: 's4SdkQualityChecks', script: script) {
         unstashFiles script: script, stage: 'qualityChecks'
 
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 's4SdkQualityChecks')
