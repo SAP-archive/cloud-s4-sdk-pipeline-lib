@@ -82,7 +82,7 @@ def initPipelineStageConfig(def script) {
     }
 
     def sendNotification = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
-    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || BRANCH_NAME == productiveBranch)){
+    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || env.BRANCH_NAME == productiveBranch)){
         script.pipelineEnvironment.skipConfiguration.SEND_NOTIFICATION = true
     }
 
