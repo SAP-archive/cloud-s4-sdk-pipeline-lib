@@ -9,7 +9,7 @@ steps:
     dockerImage: maven:3.5-jdk-8-alpine
 
   executeNpm:
-    dockerImage: s4sdk/docker-node-chromium
+    dockerImage: s4sdk/docker-node-browsers
 
   executeGradle:
     dockerImage: gradle:4.0.1-jdk8
