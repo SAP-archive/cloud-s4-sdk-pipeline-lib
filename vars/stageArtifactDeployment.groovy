@@ -9,20 +9,29 @@ def call(Map parameters = [:]) {
             String url = stageConfig.nexus.url
             String repository = stageConfig.nexus.repository
             String credentialsId = stageConfig.nexus.credentialsId
+            String nexusVersion = stageConfig.nexus.version
 
             try {
                 unstashFiles script: script, stage: 'deploy'
 
-                def pom = readMavenPom file: 'pom.xml'
-                String groupId = pom.groupId
-                String artifactId = pom.artifactId
-                String version = pom.version
+                deployMavenArtifactsToNexus(
+                        script: script,
+                        url: url,
+                        nexusVersion: nexusVersion,
+                        repository: repository,
+                        credentialsId: credentialsId,
+                        pomFile: 'pom.xml',
+                        targetFolder: 'target')
 
-                List jarFiles = findFiles(glob: 'application/target/*.jar')
-                List warFiles = findFiles(glob: 'application/target/*.war')
-                List earFiles = findFiles(glob: 'application/target/*.ear')
+                deployMavenArtifactsToNexus(
+                        script: script,
+                        url: url,
+                        nexusVersion: nexusVersion,
+                        repository: repository,
+                        credentialsId: credentialsId,
+                        pomFile: 'application/pom.xml',
+                        targetFolder: 'application/target')
 
-                deployArtifactsToNexus script: script, url: url, repository: repository, credentialsId: credentialsId, groupId: groupId, artifactId: artifactId, version: version, jarFiles: jarFiles, warFiles: warFiles, earFiles: earFiles
             } finally {
                 stashFiles script: script, stage: 'deploy'
             }

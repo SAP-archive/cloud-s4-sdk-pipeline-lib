@@ -44,3 +44,7 @@ stages:
     preset: '36'
     vulnerabilityThresholdLow: 99999
     vulnerabilityThresholdMedium: 0
+
+  artifactDeployment:
+    nexus:
+      version: nexus3
