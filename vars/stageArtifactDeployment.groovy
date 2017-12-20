@@ -1,18 +1,34 @@
 import com.sap.icd.jenkins.ConfigurationLoader
+import com.sap.icd.jenkins.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     def script = parameters.script
 
     runAsStage(stageName: 'artifactDeployment', script: script) {
+
+        Map defaultConfig = ConfigurationLoader.defaultStageConfiguration(script, 'artifactDeployment')
         Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'artifactDeployment')
+
         if (stageConfig.nexus) {
-            String url = stageConfig.nexus.url
-            String repository = stageConfig.nexus.repository
-            String credentialsId = stageConfig.nexus.credentialsId
-            String nexusVersion = stageConfig.nexus.version
+
+            List stageConfigurationKeys = [
+                    'url',
+                    'repository',
+                    'version',
+                    'credentialsId'
+            ]
+
+            Map nexusConfiguration = ConfigurationMerger.merge(stageConfig.nexus, stageConfigurationKeys, defaultConfig.nexus)
+
+            String url = nexusConfiguration.url
+            String repository = nexusConfiguration.repository
+            String credentialsId = nexusConfiguration.credentialsId
+            String nexusVersion = nexusConfiguration.version
 
             try {
                 unstashFiles script: script, stage: 'deploy'
+
+                def pom = readMavenPom file: 'pom.xml'
 
                 deployMavenArtifactsToNexus(
                         script: script,
@@ -30,7 +46,8 @@ def call(Map parameters = [:]) {
                         repository: repository,
                         credentialsId: credentialsId,
                         pomFile: 'application/pom.xml',
-                        targetFolder: 'application/target')
+                        targetFolder: 'application/target',
+                        defaultGroupId: pom.groupId)
 
             } finally {
                 stashFiles script: script, stage: 'deploy'

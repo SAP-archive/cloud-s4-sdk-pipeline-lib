@@ -13,7 +13,8 @@ def call(Map parameters = [:]) {
             'repository',
             'credentialsId',
             'pomFile',
-            'targetFolder'
+            'targetFolder',
+            'defaultGroupId'
         ]
 
         def configuration = ConfigurationMerger.merge(parameters, parameterKeys, defaultConfiguration)
@@ -21,6 +22,8 @@ def call(Map parameters = [:]) {
         def pom = readMavenPom file: configuration.pomFile
 
         List artifacts = []
+
+        def groupId = pom.groupId ?: configuration.defaultGroupId
 
         artifacts.add([artifactId: pom.artifactId,
                        classifier: '',
@@ -37,7 +40,7 @@ def call(Map parameters = [:]) {
         Map nexusArtifactUploaderParameters = [nexusVersion: configuration.nexusVersion,
                                                protocol    : 'http',
                                                nexusUrl    : configuration.url,
-                                               groupId     : pom.groupId,
+                                               groupId     : groupId,
                                                version     : pom.version,
                                                repository  : configuration.repository,
                                                artifacts   : artifacts]
