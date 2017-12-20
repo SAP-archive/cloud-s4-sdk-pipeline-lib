@@ -15,7 +15,8 @@ def call(Map parameters = [:]) {
                     'url',
                     'repository',
                     'version',
-                    'credentialsId'
+                    'credentialsId',
+                    'additionalClassifiers'
             ]
 
             Map nexusConfiguration = ConfigurationMerger.merge(stageConfig.nexus, stageConfigurationKeys, defaultConfig.nexus)
@@ -47,6 +48,7 @@ def call(Map parameters = [:]) {
                         credentialsId: credentialsId,
                         pomFile: 'application/pom.xml',
                         targetFolder: 'application/target',
+                        additionalClassifiers: nexusConfiguration.additionalClassifiers,
                         defaultGroupId: pom.groupId)
 
             } finally {

@@ -14,7 +14,8 @@ def call(Map parameters = [:]) {
             'credentialsId',
             'pomFile',
             'targetFolder',
-            'defaultGroupId'
+            'defaultGroupId',
+            'additionalClassifiers'
         ]
 
         def configuration = ConfigurationMerger.merge(parameters, parameterKeys, defaultConfiguration)
@@ -31,12 +32,24 @@ def call(Map parameters = [:]) {
                        file: configuration.pomFile])
 
         if(pom.packaging != 'pom'){
+            def packaging = pom.packaging ?: 'jar'
             artifacts.add([artifactId: pom.artifactId,
                            classifier: '',
-                           type: pom.packaging,
-                           file: "${configuration.targetFolder}/${pom.artifactId}.${pom.packaging}"])
+                           type: packaging,
+                           file: "${configuration.targetFolder}/${pom.artifactId}.$packaging"])
         }
 
+        if(configuration.additionalClassifiers){
+            for(def i=0; i<configuration.additionalClassifiers.size(); i++){
+                def additionalClassifier = configuration.additionalClassifiers[i]
+
+                artifacts.add([artifactId: pom.artifactId,
+                               classifier: additionalClassifier.classifier,
+                               type: additionalClassifier.type,
+                               file: "${configuration.targetFolder}/${pom.artifactId}-${additionalClassifier.classifier}.${additionalClassifier.type}"])
+            }
+        }
+        
         Map nexusArtifactUploaderParameters = [nexusVersion: configuration.nexusVersion,
                                                protocol    : 'http',
                                                nexusUrl    : configuration.url,
