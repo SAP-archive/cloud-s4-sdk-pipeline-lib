@@ -8,14 +8,14 @@ def call(Map parameters = [:]) {
         def defaultConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'deployMavenArtifactsToNexus')
 
         def parameterKeys = [
-            'nexusVersion',
-            'url',
-            'repository',
-            'credentialsId',
-            'pomFile',
-            'targetFolder',
-            'defaultGroupId',
-            'additionalClassifiers'
+                'nexusVersion',
+                'url',
+                'repository',
+                'credentialsId',
+                'pomFile',
+                'targetFolder',
+                'defaultGroupId',
+                'additionalClassifiers'
         ]
 
         def configuration = ConfigurationMerger.merge(parameters, parameterKeys, defaultConfiguration)
@@ -28,31 +28,33 @@ def call(Map parameters = [:]) {
 
         artifacts.add([artifactId: pom.artifactId,
                        classifier: '',
-                       type: 'pom',
-                       file: configuration.pomFile])
+                       type      : 'pom',
+                       file      : configuration.pomFile])
 
-        if(pom.packaging != 'pom'){
+        if (pom.packaging != 'pom') {
             def packaging = pom.packaging ?: 'jar'
             artifacts.add([artifactId: pom.artifactId,
                            classifier: '',
-                           type: packaging,
-                           file: "${configuration.targetFolder}/${pom.artifactId}.$packaging"])
+                           type      : packaging,
+                           file      : "${configuration.targetFolder}/${pom.artifactId}.$packaging"])
         }
 
-        if(configuration.additionalClassifiers){
-            for(def i=0; i<configuration.additionalClassifiers.size(); i++){
+        if (configuration.additionalClassifiers) {
+            for (def i = 0; i < configuration.additionalClassifiers.size(); i++) {
                 def additionalClassifier = configuration.additionalClassifiers[i]
 
                 artifacts.add([artifactId: pom.artifactId,
                                classifier: additionalClassifier.classifier,
-                               type: additionalClassifier.type,
-                               file: "${configuration.targetFolder}/${pom.artifactId}-${additionalClassifier.classifier}.${additionalClassifier.type}"])
+                               type      : additionalClassifier.type,
+                               file      : "${configuration.targetFolder}/${pom.artifactId}-${additionalClassifier.classifier}.${additionalClassifier.type}"])
             }
         }
-        
+
+        def nexusUrlWithoutProtocol = configuration.url.replaceFirst("^https?://", "")
+
         Map nexusArtifactUploaderParameters = [nexusVersion: configuration.nexusVersion,
                                                protocol    : 'http',
-                                               nexusUrl    : configuration.url,
+                                               nexusUrl    : nexusUrlWithoutProtocol,
                                                groupId     : groupId,
                                                version     : pom.version,
                                                repository  : configuration.repository,
