@@ -14,11 +14,16 @@ def call(Map parameters = [:], body) {
             'dockerImage',
             'dockerOptions'
         ]
-        List stepConfigurationKeys = ['dockerImage']
+        List stepConfigurationKeys = ['dockerImage', 'defaultNpmRegistry']
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
-        executeDockerNative(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) { body() }
+        executeDockerNative(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) {
+            if(configuration.defaultNpmRegistry){
+                sh "npm config set registry ${configuration.defaultNpmRegistry}"
+            }
+            body()
+        }
     }
 }
 
