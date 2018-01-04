@@ -1,5 +1,5 @@
-import com.sap.icd.jenkins.E2ETestCommandHelper
-import com.sap.icd.jenkins.EndToEndTestType
+import com.sap.cloud.sdk.s4hana.pipeline.E2ETestCommandHelper
+import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeEndToEndTest',stepParameters: parameters) {

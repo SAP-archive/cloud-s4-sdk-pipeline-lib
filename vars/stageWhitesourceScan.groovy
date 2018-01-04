@@ -1,5 +1,5 @@
-import com.sap.icd.jenkins.ConfigurationHelper
-import com.sap.icd.jenkins.ConfigurationLoader
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationHelper
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 
 def call(Map parameters = [:]) {
     def script = parameters.script

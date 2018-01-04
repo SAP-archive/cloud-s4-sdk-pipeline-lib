@@ -1,4 +1,4 @@
-package com.sap.icd.jenkins
+package com.sap.cloud.sdk.s4hana.pipeline
 
 import com.cloudbees.groovy.cps.NonCPS
 

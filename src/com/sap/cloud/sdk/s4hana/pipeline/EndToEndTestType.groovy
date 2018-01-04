@@ -1,4 +1,4 @@
-package com.sap.icd.jenkins
+package com.sap.cloud.sdk.s4hana.pipeline
 
 enum EndToEndTestType {
     END_TO_END_TEST('ci-e2e'),

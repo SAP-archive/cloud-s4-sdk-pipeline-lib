@@ -1,5 +1,5 @@
-import com.sap.icd.jenkins.CloudPlatform
-import com.sap.icd.jenkins.DeploymentType
+import com.sap.cloud.sdk.s4hana.pipeline.CloudPlatform
+import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'deployToCloudPlatform', stepParameters: parameters) {

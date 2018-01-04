@@ -1,5 +1,4 @@
-import com.sap.icd.jenkins.ConfigurationLoader
-import com.sap.icd.jenkins.ConfigurationMerger
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
 
 @Grab('com.xlson.groovycsv:groovycsv:1.1')
 import static com.xlson.groovycsv.CsvParser.parseCsv

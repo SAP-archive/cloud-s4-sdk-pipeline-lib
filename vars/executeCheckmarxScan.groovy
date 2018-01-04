@@ -1,5 +1,4 @@
 import com.cloudbees.groovy.cps.NonCPS
-import com.sap.icd.jenkins.ConfigurationLoader
 import hudson.util.Secret
 
 def call(Map parameters = [:]) {

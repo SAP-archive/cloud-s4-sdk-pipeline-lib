@@ -1,5 +1,5 @@
-import com.sap.icd.jenkins.ConfigurationLoader
-import com.sap.icd.jenkins.ConfigurationMerger
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'deployMavenArtifactsToNexus', stepParameters: parameters) {

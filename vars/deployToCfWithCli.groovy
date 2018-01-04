@@ -1,10 +1,10 @@
 import com.cloudbees.groovy.cps.NonCPS
-import com.sap.icd.jenkins.CfTarget
-import com.sap.icd.jenkins.ConfigurationHelper
-import com.sap.icd.jenkins.ConfigurationLoader
-import com.sap.icd.jenkins.ConfigurationMerger
-import com.sap.icd.jenkins.DeploymentType
-import com.sap.icd.jenkins.ManifestUpdater
+import com.sap.cloud.sdk.s4hana.pipeline.CfTarget
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationHelper
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
+import com.sap.cloud.sdk.s4hana.pipeline.ManifestUpdater
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 
 import java.util.regex.Matcher

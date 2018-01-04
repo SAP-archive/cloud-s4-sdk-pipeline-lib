@@ -1,5 +1,5 @@
-import com.sap.icd.jenkins.ConfigurationLoader
-import com.sap.icd.jenkins.EndToEndTestType
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 
 def call(Map parameters = [:]) {
     def script = parameters.script
