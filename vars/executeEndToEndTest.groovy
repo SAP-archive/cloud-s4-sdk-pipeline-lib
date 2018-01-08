@@ -30,7 +30,7 @@ def call(Map parameters = [:]) {
 
                 try {
                     withCredentials(credentials) {
-                        executeNpm(script: script) {
+                        executeNpm(script: script, dockerOptions:'--shm-size 512MB') {
                             sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
                             withEnv(['DISPLAY=:99']) {
                                 sh shScript
