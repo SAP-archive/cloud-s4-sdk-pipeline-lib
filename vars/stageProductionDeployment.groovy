@@ -9,14 +9,13 @@ def call(Map parameters = [:]) {
 
         if (fileExists('package.json')) {
             lock(script.pipelineEnvironment.configuration.productionDeploymentLock) {
-                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true
-                executeEndToEndTest(script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST)
+                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: 'deploy'
+                executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST, stage: 'deploy'
             }
         } else {
-            deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true
+            deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: 'deploy'
             echo "Smoke tests skipped, because package.json does not exist!"
         }
-
         stashFiles script: script, stage: 'deploy'
     }
 }

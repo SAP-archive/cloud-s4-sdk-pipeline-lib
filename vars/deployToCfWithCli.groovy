@@ -1,17 +1,11 @@
 import com.cloudbees.groovy.cps.NonCPS
-import com.sap.cloud.sdk.s4hana.pipeline.CfTarget
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationHelper
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
-import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
-import com.sap.cloud.sdk.s4hana.pipeline.ManifestUpdater
-import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+import com.sap.cloud.sdk.s4hana.pipeline.*
 
 import java.util.regex.Matcher
 
 def call(Map parameters = [:]) {
 
-    handleStepErrors (stepName: 'deployToCfWithCli', stepParameters: parameters) {
+    handleStepErrors(stepName: 'deployToCfWithCli', stepParameters: parameters) {
 
         final script = parameters.script
 
@@ -19,58 +13,43 @@ def call(Map parameters = [:]) {
 
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToCfWithCli')
 
-        List parameterKeys = [
-            'dockerImage',
-            'smokeTestStatusCode',
-            'deploymentType',
-            'targets',
-            'environmentVariables',
-            'org',
-            'space',
-            'apiEndpoint',
-            'appName',
-            'manifest',
-            'credentialsId',
-            'username',
-            'password'
-        ]
-        List stepConfigurationKeys = [
-            'dockerImage',
-            'smokeTestStatusCode',
-            'org',
-            'space',
-            'apiEndpoint',
-            'appName',
-            'manifest',
-            'credentialsId',
-            'username',
-            'password'
-        ]
+        List parameterKeys = ['dockerImage',
+                              'smokeTestStatusCode',
+                              'deploymentType',
+                              'environmentVariables',
+                              'org',
+                              'space',
+                              'apiEndpoint',
+                              'appName',
+                              'manifest',
+                              'credentialsId',
+                              'username',
+                              'password']
+        List stepConfigurationKeys = ['dockerImage',
+                                      'smokeTestStatusCode',
+                                      'org',
+                                      'space',
+                                      'apiEndpoint',
+                                      'appName',
+                                      'manifest',
+                                      'credentialsId',
+                                      'username',
+                                      'password']
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
+        CfTarget cfTarget = new CfTarget(configuration)
+        cfTarget.validate()
 
-        def deploymentDescriptors = new ConfigurationHelper(configuration).getMandatoryProperty('targets')
-        for (def i = 0; i<deploymentDescriptors.size(); i++) {
-            //default value
-            CfTarget cfTarget = new CfTarget(configuration)
-            //overwrite default value by using customized value from parameter: targets
-            cfTarget.loadNotNullFrom(deploymentDescriptors[i])
-
-            cfTarget.validate()
-
-            if (cfTarget.isCredentialsIdDefined()) {
-                withCredentials([
-                    [$class: 'UsernamePasswordMultiBinding', credentialsId: cfTarget.credentialsId, passwordVariable: 'CF_PASSWORD', usernameVariable: 'CF_USERNAME']
-                ]) {
-                    cfTarget.setUsername(CF_USERNAME)
-                    cfTarget.setPassword(BashUtils.escape(CF_PASSWORD))
-                    deploy(configuration.dockerImage, configuration.deploymentType, cfTarget, configuration.smokeTestStatusCode, configuration.environmentVariables)
-                }
-            } else if (cfTarget.isUsernameAndPasswordDefined()) {
+        if (cfTarget.isCredentialsIdDefined()) {
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: cfTarget.credentialsId, passwordVariable: 'CF_PASSWORD', usernameVariable: 'CF_USERNAME']]) {
+                cfTarget.setUsername(CF_USERNAME)
+                cfTarget.setPassword(BashUtils.escape(CF_PASSWORD))
                 deploy(configuration.dockerImage, configuration.deploymentType, cfTarget, configuration.smokeTestStatusCode, configuration.environmentVariables)
-            } else {
-                throw new Exception("ERROR - EITHER SPECIFY credentialsId OR username and password")
             }
+        } else if (cfTarget.isUsernameAndPasswordDefined()) {
+            deploy(configuration.dockerImage, configuration.deploymentType, cfTarget, configuration.smokeTestStatusCode, configuration.environmentVariables)
+        } else {
+            throw new Exception("ERROR - EITHER SPECIFY credentialsId OR username and password")
         }
     }
 }
@@ -92,16 +71,14 @@ private deploy(dockerImage, deploymentType, cfTarget, statusCode, environmentVar
                     sh "cf logout"
                 }
             } else {
-                sh "cf login -u ${cfTarget.username} -p ${cfTarget.password} -a ${cfTarget.apiEndpoint} -o ${cfTarget.org} -s ${cfTarget.space} && " +
-                        "cf push ${cfTarget.appName} -f ${cfTarget.manifest} && " +
-                        "cf logout"
+                sh "cf login -u ${cfTarget.username} -p ${cfTarget.password} -a ${cfTarget.apiEndpoint} -o ${cfTarget.org} -s ${cfTarget.space} && " + "cf push ${cfTarget.appName} -f ${cfTarget.manifest} && " + "cf logout"
             }
         }
     }
 }
 
-private copyUserVariablesToManifest(appName, variablesToKeep, manifest){
-    if(doesAppExists(appName)) {
+private copyUserVariablesToManifest(appName, variablesToKeep, manifest) {
+    if (doesAppExists(appName)) {
         String environmentVariables = sh returnStdout: true, script: "cf env ${appName}"
         Map userVariables = extractUserVariables(environmentVariables, variablesToKeep)
         Map manifestMap = readYaml file: manifest
@@ -113,12 +90,12 @@ private copyUserVariablesToManifest(appName, variablesToKeep, manifest){
 }
 
 @NonCPS
-private extractUserVariables(environmentVariables, variablesToKeep){
+private extractUserVariables(environmentVariables, variablesToKeep) {
     Map userVariables = [:]
     Matcher userEnvSectionMatcher = (environmentVariables =~ /User-Provided:\n(.+\n)*/)
     if (userEnvSectionMatcher.find()) {
         String userEnv = userEnvSectionMatcher.group()
-        for(int i=0; i<variablesToKeep.size(); i++){
+        for (int i = 0; i < variablesToKeep.size(); i++) {
             String userEnvKey = variablesToKeep[i]
             Matcher userEnvMatcher = (userEnv =~ /${userEnvKey}:(.*)/)
             if (userEnvMatcher.find()) {
@@ -130,7 +107,7 @@ private extractUserVariables(environmentVariables, variablesToKeep){
     return userVariables
 }
 
-private doesAppExists(String appName){
-    String apps = sh returnStdout:true, script:'cf apps'
+private doesAppExists(String appName) {
+    String apps = sh returnStdout: true, script: 'cf apps'
     return apps.contains(appName)
 }

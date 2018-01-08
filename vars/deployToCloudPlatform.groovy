@@ -3,14 +3,39 @@ import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'deployToCloudPlatform', stepParameters: parameters) {
+        def index = 1
+        def deployments = [:]
+        def stageName = parameters.get('stage')
+        def script = parameters.get('script')
         if (parameters.cfTargets) {
-            deployToCfWithCli script: parameters.script, targets: parameters.cfTargets, deploymentType: parameters.isProduction ? DeploymentType.getDepolymentTypeForProduction(CloudPlatform.CLOUD_FOUNDRY) : DeploymentType.STANDARD
+            for (int i = 0; i < parameters.cfTargets.size(); i++) {
+                def target = parameters.cfTargets[i]
+                deployments["Deployment ${index > 1 ? index : ''}"] = {
+                    node(env.NODE_NAME) {
+                        unstashFiles script: script, stage: stageName
+                        deployToCfWithCli script: parameters.script, org: target.org, space: target.space, apiEndpoint: target.apiEndpoint, username: target.username, password: target.password, manifest: target.manifest, deploymentType: parameters.isProduction ? DeploymentType.getDepolymentTypeForProduction(CloudPlatform.CLOUD_FOUNDRY) : DeploymentType.STANDARD
+                        stashFiles script: script, stage: stageName
+                    }
+                }
+                index++
+            }
+            runClosures deployments, script
         } else if (parameters.neoTargets) {
 
             def pom = readMavenPom file: 'application/pom.xml'
             def source = "application/target/${pom.getArtifactId()}.${pom.getPackaging()}"
-
-            deployToNeoWithCli script: parameters.script, targets: parameters.neoTargets, deploymentType: parameters.isProduction ? DeploymentType.getDepolymentTypeForProduction(CloudPlatform.NEO) : DeploymentType.STANDARD, source: source
+            for (int i = 0; i < parameters.neoTargets.size(); i++) {
+                def target = parameters.neoTargets[i]
+                deployments["Deployment ${index > 1 ? index : ''}"] = {
+                    node(env.NODE_NAME) {
+                        unstashFiles script: script, stage: stageName
+                        deployToNeoWithCli script: parameters.script, target: target, deploymentType: parameters.isProduction ? DeploymentType.getDepolymentTypeForProduction(CloudPlatform.NEO) : DeploymentType.STANDARD, source: source
+                        stashFiles script: script, stage: stageName
+                    }
+                }
+                index++
+            }
+            runClosures deployments, script
         } else {
             currentBuild.result = 'FAILURE'
             error("Test Deployment skipped because no targets defined!")

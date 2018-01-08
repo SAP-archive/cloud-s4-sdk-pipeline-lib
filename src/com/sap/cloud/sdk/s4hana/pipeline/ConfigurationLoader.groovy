@@ -39,6 +39,11 @@ class ConfigurationLoader implements Serializable {
     }
 
     @NonCPS
+    static boolean isFeatureActive(script, String feature){
+        return script?.pipelineEnvironment?.configuration?.general?.features?.get(feature) ?: false
+    }
+
+    @NonCPS
     private static loadConfiguration(script, String type, String entryName, ConfigurationType configType){
         switch (configType) {
             case ConfigurationType.CUSTOM_CONFIGURATION:
