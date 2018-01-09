@@ -1,11 +1,11 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 
 def call(Map parameters = [:]) {
+    def stageName = 'performanceTests'
     def script = parameters.script
-    runAsStage(stageName: 'performanceTest', script: script) {
-        unstashFiles script: script, stage: 'performanceTest'
+    runAsStage(stageName: stageName, script: script) {
 
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'performanceTest')
+        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         if (stageConfiguration) {
             lock(script.pipelineEnvironment.configuration.performanceTestLock) {
@@ -24,7 +24,5 @@ def call(Map parameters = [:]) {
         } else {
             echo "Performance tests have not been enabled. Skipping the stage."
         }
-        stashFiles script: script, stage: 'performanceTest'
-        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

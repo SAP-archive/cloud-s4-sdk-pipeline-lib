@@ -1,11 +1,10 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 
 def call(Map parameters = [:]) {
+    def stageName = 'unitTests'
     def script = parameters.script
-    runAsStage(stageName: 'unitTests', script: script) {
-        unstashFiles script: script, stage: 'unitTest'
-
-        Map configuration = ConfigurationLoader.stageConfiguration(script, 'unitTests')
+    runAsStage(stageName: stageName, script: script) {
+        Map configuration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         try {
             executeMaven script: script, flags: '-B', pomPath: 'unit-tests/pom.xml', m2Path: s4SdkGlobals.m2Directory, goals: 'org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent test', dockerImage: configuration.dockerImage, defines: '-Dsurefire.forkCount=1C'
@@ -24,9 +23,6 @@ def call(Map parameters = [:]) {
             'unit-tests/target/coverage-reports/jacoco.exec',
             'unit-tests/target/coverage-reports/jacoco-ut.exec'
         ], target: 'unit-tests.exec'
-
-        stashFiles script: script, stage: 'unitTest'
-        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }
 

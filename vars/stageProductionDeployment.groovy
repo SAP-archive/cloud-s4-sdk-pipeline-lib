@@ -2,20 +2,19 @@ import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 
 def call(Map parameters = [:]) {
+    def stageName = 'productionDeployment'
     def script = parameters.script
-    runAsStage(stageName: 'productionDeployment', script: script) {
-        unstashFiles script: script, stage: 'deploy'
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'productionDeployment')
+    runAsStage(stageName: stageName, script: script) {
+        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         if (fileExists('package.json')) {
             lock(script.pipelineEnvironment.configuration.productionDeploymentLock) {
-                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: 'deploy'
-                executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST, stage: 'deploy'
+                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
+                executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST, stage: stageName
             }
         } else {
-            deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: 'deploy'
+            deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
             echo "Smoke tests skipped, because package.json does not exist!"
         }
-        stashFiles script: script, stage: 'deploy'
     }
 }

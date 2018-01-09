@@ -23,7 +23,15 @@ def call(Map parameters = [:], body) {
 
     handleStepErrors(stepName: stageName, stepParameters: [:]) {
         node(nodeLabel) {
-            body()
+            try {
+                unstashFiles script: script, stage: stageName
+                body()
+                stashFiles script: script, stage: stageName
+                echo "Current build result in stage $stageName is ${script.currentBuild.result}"
+            }
+            finally {
+                deleteDir()
+            }
         }
     }
 }

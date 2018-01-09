@@ -1,11 +1,10 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 
 def call(Map parameters = [:]) {
+    def stageName = 's4SdkQualityChecks'
     def script = parameters.script
-    runAsStage (stageName: 's4SdkQualityChecks', script: script) {
-        unstashFiles script: script, stage: 'qualityChecks'
-
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 's4SdkQualityChecks')
+    runAsStage (stageName: stageName, script: script) {
+        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         checkDependencies script: script
 
@@ -14,8 +13,5 @@ def call(Map parameters = [:]) {
         checkCodeCoverage script: script, jacocoExcludes: stageConfiguration.jacocoExcludes
         checkHystrix()
         checkServices script: script, nonErpDestinations: stageConfiguration.nonErpDestinations
-
-        stashFiles script: script, stage: 'qualityChecks'
-        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

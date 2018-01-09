@@ -2,12 +2,13 @@ import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
 
 def call(Map parameters = [:]) {
+    def stageName = 'artifactDeployment'
     def script = parameters.script
 
-    runAsStage(stageName: 'artifactDeployment', script: script) {
+    runAsStage(stageName: stageName, script: script) {
 
-        Map defaultConfig = ConfigurationLoader.defaultStageConfiguration(script, 'artifactDeployment')
-        Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'artifactDeployment')
+        Map defaultConfig = ConfigurationLoader.defaultStageConfiguration(script, stageName)
+        Map stageConfig = ConfigurationLoader.stageConfiguration(script, stageName)
 
         if (stageConfig.nexus) {
 
@@ -26,34 +27,28 @@ def call(Map parameters = [:]) {
             String credentialsId = nexusConfiguration.credentialsId
             String nexusVersion = nexusConfiguration.version
 
-            try {
-                unstashFiles script: script, stage: 'deploy'
+            def pom = readMavenPom file: 'pom.xml'
 
-                def pom = readMavenPom file: 'pom.xml'
+            deployMavenArtifactsToNexus(
+                    script: script,
+                    url: url,
+                    nexusVersion: nexusVersion,
+                    repository: repository,
+                    credentialsId: credentialsId,
+                    pomFile: 'pom.xml',
+                    targetFolder: 'target')
 
-                deployMavenArtifactsToNexus(
-                        script: script,
-                        url: url,
-                        nexusVersion: nexusVersion,
-                        repository: repository,
-                        credentialsId: credentialsId,
-                        pomFile: 'pom.xml',
-                        targetFolder: 'target')
+            deployMavenArtifactsToNexus(
+                    script: script,
+                    url: url,
+                    nexusVersion: nexusVersion,
+                    repository: repository,
+                    credentialsId: credentialsId,
+                    pomFile: 'application/pom.xml',
+                    targetFolder: 'application/target',
+                    additionalClassifiers: nexusConfiguration.additionalClassifiers,
+                    defaultGroupId: pom.groupId)
 
-                deployMavenArtifactsToNexus(
-                        script: script,
-                        url: url,
-                        nexusVersion: nexusVersion,
-                        repository: repository,
-                        credentialsId: credentialsId,
-                        pomFile: 'application/pom.xml',
-                        targetFolder: 'application/target',
-                        additionalClassifiers: nexusConfiguration.additionalClassifiers,
-                        defaultGroupId: pom.groupId)
-
-            } finally {
-                stashFiles script: script, stage: 'deploy'
-            }
         } else {
             println("Can't deploy to nexus because the configuration is missing.")
         }

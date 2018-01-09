@@ -2,11 +2,12 @@ import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
 
 def call(Map parameters = [:]) {
+    def stageName = 'integrationTests'
     def script = parameters.script
-    runAsStage(stageName: 'integrationTests', script: script) {
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'integrationTests')
+    runAsStage(stageName: stageName, script: script) {
+        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, 'integrationTests')
+        final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
 
         List stageConfigurationKeys = [
             'retry',
@@ -15,8 +16,6 @@ def call(Map parameters = [:]) {
         ]
 
         Map configuration = ConfigurationMerger.merge(parameters, [], stageConfiguration, stageConfigurationKeys, stageDefaults)
-
-        unstashFiles script: script, stage: 'integrationTest'
 
         try {
             if(configuration.crendentials != null){
@@ -57,8 +56,5 @@ def call(Map parameters = [:]) {
             'integration-tests/target/coverage-reports/jacoco.exec',
             'integration-tests/target/coverage-reports/jacoco-ut.exec'
         ], target: 'integration-tests.exec'
-
-        stashFiles script: script, stage: 'integrationTest'
-        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }

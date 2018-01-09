@@ -2,35 +2,30 @@ import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationHelper
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 
 def call(Map parameters = [:]) {
+    def stageName = 'whitesourceScan'
     def script = parameters.script
-    runAsStage(stageName: 'whitesourceScan', script: script) {
-        try {
-            unstashFiles script: script, stage: 'whitesourceScan'
+    runAsStage(stageName: stageName, script: script) {
+        // Maven
+        Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        if (whitesourceConfiguration) {
+            def whitesourceConfigurationHelper = new ConfigurationHelper(whitesourceConfiguration)
+            def orgToken = whitesourceConfigurationHelper.getConfigProperty('orgToken')
+            def product = whitesourceConfigurationHelper.getConfigProperty('product')
 
-            // Maven
-            Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
-            if (whitesourceConfiguration) {
-                def whitesourceConfigurationHelper = new ConfigurationHelper(whitesourceConfiguration)
-                def orgToken = whitesourceConfigurationHelper.getConfigProperty('orgToken')
-                def product = whitesourceConfigurationHelper.getConfigProperty('product')
+            def stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeMaven')
+            def globalSettingsFile = new ConfigurationHelper(stepConfiguration).getConfigProperty('globalSettingsFile')
 
-                def stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeMaven')
-                def globalSettingsFile = new ConfigurationHelper(stepConfiguration).getConfigProperty('globalSettingsFile')
+            executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product, globalSettingsFile: globalSettingsFile
+        } else {
+            println('Skip WhiteSource Maven scan because the stage "whitesourceScan" is not configured.')
+        }
 
-                executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product, globalSettingsFile: globalSettingsFile
-            } else {
-                println('Skip WhiteSource Maven scan because the stage "whitesourceScan" is not configured.')
-            }
-
-            // NPM
-            if (fileExists('whitesource.config.json')) {
-                executeWhitesourceScanNpm script: script
-            } else {
-                println 'Skip WhiteSource NPM Plugin, because no "whitesource.config.json" file was found in project.\n' +
-                        'Please refer to http://docs.whitesourcesoftware.com/display/serviceDocs/NPM+Plugin for usage information.'
-            }
-        } finally {
-            stashFiles script: script, stage: 'whitesourceScan'
+        // NPM
+        if (fileExists('whitesource.config.json')) {
+            executeWhitesourceScanNpm script: script
+        } else {
+            println 'Skip WhiteSource NPM Plugin, because no "whitesource.config.json" file was found in project.\n' +
+                    'Please refer to http://docs.whitesourcesoftware.com/display/serviceDocs/NPM+Plugin for usage information.'
         }
     }
 }

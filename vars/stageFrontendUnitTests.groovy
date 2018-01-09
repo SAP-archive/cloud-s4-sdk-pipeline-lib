@@ -1,12 +1,12 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 
 def call(Map parameters = [:]) {
+    def stageName = 'frontendUnitTests'
     def script = parameters.script
 
-    runAsStage(stageName: 'frontendUnitTests', script: script) {
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, 'frontendUnitTests')
+    runAsStage(stageName: stageName, script: script) {
+        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        unstashFiles script: script, stage: 'frontendUnitTest'
         if(fileExists('package.json') ) {
             try {
                 executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: '--cap-add=SYS_ADMIN') {
@@ -32,8 +32,5 @@ def call(Map parameters = [:]) {
         } else {
             echo "Frontend unit tests skipped, because package.json does not exist!"
         }
-
-        stashFiles script: script, stage: 'frontendUnitTest'
-        echo "currentBuild.result: ${script.currentBuild.result}"
     }
 }
