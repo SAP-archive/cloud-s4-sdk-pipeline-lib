@@ -43,7 +43,7 @@ def initPipelineStageConfig(def script) {
     if (ConfigurationLoader.stageConfiguration(script, 'endToEndTests') && script.pipelineEnvironment.skipConfiguration.FRONT_END_BUILD) {
         script.pipelineEnvironment.skipConfiguration.E2E_TESTS = true
     }
-    if (ConfigurationLoader.stageConfiguration(script, 'performanceTest')) {
+    if (ConfigurationLoader.stageConfiguration(script, 'performanceTests')) {
         script.pipelineEnvironment.skipConfiguration.PERFORMANCE_TESTS = true
     }
 
