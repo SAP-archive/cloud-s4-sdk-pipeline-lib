@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.ClosureHolder
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationHelper
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
@@ -17,7 +18,7 @@ def call(Map parameters = [:], body) {
 
     def nodeLabel = generalConfiguration.defaultNode
 
-    if(stageConfiguration.node){
+    if (stageConfiguration.node) {
         nodeLabel = stageConfiguration.node
     }
 
@@ -25,13 +26,28 @@ def call(Map parameters = [:], body) {
         node(nodeLabel) {
             try {
                 unstashFiles script: script, stage: stageName
-                body()
+                executeStage(stageName, stageConfiguration, ConfigurationLoader.generalConfiguration(script), body)
                 stashFiles script: script, stage: stageName
-                echo "Current build result in stage $stageName is ${script.currentBuild.result}"
+                echo "Current build result in stage $stageName is ${script.currentBuild.result}."
             }
             finally {
                 deleteDir()
             }
         }
+    }
+}
+
+private executeStage(stageName, stageConfiguration, generalConfiguration, body) {
+    def stageInterceptor = "pipeline_extensions/${stageName}.groovy"
+    if (fileExists(stageInterceptor)) {
+        Script interceptor = load(stageInterceptor)
+        interceptor.binding.setProperty('originalStage', new ClosureHolder(body as Closure))
+        interceptor.binding.setProperty('stageName', stageName)
+        interceptor.binding.setProperty('stageConfiguration', stageConfiguration)
+        interceptor.binding.setProperty('generalConfiguration', generalConfiguration)
+        echo "Running interceptor for ${stageName}."
+        interceptor()
+    } else {
+        body()
     }
 }
