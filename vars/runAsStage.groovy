@@ -38,7 +38,7 @@ def call(Map parameters = [:], body) {
 }
 
 private executeStage(stageName, stageConfiguration, generalConfiguration, body) {
-    def stageInterceptor = "pipeline_extensions/${stageName}.groovy"
+    def stageInterceptor = "pipeline/extensions/${stageName}.groovy"
     if (fileExists(stageInterceptor)) {
         Script interceptor = load(stageInterceptor)
         interceptor.binding.setProperty('originalStage', new ClosureHolder(body as Closure))
