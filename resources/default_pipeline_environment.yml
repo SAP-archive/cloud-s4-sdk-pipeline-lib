@@ -27,8 +27,6 @@ steps:
   deployToCfWithCli:
     dockerImage: s4sdk/docker-cf-cli
     smokeTestStatusCode: '200'
-    environmentVariables:
-      - 'destinations'
 
 #Stage Specific Configurations
 stages:
