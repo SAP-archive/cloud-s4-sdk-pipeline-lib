@@ -58,7 +58,7 @@ def initPipelineStageConfig(def script) {
         script.pipelineEnvironment.skipConfiguration.WHITESOURCE_SCAN = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'nodeSecurityScan')?.enabled || fileExists('package.json')) {
+    if (fileExists('package.json')) {
         script.pipelineEnvironment.skipConfiguration.NODE_SECURITY_SCAN = true
     }
 
