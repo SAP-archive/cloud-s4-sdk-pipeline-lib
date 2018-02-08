@@ -36,7 +36,7 @@ def call(Map parameters = [:]) {
         executeMaven script: script, flags: '-B -U', m2Path: s4SdkGlobals.m2Directory, goals: 'findbugs:findbugs', defines: filterOptions, dockerImage: configuration.dockerImage
 
         executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Please examine the Findbugs reports.") {
-            findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', includePattern: includeFilterFile, pattern: '**/findbugsXml.xml'
+            findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/findbugsXml.xml'
         }
     }
 }
