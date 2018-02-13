@@ -27,7 +27,7 @@ def call(Map parameters = [:]) {
                     script: script,
                     flags: '-U -B',
                     m2Path: s4SdkGlobals.m2Directory,
-                    goals: "com.sap.cloud.s4hana.quality:pmd-plugin:1.0.0:pmd ${excludeOption}",
+                    goals: "com.sap.cloud.s4hana.quality:pmd-plugin:RELEASE:pmd ${excludeOption}",
                     defines: '-Dpmd.rulesets=rulesets/s4hana-qualities.xml',
                     dockerImage: configuration.dockerImage
                     )
