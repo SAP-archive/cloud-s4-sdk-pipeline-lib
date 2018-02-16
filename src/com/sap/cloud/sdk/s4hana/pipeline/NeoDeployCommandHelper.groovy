@@ -45,10 +45,6 @@ class NeoDeployCommandHelper implements Serializable{
     String deployCommand(){
         String command = "${neoTool} deploy ${mainArgs()} -s ${source} ${additionalCommonArgs()}"
 
-        if(deploymentDescriptor.containsKey('runtime')){
-            command += " --runtime ${deploymentDescriptor.runtime}"
-        }
-
         return command
     }
 
@@ -73,6 +69,10 @@ class NeoDeployCommandHelper implements Serializable{
             else {
                 args += " --ev ${value}"
             }
+        }
+        
+        if(deploymentDescriptor.containsKey('runtime')){
+            args += " --runtime ${deploymentDescriptor.runtime}"
         }
 
         if(deploymentDescriptor.containsKey('runtimeVersion')){

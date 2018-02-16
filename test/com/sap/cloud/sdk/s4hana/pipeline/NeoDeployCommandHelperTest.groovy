@@ -52,7 +52,7 @@ class NeoDeployCommandHelperTest {
         assertTrue(actual.contains(basicCommand))
         assertTrue(actual.contains(' --ev ENV1=value1 --ev ENV2=value2'))
         assertTrue(actual.contains(' --vm-arguments "-Dargument1=value1 -Dargument2=value2"'))
-        assertTrue(!actual.contains('--runtime neо-javaee6-wp'))
+        assertTrue(actual.contains('--runtime neо-javaee6-wp'))
         assertTrue(actual.contains(' --runtime-version 2'))
         assertTrue(actual.contains(' --size lite'))
     }
