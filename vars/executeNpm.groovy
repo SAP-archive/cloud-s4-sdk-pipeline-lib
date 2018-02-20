@@ -19,10 +19,18 @@ def call(Map parameters = [:], body) {
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
         executeDockerNative(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) {
-            if(configuration.defaultNpmRegistry){
-                sh "npm config set registry ${configuration.defaultNpmRegistry}"
+            try {
+                if (configuration.defaultNpmRegistry) {
+                    sh "npm config set registry ${configuration.defaultNpmRegistry}"
+                }
+
+                body()
             }
-            body()
+            catch(Exception e) {
+                println "Error while executing npm. Here are the logs:"
+                sh "cat ~/.npm/_logs/*"
+                throw e;
+            }
         }
     }
 }

@@ -6,6 +6,14 @@ def call(Map parameters = [:]) {
 
     runAsStage(stageName: stageName, script: script) {
         Map configuration = ConfigurationLoader.stageConfiguration(script, stageName)
-        executeMaven script: script, flags: '-U -B', m2Path: s4SdkGlobals.m2Directory, goals: 'clean install', defines:'-Dmaven.test.skip=true', dockerImage: configuration.dockerImage
+
+        executeMaven(
+            script: script,
+            flags: '-U -B',
+            m2Path: s4SdkGlobals.m2Directory,
+            goals: 'clean install',
+            defines:'-Dmaven.test.skip=true',
+            dockerImage: configuration.dockerImage
+        )
     }
 }
