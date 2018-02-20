@@ -5,6 +5,8 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkPmd', stepParameters: parameters) {
         def script = parameters.script
 
+        final def stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'checkPmd')
+
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkPmd')
 
         List parameterKeys = [
@@ -15,7 +17,7 @@ def call(Map parameters = [:]) {
 
         List stepConfigurationKeys = parameterKeys
 
-        Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys)
+        Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
         def excludeOption
         def excludes = configuration.excludes
