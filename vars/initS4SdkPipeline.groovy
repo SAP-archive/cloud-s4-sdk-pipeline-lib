@@ -1,5 +1,4 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'initS4SdkPipeline', stepParameters: parameters) {
@@ -16,32 +15,6 @@ def call(Map parameters = [:]) {
 
         setupPipelineEnvironment(parameters)
 
-        if(DownloadCacheUtils.isCacheActive()) {
-            echo "Download cache for maven and npm activated"
-
-            writeFile file: "s4hana_pipeline/global_settings.xml", text: libraryResource("mvn_download_cache_proxy_settings.xml")
-
-            // FIXME: Here we missuse the defaultConfiguration to control behavior in npm steps (will be merged with other values)
-            script.pipelineEnvironment.defaultConfiguration.dockerNetwork = DownloadCacheUtils.networkName()
-
-            // FIXME For maven we use the default settings (possible because executeMaven never sets any own dockerOptions)
-            script.pipelineEnvironment.defaultConfiguration.steps.executeMaven.dockerOptions = DownloadCacheUtils.downloadCacheNetworkParam()
-
-            script.pipelineEnvironment.defaultConfiguration.steps.executeMaven.globalSettingsFile="s4hana_pipeline/global_settings.xml"
-            script.pipelineEnvironment.defaultConfiguration.steps.executeNpm.defaultNpmRegistry = "http://s4sdk-nexus:8081/repository/npm-proxy"
-
-            if(script.pipelineEnvironment.configuration.steps?.executeNpm?.defaultNpmRegistry) {
-                println("[WARNING]: Pipeline configuration contains custom value for 'executeNpm.defaultNpmRegistry'. "+
-                    "The download cache will not be used for npm builds. To setup a npm-proxy, specify it in your 'server.cfg' file.")
-            }
-
-        }
-        else {
-            echo "Download cache for maven and npm not activated"
-        }
-
-        legacyConfigChecks(script.pipelineEnvironment.configuration)
-
         Map s4SdkStashConfiguration = readYaml(text: libraryResource('stash_settings.yml'))
         echo "Stash config: ${s4SdkStashConfiguration}"
         script.pipelineEnvironment.configuration.s4SdkStashConfiguration = s4SdkStashConfiguration
@@ -56,14 +29,12 @@ def call(Map parameters = [:]) {
         script.pipelineEnvironment.configuration.endToEndTestLock = "${prefix}/endToEndTest"
         script.pipelineEnvironment.configuration.productionDeploymentLock = "${prefix}/productionDeployment"
         script.pipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles"
-
-        initStageSkipConfig(script)
-
+        initPipelineStageConfig(script)
         stashFiles script: script, stage: 'init'
     }
 }
 
-def initStageSkipConfig(def script) {
+def initPipelineStageConfig(def script) {
 
     if (fileExists('package.json')) {
         script.pipelineEnvironment.skipConfiguration.FRONT_END_BUILD = true
@@ -115,26 +86,4 @@ def initStageSkipConfig(def script) {
         script.pipelineEnvironment.skipConfiguration.SEND_NOTIFICATION = true
     }
 
-}
-
-def legacyConfigChecks(Map configuration) {
-    // Maven globalSettings obsolete since introduction of DL-Cache
-    String globalSettingsFile = configuration?.steps?.executeMaven?.globalSettingsFile
-    if(globalSettingsFile) {
-        // switch to project settings if not also defined by user
-        String projectSettingsFile = configuration?.steps?.executeMaven?.projectSettingsFile
-        if(!projectSettingsFile) {
-            println("[WARNING]: Your pipeline configuration contains the obsolete configuration parameter 'executeMaven.globalSettingsFile=${globalSettingsFile}'. "+
-                "The S/4HANA Cloud SDK Pipeline uses an own global settings file to inject its download proxy as maven repository mirror. "+
-                "Since you did not specify a project settings file, your settings file will be used as 'executeMaven.projectSettingsFile'.")
-            configuration?.steps?.executeMaven?.projectSettingsFile=globalSettingsFile
-            configuration.steps.executeMaven.remove('globalSettingsFile')
-        }
-        else {
-            currentBuild.result = 'FAILURE'
-            error("Your pipeline configuration contains the obsolete configuration parameter 'executeMaven.globalSettingsFile=${globalSettingsFile}' together with 'executeMaven.projectSettingsFile=${projectSettingsFile}'. "+
-                "The S/4HANA Cloud SDK Pipeline uses an own global settings file to inject its download proxy as maven repository mirror. "+
-                "Please reduce your settings to one file and specify it under 'executeMaven.globalSettingsFile'.")
-        }
-    }
 }

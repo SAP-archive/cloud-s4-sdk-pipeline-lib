@@ -12,7 +12,10 @@ def call(Map parameters = [:]) {
             def orgToken = whitesourceConfigurationHelper.getConfigProperty('orgToken')
             def product = whitesourceConfigurationHelper.getConfigProperty('product')
 
-            executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product
+            def stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeMaven')
+            def globalSettingsFile = new ConfigurationHelper(stepConfiguration).getConfigProperty('globalSettingsFile')
+
+            executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product, globalSettingsFile: globalSettingsFile
         } else {
             println('Skip WhiteSource Maven scan because the stage "whitesourceScan" is not configured.')
         }

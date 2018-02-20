@@ -1,5 +1,4 @@
 import com.cloudbees.groovy.cps.NonCPS
-import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 
 def call(Map parameters = [:], body) {
     def dockerImage = parameters.get('dockerImage', '')
@@ -28,34 +27,27 @@ private getDockerOptions(Map dockerEnvVars, Map dockerVolumeBind, def dockerOpti
         'HTTPS_PROXY',
         'NO_PROXY'
     ]
-    def options = []
-    if (dockerEnvVars) {
-        for (String k : dockerEnvVars.keySet()) {
-            options.add("--env ${k}=${BashUtils.escape(dockerEnvVars[k].toString())}")
+    def options = ""
+    if(dockerEnvVars) {
+        for (String k: dockerEnvVars.keySet()) {
+            options += " --env ${k}=" + dockerEnvVars[k].toString()
         }
     }
 
-    for (String envVar : specialEnvironments) {
-        if (dockerEnvVars == null || !dockerEnvVars.containsKey(envVar)) {
-            options.add("--env ${envVar}")
+    for(String envVar: specialEnvironments){
+        if(dockerEnvVars == null || !dockerEnvVars.containsKey(envVar)){
+            options += " --env ${envVar}"
         }
     }
 
-    if (dockerVolumeBind) {
-        for (String k : dockerVolumeBind.keySet()) {
-            options.add("--volume ${k}:${dockerVolumeBind[k].toString()}")
+    if(dockerVolumeBind) {
+        for (String k: dockerVolumeBind.keySet()) {
+            options += " --volume ${k}:" + dockerVolumeBind[k].toString()
         }
     }
 
-    if (dockerOptions instanceof CharSequence) {
-        options.add(dockerOptions.toString())
-    } else if (dockerOptions instanceof List) {
-        for (String option : dockerOptions) {
-            options.add "${option}"
-        }
-    } else {
-        throw new IllegalArgumentException("Unexpected type for dockerOptions. Expected was either a list or a string. Actual type was: '${dockerOptions.getClass()}'")
+    if(dockerOptions){
+        options += " ${dockerOptions}"
     }
-
-    return options.join(' ')
+    return options
 }

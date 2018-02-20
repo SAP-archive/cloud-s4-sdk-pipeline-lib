@@ -1,14 +1,9 @@
-import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
-
+import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkNodeSecurityPlatform', stepParameters: parameters) {
         final script = parameters.script
-
         try {
-            def dockerOptions = ["--entrypoint=''"]
-            DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
-
-            executeNpm(script: script, dockerImage: 'allthings/nsp', dockerOptions: dockerOptions) {
+            executeNpm(script: script, dockerImage: 'allthings/nsp', dockerOptions: "--entrypoint=''") {
                 sh '''
                 set -o pipefail
                 nsp check 2>&1 | tee nsp.log
