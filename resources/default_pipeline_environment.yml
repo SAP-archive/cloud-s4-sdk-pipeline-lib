@@ -16,6 +16,12 @@ steps:
 
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
+    scanModules:
+      - 'application'
+
+  checkPmd:
+    scanModules:
+      - 'application'
 
   checkJMeter:
     dockerImage: famiko/jmeter-base

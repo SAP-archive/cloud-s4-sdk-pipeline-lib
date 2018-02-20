@@ -10,14 +10,12 @@ def call(Map parameters = [:]) {
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkFindbugs')
 
         List parameterKeys = [
+            'scanModules',
             'dockerImage',
             'excludeFilterFile'
         ]
 
-        List stepConfigurationKeys = [
-            'dockerImage',
-            'excludeFilterFile'
-        ]
+        List stepConfigurationKeys = parameterKeys
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
@@ -33,10 +31,33 @@ def call(Map parameters = [:]) {
         writeFile file: localIncludeFilerPath, text: libraryResource(includeFilterFile)
         filterOptions += "-Dfindbugs.includeFilterFile=${localIncludeFilerPath}"
 
-        executeMaven script: script, flags: '-B -U', m2Path: s4SdkGlobals.m2Directory, goals: 'findbugs:findbugs', defines: filterOptions, dockerImage: configuration.dockerImage
+        executeMavenFindbugsForConfiguredModules(script, filterOptions, configuration)
 
         executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Please examine the Findbugs reports.") {
-            findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/findbugsXml.xml'
+            findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/findbugsXml.xml'
         }
     }
+}
+
+def executeMavenFindbugsForConfiguredModules(script, filterOptions, Map configuration) {
+    if (configuration.scanModules) {
+        for (int i = 0; i < configuration.scanModules.size(); i++) {
+            def scanModule = configuration.scanModules[i]
+            executeMavenFindbugs(script, filterOptions, configuration, "$scanModule/pom.xml")
+        }
+    } else {
+        executeMavenFindbugs(script, filterOptions, configuration, "pom.xml")
+    }
+}
+
+def executeMavenFindbugs(script, filterOptions, Map configuration, String pomPath) {
+    executeMaven(
+        script: script,
+        flags: '-B -U',
+        pomPath: pomPath,
+        m2Path: s4SdkGlobals.m2Directory,
+        goals: 'findbugs:findbugs',
+        defines: filterOptions,
+        dockerImage: configuration.dockerImage
+    )
 }
