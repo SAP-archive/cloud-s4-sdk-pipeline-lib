@@ -8,11 +8,11 @@ def call(Map parameters = [:]) {
         final script = parameters.script
 
         final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeMaven')
-
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeMaven')
 
         List parameterKeys = [
             'dockerImage',
+            'dockerOptions',
             'globalSettingsFile',
             'projectSettingsFile',
             'pomPath',
@@ -23,7 +23,6 @@ def call(Map parameters = [:]) {
         ]
         List stepConfigurationKeys = [
             'dockerImage',
-            'globalSettingsFile',
             'projectSettingsFile',
             'pomPath',
             'm2Path'
@@ -75,7 +74,9 @@ def call(Map parameters = [:]) {
             command += " ${defines}"
         }
 
-        executeDockerNative(dockerImage: configuration.dockerImage) { sh command }
+        executeDockerNative(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) {
+            sh command
+        }
     }
 }
 

@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 import com.sap.cloud.sdk.s4hana.pipeline.E2ETestCommandHelper
 import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 
@@ -9,6 +10,10 @@ def call(Map parameters = [:]) {
         EndToEndTestType type = parameters.get('endToEndTestType')
         def parallelE2ETests = [:]
         def index = 1
+
+        def dockerOptions = [ '--shm-size 512MB' ]
+        DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+
         if (appUrls) {
             for (def appUrl : appUrls) {
 
@@ -32,7 +37,7 @@ def call(Map parameters = [:]) {
                         unstashFiles script: script, stage: parameters.stage
                         try {
                             withCredentials(credentials) {
-                                executeNpm(script: script, dockerOptions:'--shm-size 512MB') {
+                                executeNpm(script: script, dockerOptions: dockerOptions) {
                                     sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
                                     withEnv(['DISPLAY=:99']) {
                                         sh shScript

@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 def call(Map parameters = [:]) {
     def stageName = 'frontendUnitTests'
@@ -7,9 +8,12 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
+        def dockerOptions = [ '--cap-add=SYS_ADMIN' ]
+        DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+
         if(fileExists('package.json') ) {
             try {
-                executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: '--cap-add=SYS_ADMIN') {
+                executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: dockerOptions) {
                     sh "npm run ci-test -- --headless"
                 }
             } catch(Exception e) {
