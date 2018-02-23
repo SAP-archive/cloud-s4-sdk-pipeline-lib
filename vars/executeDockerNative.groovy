@@ -2,10 +2,10 @@ import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 
 def call(Map parameters = [:], body) {
-    def dockerImage = parameters.get('dockerImage', '')
-    Map dockerEnvVars = parameters.get('dockerEnvVars', [:])
-    def dockerOptions = parameters.get('dockerOptions', '')
-    Map dockerVolumeBind = parameters.get('dockerVolumeBind', [:])
+    def dockerImage = parameters.dockerImage ?: ''
+    Map dockerEnvVars = parameters.dockerEnvVars ?: [:]
+    def dockerOptions = parameters.dockerOptions ?: ''
+    Map dockerVolumeBind = parameters.dockerVolumeBind ?: [:]
 
     def image = docker.image(dockerImage)
     image.pull()
