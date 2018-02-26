@@ -8,35 +8,33 @@ def call(Map parameters = [:]) {
         def defaultConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'deployMavenArtifactsToNexus')
 
         def parameterKeys = [
-                'nexusVersion',
                 'url',
                 'repository',
+                'nexusVersion',
                 'credentialsId',
-                'pomFile',
+                'pomPath',
                 'targetFolder',
-                'defaultGroupId',
                 'additionalClassifiers'
         ]
 
         def configuration = ConfigurationMerger.merge(parameters, parameterKeys, defaultConfiguration)
 
-        def pom = readMavenPom file: configuration.pomFile
+        def pomFile = configuration.pomPath?"${configuration.pomPath}/pom.xml":"pom.xml"
+        def pom = readPom(script, configuration, pomFile)
 
         List artifacts = []
-
-        def groupId = pom.groupId ?: configuration.defaultGroupId
-
         artifacts.add([artifactId: pom.artifactId,
                        classifier: '',
                        type      : 'pom',
-                       file      : configuration.pomFile])
+                       file      : pomFile])
 
         if (pom.packaging != 'pom') {
             def packaging = pom.packaging ?: 'jar'
+            String finalName = pom.getBuild().getFinalName()
             artifacts.add([artifactId: pom.artifactId,
                            classifier: '',
                            type      : packaging,
-                           file      : "${configuration.targetFolder}/${pom.artifactId}.$packaging"])
+                           file      : "${configuration.targetFolder}/${finalName}.$packaging"])
         }
 
         if (configuration.additionalClassifiers) {
@@ -55,15 +53,40 @@ def call(Map parameters = [:]) {
         Map nexusArtifactUploaderParameters = [nexusVersion: configuration.nexusVersion,
                                                protocol    : 'http',
                                                nexusUrl    : nexusUrlWithoutProtocol,
-                                               groupId     : groupId,
+                                               groupId     : pom.groupId,
                                                version     : pom.version,
                                                repository  : configuration.repository,
                                                artifacts   : artifacts]
 
-        if (parameters.credentialsId != null) {
-            nexusArtifactUploaderParameters.put('credentialsId', parameters.credentialsId)
+        if (configuration.credentialsId != null) {
+            nexusArtifactUploaderParameters.put('credentialsId', configuration.credentialsId)
         }
 
         nexusArtifactUploader(nexusArtifactUploaderParameters)
     }
+}
+
+def generateEffectivePom(script, pomFile, configuration){
+    executeMaven(
+        script: script,
+        flags: '-B',
+        pomPath: "$pomFile",
+        m2Path: s4SdkGlobals.m2Directory,
+        goals: 'help:effective-pom',
+        dockerImage: configuration.dockerImage,
+        defines: "-Doutput=effectivePom.xml"
+    )
+
+    return configuration.pomPath?"${configuration.pomPath}/effectivePom.xml":"effectivePom.xml"
+}
+
+def readPom(script, configuration, pomFile){
+    def pom
+    if(configuration.pomPath){
+        def effectivePomPath = generateEffectivePom(script, pomFile, configuration)
+        pom = readMavenPom file: effectivePomPath
+    } else{
+        pom = readMavenPom file: pomFile
+    }
+    return pom
 }

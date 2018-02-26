@@ -27,7 +27,15 @@ def call(Map parameters = [:]) {
             String credentialsId = nexusConfiguration.credentialsId
             String nexusVersion = nexusConfiguration.version
 
-            def pom = readMavenPom file: 'pom.xml'
+            deployMavenArtifactsToNexus(
+                    script: script,
+                    url: url,
+                    nexusVersion: nexusVersion,
+                    repository: repository,
+                    credentialsId: credentialsId,
+                    pomPath: '',
+                    targetFolder: 'target'
+            )
 
             deployMavenArtifactsToNexus(
                     script: script,
@@ -35,19 +43,10 @@ def call(Map parameters = [:]) {
                     nexusVersion: nexusVersion,
                     repository: repository,
                     credentialsId: credentialsId,
-                    pomFile: 'pom.xml',
-                    targetFolder: 'target')
-
-            deployMavenArtifactsToNexus(
-                    script: script,
-                    url: url,
-                    nexusVersion: nexusVersion,
-                    repository: repository,
-                    credentialsId: credentialsId,
-                    pomFile: 'application/pom.xml',
+                    pomPath: 'application',
                     targetFolder: 'application/target',
-                    additionalClassifiers: nexusConfiguration.additionalClassifiers,
-                    defaultGroupId: pom.groupId)
+                    additionalClassifiers: nexusConfiguration.additionalClassifiers
+            )
 
         } else {
             println("Can't deploy to nexus because the configuration is missing.")
