@@ -93,9 +93,8 @@ def initStageSkipConfig(def script) {
     }
 
     if (script.pipelineEnvironment.skipConfiguration.CHECKMARX_SCAN
-            || script.pipelineEnvironment.skipConfiguration.WHITESOURCE_SCAN
-            || script.pipelineEnvironment.skipConfiguration.NODE_SECURITY_SCAN) {
-        script.pipelineEnvironment.skipConfiguration.SECURITY_CHECKS = true
+            || script.pipelineEnvironment.skipConfiguration.WHITESOURCE_SCAN) {
+        script.pipelineEnvironment.skipConfiguration.THIRD_PARTY_CHECKS = true
     }
 
     Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
