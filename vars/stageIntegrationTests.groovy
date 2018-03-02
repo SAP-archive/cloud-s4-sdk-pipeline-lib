@@ -22,11 +22,11 @@ def call(Map parameters = [:]) {
                 configuration.credentials = configuration.crendentials
             }
 
-            if(configuration.credentials != null){
-                dir("integration-tests/src/test/resources") { writeCredentials(configuration.credentials) }
-            }
-
             try {
+                if(configuration.credentials != null){
+                    dir("integration-tests/src/test/resources") { writeCredentials(configuration.credentials) }
+                }
+
                 int count
                 try {
                     count = configuration.retry.toInteger()

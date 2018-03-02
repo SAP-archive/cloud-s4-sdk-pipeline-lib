@@ -1,4 +1,3 @@
-import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Credential
 import com.sap.cloud.sdk.s4hana.pipeline.CredentialCollection
 
@@ -14,7 +13,7 @@ def call(List credentialItems) {
         String credentialJson = readCredentials(credentialItems).toCredentialJson()
 
         echo "Writing credential file with ${credentialItems.size()} items."
-        writeFile file: 'credentials.json', text: credentialJson
+        writeFile file: CREDENTIALS_FILE_NAME, text: credentialJson
     }
 }
 
