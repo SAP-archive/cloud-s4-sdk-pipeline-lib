@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 def call(Map parameters = [:]) {
@@ -59,8 +60,30 @@ def call(Map parameters = [:]) {
         script.pipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles"
 
         initStageSkipConfig(script)
-
+        setAutoVersionIfOnProductiveBranch(script)
         stashFiles script: script, stage: 'init'
+    }
+}
+
+def loadProductiveBranch(def script) {
+    Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
+    Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
+    Map configWithDefault = ConfigurationMerger.merge(generalConfiguration, ['productiveBranch'], defaultGeneralConfiguration)
+    return configWithDefault['productiveBranch']
+}
+
+def loadAutomaticVersioning(def script) {
+    Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
+    Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
+    Map configWithDefault = ConfigurationMerger.merge(generalConfiguration, ['automaticVersioning'], defaultGeneralConfiguration)
+    return configWithDefault['automaticVersioning']
+}
+
+def setAutoVersionIfOnProductiveBranch(def script) {
+    String productiveBranch = loadProductiveBranch(script)
+    boolean automaticVersioning = loadAutomaticVersioning(script)
+    if (env.BRANCH_NAME == productiveBranch && automaticVersioning) {
+        artifactSetVersion script: this, timestampTemplate: "%Y-%m-%dT%H%M%S%Z", buildTool: 'maven', commitVersion: false
     }
 }
 
@@ -97,11 +120,9 @@ def initStageSkipConfig(def script) {
         script.pipelineEnvironment.skipConfiguration.THIRD_PARTY_CHECKS = true
     }
 
-    Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
-    Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
     Map productionDeploymentConfiguration = ConfigurationLoader.stageConfiguration(script, 'productionDeployment')
 
-    def productiveBranch = generalConfiguration.get('productiveBranch', defaultGeneralConfiguration.get('productiveBranch'))
+    def productiveBranch = loadProductiveBranch(script)
     if ((productionDeploymentConfiguration.cfTargets || productionDeploymentConfiguration.neoTargets) && env.BRANCH_NAME == productiveBranch) {
         script.pipelineEnvironment.skipConfiguration.PRODUCTION_DEPLOYMENT = true
     }

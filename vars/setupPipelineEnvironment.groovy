@@ -3,7 +3,7 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'setupPipelineEnvironment', stepParameters: parameters) {
         def script = parameters.script
 
-        script.pipelineEnvironment.defaultConfiguration = readYaml (text: libraryResource('default_pipeline_environment.yml'))
+        script.pipelineEnvironment.defaultConfiguration = readYaml (text: libraryResource('default_s4_pipeline_environment.yml'))
 
         String configFile = parameters.get('configFile') ?: 'pipeline_config.yml'
 
