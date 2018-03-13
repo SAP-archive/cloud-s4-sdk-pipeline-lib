@@ -1,6 +1,7 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
+import com.sap.piper.DefaultValueCache
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'initS4SdkPipeline', stepParameters: parameters) {
@@ -82,8 +83,16 @@ def loadAutomaticVersioning(def script) {
 def setAutoVersionIfOnProductiveBranch(def script) {
     String productiveBranch = loadProductiveBranch(script)
     boolean automaticVersioning = loadAutomaticVersioning(script)
-    if (env.BRANCH_NAME == productiveBranch && automaticVersioning) {
-        artifactSetVersion script: this, timestampTemplate: "%Y-%m-%dT%H%M%S%Z", buildTool: 'maven', commitVersion: false
+
+    if ((env.BRANCH_NAME == productiveBranch) && automaticVersioning) {
+        prepareDefaultValues()
+
+        // FIXME Assumption: The structure of mavenExecute is compatible with that of executeMaven
+        // This is only a temporary workaround and needs to be addressed in a more general way
+        DefaultValueCache.getInstance().getDefaultValues().steps.mavenExecute = script
+            .pipelineEnvironment?.defaultConfiguration?.steps?.executeMaven
+
+        artifactSetVersion script: script, timestampTemplate: "%Y-%m-%dT%H%M%S%Z", buildTool: 'maven', commitVersion: false
     }
 }
 
