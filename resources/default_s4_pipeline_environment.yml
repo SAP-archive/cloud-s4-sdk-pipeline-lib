@@ -2,6 +2,7 @@
 general:
   productiveBranch: master
   defaultNode: ''
+  automaticVersioning: true
 
 #Steps Specific Configuration
 steps:

@@ -6,7 +6,10 @@ class NeoDeployCommandHelper implements Serializable{
         'account',
         'application'
     ]
-    private String neoTool = "/sdk/tools/neo.sh"
+
+
+    private final String neoToolDirectory = "/sdk/tools"
+    private final String neoTool = "$neoToolDirectory/neo.sh"
 
 
     private Map deploymentDescriptor
@@ -28,6 +31,16 @@ class NeoDeployCommandHelper implements Serializable{
                 error("Please define the parameter ${parameterName} in your deployment configuration")
             }
         }
+    }
+
+
+    String getNeoToolDirectory(){
+        return neoToolDirectory
+    }
+
+    String cloudCockpitLink(){
+        return "https://account.${deploymentDescriptor.host}/cockpit#"+
+            "/acc/${deploymentDescriptor.account}/app/${deploymentDescriptor.application}/dashboard"
     }
 
     String resourceLock(){
@@ -70,7 +83,7 @@ class NeoDeployCommandHelper implements Serializable{
                 args += " --ev ${value}"
             }
         }
-        
+
         if(deploymentDescriptor.containsKey('runtime')){
             args += " --runtime ${deploymentDescriptor.runtime}"
         }
