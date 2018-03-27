@@ -92,6 +92,10 @@ def setAutoVersionIfOnProductiveBranch(def script) {
         DefaultValueCache.getInstance().getDefaultValues().steps.mavenExecute = script
             .pipelineEnvironment?.defaultConfiguration?.steps?.executeMaven
 
+        script.commonPipelineEnvironment.configuration.steps = [
+            mavenExecute: script.pipelineEnvironment?.configuration?.steps?.executeMaven
+        ]
+        
         artifactSetVersion script: script, timestampTemplate: "%Y-%m-%dT%H%M%S%Z", buildTool: 'maven', commitVersion: false
     }
 }
