@@ -2,10 +2,15 @@
 general:
   productiveBranch: master
   defaultNode: ''
-  automaticVersioning: true
 
 #Steps Specific Configuration
 steps:
+  automaticVersioning:
+    enabled: true
+    gitCredentialsId: ''
+    commitVersion: false
+    buildTool: 'maven'
+    timestampTemplate: '%Y-%m-%dT%H%M%S%Z'
   executeMaven:
     dockerImage: maven:3.5-jdk-8-alpine
     dockerOptions: ''

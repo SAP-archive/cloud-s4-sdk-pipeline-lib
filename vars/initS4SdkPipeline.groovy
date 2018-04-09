@@ -62,6 +62,9 @@ def call(Map parameters = [:]) {
 
         initStageSkipConfig(script)
         setAutoVersionIfOnProductiveBranch(script)
+
+        script.pipelineEnvironment.configuration.general.gitCommitId = getGitCommitId()
+
         stashFiles script: script, stage: 'init'
     }
 }
@@ -73,30 +76,37 @@ def loadProductiveBranch(def script) {
     return configWithDefault['productiveBranch']
 }
 
-def loadAutomaticVersioning(def script) {
-    Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
-    Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
-    Map configWithDefault = ConfigurationMerger.merge(generalConfiguration, ['automaticVersioning'], defaultGeneralConfiguration)
-    return configWithDefault['automaticVersioning']
+def loadAutomaticVersioningConfig(def script) {
+    List parameterKeys = [
+        'enabled',
+        'gitCredentialsId',
+        'commitVersion',
+        'buildTool',
+        'timestampTemplate',
+        'gitUserName',
+        'gitUserEMail',
+        'gitSshUrl'
+    ]
+    final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'automaticVersioning')
+    Map defaultGeneralConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'automaticVersioning')
+    Map configWithDefault = ConfigurationMerger.merge(stepConfiguration, parameterKeys, defaultGeneralConfiguration)
+    return configWithDefault
 }
 
 def setAutoVersionIfOnProductiveBranch(def script) {
     String productiveBranch = loadProductiveBranch(script)
-    boolean automaticVersioning = loadAutomaticVersioning(script)
-
-    if ((env.BRANCH_NAME == productiveBranch) && automaticVersioning) {
+    def versionConfig = loadAutomaticVersioningConfig(script)
+    if ((env.BRANCH_NAME == productiveBranch) && versionConfig.enabled) {
         prepareDefaultValues()
-
         // FIXME Assumption: The structure of mavenExecute is compatible with that of executeMaven
         // This is only a temporary workaround and needs to be addressed in a more general way
         DefaultValueCache.getInstance().getDefaultValues().steps.mavenExecute = script
             .pipelineEnvironment?.defaultConfiguration?.steps?.executeMaven
-
         script.commonPipelineEnvironment.configuration.steps = [
             mavenExecute: script.pipelineEnvironment?.configuration?.steps?.executeMaven
         ]
-
-        artifactSetVersion script: script, timestampTemplate: "%Y-%m-%dT%H%M%S%Z", buildTool: 'maven', commitVersion: false
+        versionConfig.script=script
+        artifactSetVersion versionConfig
     }
 }
 
@@ -171,4 +181,8 @@ def legacyConfigChecks(Map configuration) {
                 "Please reduce your settings to one file and specify it under 'executeMaven.globalSettingsFile'.")
         }
     }
+}
+
+def getGitCommitId() {
+    return sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
 }
