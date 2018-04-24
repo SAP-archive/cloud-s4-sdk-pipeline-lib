@@ -13,7 +13,7 @@ def call(Map parameters = [:]) {
                     executeTestsWithAppUrlAndCredentials(script, appUrl.url, appUrl.credentialsId)
                 }
             } else {
-                executeMaven script: script, flags: '-U -B', pomPath: 'performance-tests/pom.xml', m2Path: s4SdkGlobals.m2Directory, goals: 'test'
+                mavenExecute script: script, flags: '-U -B', pomPath: 'performance-tests/pom.xml', m2Path: s4SdkGlobals.m2Directory, goals: 'test'
             }
         }
         finally{
@@ -27,6 +27,6 @@ def executeTestsWithAppUrlAndCredentials(script, url, credentialsId){
             [$class: 'UsernamePasswordMultiBinding', credentialsId: credentialsId, passwordVariable: 'PERFORMANCE_TEST_PASSWORD', usernameVariable: 'PERFORMANCE_TEST_USERNAME']
     ]) {
         def defines = "-DappUrl=${BashUtils.escape(url)} -Dusername=$PERFORMANCE_TEST_USERNAME, -Dpassword=${BashUtils.escape(PERFORMANCE_TEST_PASSWORD)}"
-        executeMaven script: script, flags: '-U -B', pomPath: 'performance-tests/pom.xml', m2Path: s4SdkGlobals.m2Directory, goals: 'test', defines: defines
+        mavenExecute script: script, flags: '-U -B', pomPath: 'performance-tests/pom.xml', m2Path: s4SdkGlobals.m2Directory, goals: 'test', defines: defines
     }
 }

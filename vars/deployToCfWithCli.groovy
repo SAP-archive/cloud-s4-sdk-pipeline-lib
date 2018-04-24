@@ -1,4 +1,8 @@
-import com.sap.cloud.sdk.s4hana.pipeline.*
+import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+import com.sap.cloud.sdk.s4hana.pipeline.CfTarget
+import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
+import com.sap.piper.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
 
@@ -10,27 +14,31 @@ def call(Map parameters = [:]) {
 
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToCfWithCli')
 
-        List parameterKeys = ['dockerImage',
-                              'smokeTestStatusCode',
-                              'deploymentType',
-                              'org',
-                              'space',
-                              'apiEndpoint',
-                              'appName',
-                              'manifest',
-                              'credentialsId',
-                              'username',
-                              'password']
-        List stepConfigurationKeys = ['dockerImage',
-                                      'smokeTestStatusCode',
-                                      'org',
-                                      'space',
-                                      'apiEndpoint',
-                                      'appName',
-                                      'manifest',
-                                      'credentialsId',
-                                      'username',
-                                      'password']
+        Set parameterKeys = [
+            'dockerImage',
+            'smokeTestStatusCode',
+            'deploymentType',
+            'org',
+            'space',
+            'apiEndpoint',
+            'appName',
+            'manifest',
+            'credentialsId',
+            'username',
+            'password'
+        ]
+        Set stepConfigurationKeys = [
+            'dockerImage',
+            'smokeTestStatusCode',
+            'org',
+            'space',
+            'apiEndpoint',
+            'appName',
+            'manifest',
+            'credentialsId',
+            'username',
+            'password'
+        ]
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
         CfTarget cfTarget = new CfTarget(configuration)
@@ -51,7 +59,7 @@ def call(Map parameters = [:]) {
 }
 
 private deploy(dockerImage, deploymentType, cfTarget, statusCode) {
-    executeDockerNative(dockerImage: dockerImage) {
+    dockerExecute(dockerImage: dockerImage) {
         lock("${cfTarget.apiEndpoint}/${cfTarget.org}/${cfTarget.space}/${cfTarget.appName}") {
             if (deploymentType == DeploymentType.BLUE_GREEN) {
                 withEnv(["STATUS_CODE=${statusCode}"]) {

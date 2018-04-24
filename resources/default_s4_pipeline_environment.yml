@@ -2,16 +2,17 @@
 general:
   productiveBranch: master
   defaultNode: ''
+  automaticVersioning: true
 
 #Steps Specific Configuration
 steps:
-  automaticVersioning:
-    enabled: true
+  artifactSetVersion:
     gitCredentialsId: ''
     commitVersion: false
     buildTool: 'maven'
     timestampTemplate: '%Y-%m-%dT%H%M%S%Z'
-  executeMaven:
+
+  mavenExecute:
     dockerImage: maven:3.5-jdk-8-alpine
     dockerOptions: ''
 
@@ -43,6 +44,14 @@ steps:
 
 #Stage Specific Configurations
 stages:
+
+#    In order to avoid the trust issues between the build server and the git server in a distributed setup,
+#    the init stage always executes on the master node. The underlying assumption here is that, Jenkins
+#    server has a ssh key and it has been added to the git server. This is necessary if Jenkins has to push
+#    code changes to the git server.
+  initS4sdkPipeline:
+    node: master
+
   integrationTests:
     retry: 1
     forkCount: 1C

@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'deployMavenArtifactsToNexus', stepParameters: parameters) {
@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
         def script = parameters.script
         def defaultConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'deployMavenArtifactsToNexus')
 
-        def parameterKeys = [
+        Set parameterKeys = [
                 'url',
                 'repository',
                 'nexusVersion',
@@ -67,7 +67,7 @@ def call(Map parameters = [:]) {
 }
 
 def generateEffectivePom(script, pomFile, configuration){
-    executeMaven(
+    mavenExecute(
         script: script,
         flags: '-B',
         pomPath: "$pomFile",

@@ -16,8 +16,9 @@ dependencies {
     compile group: 'org.eclipse.hudson', name: 'hudson-core', version: '3.2.0'
     compile 'org.codehaus.groovy:groovy-all:2.4.10'
     compile 'org.jenkins-ci.plugins.workflow:workflow-cps:2.38'
-    compile files('libs/jenkins-library-69404e845decc27c2b06ca93fe78c75e4f8bc97e.jar') //FIXME Only for running the tests, find better option to do this
+    compile files('libs/jenkins-library-da2f041a6d28a944f5c4648b1145c963fa087452.jar') //FIXME Only for running the tests, find better option to do this
     ivy 'org.apache.ivy:ivy:2.4.0'
+    compile 'org.apache.ivy:ivy:2.4.0'
     testCompile 'junit:junit:4.12'
 }
 

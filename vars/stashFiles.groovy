@@ -3,7 +3,7 @@ def call(Map parameters = [:]) {
         def script = parameters.script
         def stage = parameters.stage
 
-        Map stashConfig = script.pipelineEnvironment.configuration.s4SdkStashConfiguration
+        Map stashConfig = script.commonPipelineEnvironment.configuration.s4SdkStashConfiguration
 
         for (def stash : stashConfig[stage].stashes) {
             def name = stash.name
@@ -12,7 +12,7 @@ def call(Map parameters = [:]) {
 
 
             if (stash?.merge == true) {
-                String lockName = "${script.pipelineEnvironment.configuration.stashFiles}/${stash.name}"
+                String lockName = "${script.commonPipelineEnvironment.configuration.stashFiles}/${stash.name}"
                 lock(lockName) {
                     unstash stash.name
                     steps.stash name: name, includes: include, exclude: exclude, allowEmpty: true

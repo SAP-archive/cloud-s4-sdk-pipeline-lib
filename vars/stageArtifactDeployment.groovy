@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     def stageName = 'artifactDeployment'
@@ -12,7 +12,7 @@ def call(Map parameters = [:]) {
 
         if (stageConfig.nexus) {
 
-            List stageConfigurationKeys = [
+            Set stageConfigurationKeys = [
                     'url',
                     'repository',
                     'version',

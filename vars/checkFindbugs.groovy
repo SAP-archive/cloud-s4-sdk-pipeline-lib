@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkFindbugs', stepParameters: parameters) {
@@ -9,13 +9,13 @@ def call(Map parameters = [:]) {
 
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkFindbugs')
 
-        List parameterKeys = [
+        Set parameterKeys = [
             'scanModules',
             'dockerImage',
             'excludeFilterFile'
         ]
 
-        List stepConfigurationKeys = parameterKeys
+        Set stepConfigurationKeys = parameterKeys
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
@@ -51,7 +51,7 @@ def executeMavenFindbugsForConfiguredModules(script, filterOptions, Map configur
 }
 
 def executeMavenFindbugs(script, filterOptions, Map configuration, String pomPath) {
-    executeMaven(
+    mavenExecute(
         script: script,
         flags: '-B -U',
         pomPath: pomPath,

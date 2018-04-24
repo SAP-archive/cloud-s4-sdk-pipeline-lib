@@ -1,4 +1,4 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.piper.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 
 def call(Map parameters = [:]) {
@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        lock(script.pipelineEnvironment.configuration.productionDeploymentLock) {
+        lock(script.commonPipelineEnvironment.configuration.productionDeploymentLock) {
             if (fileExists('package.json')) {
                 deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
                 executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST, stage: stageName

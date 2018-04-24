@@ -1,7 +1,7 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ClosureHolder
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationHelper
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationHelper
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:], body) {
     ConfigurationHelper configurationHelper = new ConfigurationHelper(parameters)
@@ -10,7 +10,7 @@ def call(Map parameters = [:], body) {
 
     Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
     Map projectGeneralConfiguration = ConfigurationLoader.generalConfiguration(script)
-    def generalConfigurationKeys = ['defaultNode']
+    Set generalConfigurationKeys = ['defaultNode']
     Map generalConfiguration = ConfigurationMerger.merge(projectGeneralConfiguration, generalConfigurationKeys, defaultGeneralConfiguration)
 
     Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)

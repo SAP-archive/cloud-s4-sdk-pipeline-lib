@@ -1,13 +1,13 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationMerger
 
 @Grab('com.xlson.groovycsv:groovycsv:1.1')
 import static com.xlson.groovycsv.CsvParser.parseCsv
 
 def call(Map parameters = [:]) {
     handleStepErrors (stepName: 'checkServices', stepParameters: parameters) {
-        List parameterKeys = ['nonErpDestinations']
+        Set parameterKeys = ['nonErpDestinations']
 
-        final Map configuration = ConfigurationMerger.merge(parameters, parameterKeys)
+        final Map configuration = parameters.subMap(parameterKeys)
 
         final Set<String> nonErpDestinations = configuration.nonErpDestinations
 

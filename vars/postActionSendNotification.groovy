@@ -1,6 +1,6 @@
 import hudson.model.Result
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 
 def call(Map parameters = [:]) {
@@ -8,8 +8,8 @@ def call(Map parameters = [:]) {
         def script = parameters.script
 
         Map postActionConfiguration = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
-        List postActionConfigurationKeys = ['recipients']
-        List parameterKeys = []
+        Set postActionConfigurationKeys = ['recipients']
+        Set parameterKeys = []
         Map defaults = [recipients: ['']]
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, postActionConfiguration, postActionConfigurationKeys, defaults)
 

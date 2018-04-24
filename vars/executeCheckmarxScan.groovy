@@ -1,4 +1,5 @@
 import com.cloudbees.groovy.cps.NonCPS
+import com.sap.piper.ConfigurationLoader
 import hudson.util.Secret
 
 def call(Map parameters = [:]) {
@@ -11,16 +12,18 @@ def call(Map parameters = [:]) {
             throw new IllegalArgumentException("checkmarxGroupId value cannot be empty.")
         }
 
-        def checkmarxProject = parameters.get('checkMarxProjectName', script.pipelineEnvironment.configuration.general.projectName)
-        def checkmarxServerUrl = parameters.get('checkmarxServerUrl')
-        def filterPattern = parameters.get('filterPattern')
-        def fullScansScheduled = parameters.get('fullScansScheduled')
-        def generatePdfReport = parameters.get('generatePdfReport')
-        def incremental = parameters.get('incremental')
-        def preset = parameters.get('preset')
+        String projectName = ConfigurationLoader.generalConfiguration(script).projectName
+
+        def checkmarxProject = parameters.checkMarxProjectName ?: projectName
+        def checkmarxServerUrl = parameters.checkmarxServerUrl
+        def filterPattern = parameters.filterPattern
+        def fullScansScheduled = parameters.fullScansScheduled
+        def generatePdfReport = parameters.generatePdfReport
+        def incremental = parameters.incremental
+        def preset = parameters.preset
         def vulnerabilityThresholdHigh = 0
-        def vulnerabilityThresholdLow = parameters.get('vulnerabilityThresholdLow')
-        def vulnerabilityThresholdMedium = parameters.get('vulnerabilityThresholdMedium')
+        def vulnerabilityThresholdLow = parameters.vulnerabilityThresholdLow
+        def vulnerabilityThresholdMedium = parameters.vulnerabilityThresholdMedium
 
         Map checkMarxOptions = [$class                       : 'CxScanBuilder',
                                 avoidDuplicateProjectScans   : true,

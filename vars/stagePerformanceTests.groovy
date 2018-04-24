@@ -1,4 +1,4 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
     def stageName = 'performanceTests'
@@ -8,7 +8,7 @@ def call(Map parameters = [:]) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         if (stageConfiguration) {
-            lock(script.pipelineEnvironment.configuration.performanceTestLock) {
+            lock(script.commonPipelineEnvironment.configuration.performanceTestLock) {
                 deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, stage: stageName
                 def jMeterConfig = ConfigurationLoader.stepConfiguration(script, 'checkJMeter')
                 if ( jMeterConfig && jMeterConfig.enabled!=false) {
