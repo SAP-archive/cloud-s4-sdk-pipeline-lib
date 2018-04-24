@@ -13,20 +13,29 @@ def call(Map parameters = [:], body) {
     Set generalConfigurationKeys = ['defaultNode']
     Map generalConfiguration = ConfigurationMerger.merge(projectGeneralConfiguration, generalConfigurationKeys, defaultGeneralConfiguration)
 
+    Map stageDefaultConfiguration = ConfigurationLoader.defaultStageConfiguration(script, stageName)
     Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
+    Set parameterKeys = ['node']
+    Map mergedStageConfiguration = ConfigurationMerger.merge(
+        parameters,
+        parameterKeys,
+        stageConfiguration,
+        stageConfiguration.keySet(),
+        stageDefaultConfiguration
+    )
 
     def nodeLabel = generalConfiguration.defaultNode
 
-    if (stageConfiguration.node) {
-        nodeLabel = stageConfiguration.node
+    if (mergedStageConfiguration.node) {
+        nodeLabel = mergedStageConfiguration.node
     }
 
     handleStepErrors(stepName: stageName, stepParameters: [:]) {
         node(nodeLabel) {
             try {
                 unstashFiles script: script, stage: stageName
-                executeStage(stageName, stageConfiguration, ConfigurationLoader.generalConfiguration(script), body)
+                executeStage(stageName, mergedStageConfiguration, generalConfiguration, body)
                 stashFiles script: script, stage: stageName
                 echo "Current build result in stage $stageName is ${script.currentBuild.result}."
             }
