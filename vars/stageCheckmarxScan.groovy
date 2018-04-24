@@ -20,7 +20,7 @@ def call(Map parameters = [:]) {
                                        'checkmarxCredentialsId',
                                        'checkmarxServerUrl']
 
-        Map configuration = ConfigurationMerger.merge(parameters, [], stageConfiguration, stageConfigurationKeys, stageDefaults)
+        Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
         // only applicable if customized config exists
         if (stageConfiguration) {
