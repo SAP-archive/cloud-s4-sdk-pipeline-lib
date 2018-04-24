@@ -10,8 +10,12 @@ def call(Map parameters = [:], body) {
 
     Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
     Map projectGeneralConfiguration = ConfigurationLoader.generalConfiguration(script)
-    Set generalConfigurationKeys = ['defaultNode']
-    Map generalConfiguration = ConfigurationMerger.merge(projectGeneralConfiguration, generalConfigurationKeys, defaultGeneralConfiguration)
+
+    Map generalConfiguration = ConfigurationMerger.merge(
+        projectGeneralConfiguration,
+        projectGeneralConfiguration.keySet(),
+        defaultGeneralConfiguration
+    )
 
     Map stageDefaultConfiguration = ConfigurationLoader.defaultStageConfiguration(script, stageName)
     Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
