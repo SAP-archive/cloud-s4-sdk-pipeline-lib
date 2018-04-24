@@ -8,7 +8,7 @@ def call(Map parameters){
 }
 
 def renameMavenStep(script){
-    def stepsConfiguration = script.commonPipelineEnvironment.configuration
+    def stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
 
     if(stepsConfiguration?.executeMaven){
 
