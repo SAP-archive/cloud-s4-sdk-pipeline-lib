@@ -1,5 +1,5 @@
-import jenkins.model.*
 import com.cloudbees.groovy.cps.NonCPS
+import jenkins.model.*
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'abortOldBuilds') {
@@ -8,7 +8,7 @@ def call(Map parameters = [:]) {
         String jobName = script.JOB_NAME
         int currentBuildNumber = script.currentBuild.number
 
-        if(script.env.BRANCH_NAME != script.commonPipelineEnvironment.configuration.general.productiveBranch) {
+        if (!isProductiveBranch(script: script)) {
             abortOlderBuilds(jobName, currentBuildNumber)
         }
     }
