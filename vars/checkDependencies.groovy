@@ -2,7 +2,7 @@ def call(parameters = [:]) {
     handleStepErrors (stepName: 'checkDependencies', stepParameters: parameters) {
         def script = parameters.script
 
-        executeMaven script: script, flags: "-B -DoutputFile=mvnDependencyTree.txt", m2Path: s4SdkGlobals.m2Directory, goals: "dependency:tree"
+        mavenExecute script: script, flags: "-B -DoutputFile=mvnDependencyTree.txt", m2Path: s4SdkGlobals.m2Directory, goals: "dependency:tree"
 
         sh "mkdir -p ${s4SdkGlobals.reportsDirectory}/maven"
         sh "mv unit-tests/mvnDependencyTree.txt ${s4SdkGlobals.reportsDirectory}/maven/unit_test_dependencies.txt"

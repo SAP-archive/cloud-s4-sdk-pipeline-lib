@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     def stageName = 'integrationTests'
@@ -9,13 +9,13 @@ def call(Map parameters = [:]) {
 
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
 
-        List stageConfigurationKeys = [
+        Set stageConfigurationKeys = [
             'retry',
             'credentials',
             'forkCount'
         ]
 
-        Map configuration = ConfigurationMerger.merge(parameters, [], stageConfiguration, stageConfigurationKeys, stageDefaults)
+        Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
         try {
             if(configuration.crendentials != null){
@@ -35,7 +35,7 @@ def call(Map parameters = [:]) {
                     error ("retry: ${configuration.retry} must be an integer")
                 }
                 def forkCount = configuration.forkCount
-                executeMaven script: script, flags: "-B", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage, defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
+                mavenExecute script: script, flags: "-B", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage, defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
 
             } catch(Exception e) {
                 executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Integration Tests', errorMessage: "Please examine Backend Integration Tests report.") {

@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
 
@@ -10,13 +10,13 @@ def call(Map parameters = [:]) {
 
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeGradle')
 
-        List parameterKeys = [
+        Set parameterKeys = [
             'dockerImage',
             'localCache',
             'goals',
             'settingsFile'
         ]
-        List stepConfigurationKeys = [
+        Set stepConfigurationKeys = [
             'dockerImage',
             'localCache',
             'settingsFile'
@@ -41,7 +41,7 @@ def call(Map parameters = [:]) {
             command += " ${goals}"
         }
 
-        executeDockerNative(dockerImage: configuration.dockerImage) { sh command }
+        dockerExecute(dockerImage: configuration.dockerImage) { sh command }
     }
 }
 

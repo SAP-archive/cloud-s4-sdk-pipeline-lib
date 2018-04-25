@@ -1,4 +1,4 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.piper.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 def call(Map parameters = [:]) {

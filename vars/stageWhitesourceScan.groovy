@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationHelper
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.piper.ConfigurationHelper
+import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
     def stageName = 'whitesourceScan'

@@ -5,7 +5,7 @@ def call(Map parameters = [:]) {
         final script = parameters.script
 //        dir('application') {
             try {
-                executeMaven(
+                mavenExecute(
                         script: script,
                         m2Path: s4SdkGlobals.m2Directory,
                         pomPath: 'application/pom.xml',

@@ -1,4 +1,4 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
+import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
     def stageName = 'unitTests'
@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
         Map configuration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         try {
-            executeMaven(
+            mavenExecute(
                 script: script,
                 flags: '-B',
                 pomPath: 'unit-tests/pom.xml',

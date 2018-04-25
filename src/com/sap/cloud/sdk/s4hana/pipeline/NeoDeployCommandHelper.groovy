@@ -1,5 +1,7 @@
 package com.sap.cloud.sdk.s4hana.pipeline
 
+import com.sap.piper.ConfigurationHelper
+
 class NeoDeployCommandHelper implements Serializable{
     private List mandatoryParameters = [
         'host',

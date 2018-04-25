@@ -5,7 +5,7 @@ def call(Map parameters = [:]) {
 
         deleteDir()
 
-        List toUnstash = script.pipelineEnvironment.configuration.s4SdkStashConfiguration.get(stage)?.unstash ?: []
+        List toUnstash = script.commonPipelineEnvironment.configuration.s4SdkStashConfiguration?.get(stage)?.unstash ?: []
 
         echo "Unstashing ${toUnstash}"
 

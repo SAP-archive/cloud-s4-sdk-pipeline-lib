@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:], body) {
 
@@ -10,15 +10,15 @@ def call(Map parameters = [:], body) {
 
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
 
-        List parameterKeys = [
+        Set parameterKeys = [
             'dockerImage',
             'dockerOptions'
         ]
-        List stepConfigurationKeys = ['dockerImage', 'defaultNpmRegistry']
+        Set stepConfigurationKeys = ['dockerImage', 'defaultNpmRegistry']
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
-        executeDockerNative(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) {
+        dockerExecute(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) {
             try {
                 if (configuration.defaultNpmRegistry) {
                     sh "npm config set registry ${configuration.defaultNpmRegistry}"

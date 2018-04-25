@@ -1,4 +1,10 @@
-import com.sap.cloud.sdk.s4hana.pipeline.*
+import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
+import com.sap.cloud.sdk.s4hana.pipeline.NeoDeployCommandHelper
+
+import com.sap.piper.ConfigurationHelper
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
 
@@ -10,11 +16,14 @@ def call(Map parameters = [:]) {
 
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToNeoWithCli')
 
-        List parameterKeys = ['dockerImage',
-                              'deploymentType',
-                              'target',
-                              'source']
-        List stepConfigurationKeys = ['dockerImage']
+        Set parameterKeys = [
+            'dockerImage',
+            'deploymentType',
+            'target',
+            'source'
+        ]
+
+        Set stepConfigurationKeys = ['dockerImage']
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
@@ -38,9 +47,9 @@ def call(Map parameters = [:]) {
     }
 }
 
-private deploy(dockerImage, deploymentType, NeoDeployCommandHelper commandHelper) {
+private deploy(dockerImage, DeploymentType deploymentType, NeoDeployCommandHelper commandHelper) {
     commandHelper.assertMandatoryParameters()
-    executeDockerNative(dockerImage: dockerImage) {
+    dockerExecute(dockerImage: dockerImage) {
         lock("deployToNeoWithCli:${commandHelper.resourceLock()}") {
 
             if (deploymentType == DeploymentType.ROLLING_UPDATE) {

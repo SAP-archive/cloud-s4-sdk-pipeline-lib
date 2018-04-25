@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkPmd', stepParameters: parameters) {
@@ -9,13 +9,13 @@ def call(Map parameters = [:]) {
 
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkPmd')
 
-        List parameterKeys = [
+        Set parameterKeys = [
             'scanModules',
             'dockerImage',
             'excludes'
         ]
 
-        List stepConfigurationKeys = parameterKeys
+        Set stepConfigurationKeys = parameterKeys
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
@@ -54,7 +54,7 @@ def executeMavenPMDForConfiguredModules(script, options, Map configuration) {
 }
 
 def executeMavenPMD(script, options, Map configuration, String pomPath) {
-    executeMaven(
+    mavenExecute(
         script: script,
         flags: '-B -U',
         pomPath: pomPath,

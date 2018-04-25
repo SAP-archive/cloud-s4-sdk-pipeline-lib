@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationMerger
+import com.sap.piper.ConfigurationLoader
+import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     def stageName = 'checkmarxScan'
@@ -8,7 +8,7 @@ def call(Map parameters = [:]) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
 
-        List stageConfigurationKeys = ['groupId',
+        Set stageConfigurationKeys = ['groupId',
                                        'vulnerabilityThresholdMedium',
                                        'checkMarxProjectName',
                                        'vulnerabilityThresholdLow: 999999',
@@ -20,7 +20,7 @@ def call(Map parameters = [:]) {
                                        'checkmarxCredentialsId',
                                        'checkmarxServerUrl']
 
-        Map configuration = ConfigurationMerger.merge(parameters, [], stageConfiguration, stageConfigurationKeys, stageDefaults)
+        Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
         // only applicable if customized config exists
         if (stageConfiguration) {

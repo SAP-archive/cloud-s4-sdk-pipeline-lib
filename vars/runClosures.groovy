@@ -1,8 +1,6 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ConfigurationLoader
-
 def call(Map closures, script) {
     handleStepErrors(stepName: 'runClosures', stepParameters: [:]) {
-        if (ConfigurationLoader.isFeatureActive(script, 'parallelTestExecution')) {
+        if (isFeatureActive(script: script, feature:'parallelTestExecution')) {
             parallel closures
         } else {
             def closuresToRun = closures.values().asList()
