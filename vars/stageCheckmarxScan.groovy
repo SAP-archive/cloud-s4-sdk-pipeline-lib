@@ -11,7 +11,7 @@ def call(Map parameters = [:]) {
         Set stageConfigurationKeys = ['groupId',
                                        'vulnerabilityThresholdMedium',
                                        'checkMarxProjectName',
-                                       'vulnerabilityThresholdLow: 999999',
+                                       'vulnerabilityThresholdLow',
                                        'filterPattern',
                                        'fullScansScheduled',
                                        'generatePdfReport',
