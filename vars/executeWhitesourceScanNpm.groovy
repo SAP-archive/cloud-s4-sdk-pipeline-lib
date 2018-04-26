@@ -9,8 +9,7 @@ def call(Map parameters = [:]) {
                 sh """
                 npm install whitesource
                 alias whitesource='node node_modules/whitesource/bin/whitesource.js'
-                whitesource run || echo 'whitesource scan failed'
-                npm ls --json > whitesourceJsonTree.json || echo 'npm ls failed'
+                whitesource run
                 """.trim()
             }
         } finally {
