@@ -1,6 +1,6 @@
 import com.sap.piper.ConfigurationLoader
 
-def call(Map parameters){
+def call(Map parameters) {
     def script = parameters.script
 
     script.commonPipelineEnvironment.configuration.skipping = [:]
@@ -19,11 +19,14 @@ def call(Map parameters){
     if (script.commonPipelineEnvironment.configuration.skipping.E2E_TESTS || script.commonPipelineEnvironment.configuration.skipping.PERFORMANCE_TESTS) {
         script.commonPipelineEnvironment.configuration.skipping.REMOTE_TESTS = true
     }
-    if (ConfigurationLoader.stageConfiguration(script, 'checkmarxScan')) {
+    if (ConfigurationLoader.stageConfiguration(script, 'checkmarxScan') && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.skipping.CHECKMARX_SCAN = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'whitesourceScan') || fileExists('whitesource.config.json')) {
+    boolean isWhitesourceConfigured =
+        ConfigurationLoader.stageConfiguration(script, 'whitesourceScan') || fileExists('whitesource.config.json')
+
+    if (isProductiveBranch(script: script) && isWhitesourceConfigured) {
         script.commonPipelineEnvironment.configuration.skipping.WHITESOURCE_SCAN = true
     }
 
@@ -47,7 +50,7 @@ def call(Map parameters){
     }
 
     def sendNotification = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
-    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))){
+    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.skipping.SEND_NOTIFICATION = true
     }
 }
