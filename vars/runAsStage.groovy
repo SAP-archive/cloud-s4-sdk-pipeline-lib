@@ -1,4 +1,3 @@
-import com.sap.cloud.sdk.s4hana.pipeline.ClosureHolder
 import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
@@ -39,7 +38,7 @@ def call(Map parameters = [:], body) {
         node(nodeLabel) {
             try {
                 unstashFiles script: script, stage: stageName
-                executeStage(stageName, mergedStageConfiguration, generalConfiguration, body)
+                executeStage(body, stageName, mergedStageConfiguration, generalConfiguration)
                 stashFiles script: script, stage: stageName
                 echo "Current build result in stage $stageName is ${script.currentBuild.result}."
             }
@@ -50,17 +49,13 @@ def call(Map parameters = [:], body) {
     }
 }
 
-private executeStage(stageName, stageConfiguration, generalConfiguration, body) {
+private executeStage(Closure originalStage, String stageName, Map stageConfiguration, Map generalConfiguration) {
     def stageInterceptor = "pipeline/extensions/${stageName}.groovy"
     if (fileExists(stageInterceptor)) {
         Script interceptor = load(stageInterceptor)
-        interceptor.binding.setProperty('originalStage', new ClosureHolder(body as Closure))
-        interceptor.binding.setProperty('stageName', stageName)
-        interceptor.binding.setProperty('stageConfiguration', stageConfiguration)
-        interceptor.binding.setProperty('generalConfiguration', generalConfiguration)
         echo "Running interceptor for ${stageName}."
-        interceptor()
+        interceptor(originalStage, stageName, stageConfiguration, generalConfiguration)
     } else {
-        body()
+        originalStage()
     }
 }
