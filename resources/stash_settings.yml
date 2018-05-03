@@ -62,6 +62,10 @@ whitesourceScan:
   unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2', 'NODE_MODULES']
   stashes: []
 
+sourceClearScan:
+  unstash: ['SOURCE', 'M2', 'NODE_MODULES']
+  stashes: []
+
 nodeSecurityPlatform:
   unstash: ['SOURCE', 'REPORTS']
   stashes: []

@@ -29,7 +29,7 @@ def call(Map parameters = [:], body) {
             catch(Exception e) {
                 println "Error while executing npm. Here are the logs:"
                 sh "cat ~/.npm/_logs/*"
-                throw e;
+                throw e
             }
         }
     }
