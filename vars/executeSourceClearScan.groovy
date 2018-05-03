@@ -14,9 +14,9 @@ def call(Map parameters = [:]) {
         // Merge project defined configuration with the pipeline-defined configuration.
         // In the pipeline-defined configuration, we take care that SourceClear does not re-compile the Maven project,
         // and uses our settings file and m2 directory.
-        Map sourceClearConfig = parameters.projectDefinedConfig
+        Map sourceClearConfig = parameters.projectDefinedConfig ?: [:]
         Map pipelineDefinedSourceClearConfig = [
-            fail_on             : 'medium',
+            fail_on             : 'high',
             compile_first       : false,
             install_first       : false,
             custom_maven_command: assembleCustomMavenCommands(script)
