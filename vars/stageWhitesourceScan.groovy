@@ -12,7 +12,7 @@ def call(Map parameters = [:]) {
             def orgToken = whitesourceConfigurationHelper.getConfigProperty('orgToken')
             def product = whitesourceConfigurationHelper.getConfigProperty('product')
 
-            executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product
+            executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product, pomPath:'application/pom.xml'
         } else {
             println('Skip WhiteSource Maven scan because the stage "whitesourceScan" is not configured.')
         }

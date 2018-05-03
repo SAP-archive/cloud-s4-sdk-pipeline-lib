@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
         try {
             executeNpm(script: script, dockerOptions: DownloadCacheUtils.downloadCacheNetworkParam()) {
                 sh """
-                npm install whitesource
+                npm install whitesource --save-dev
                 alias whitesource='node node_modules/whitesource/bin/whitesource.js'
                 whitesource run
                 """.trim()
