@@ -1,4 +1,3 @@
-import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
@@ -8,9 +7,8 @@ def call(Map parameters = [:]) {
         // Maven
         Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         if (whitesourceConfiguration) {
-            def whitesourceConfigurationHelper = new ConfigurationHelper(whitesourceConfiguration)
-            def orgToken = whitesourceConfigurationHelper.getConfigProperty('orgToken')
-            def product = whitesourceConfigurationHelper.getConfigProperty('product')
+            def orgToken = whitesourceConfiguration.orgToken
+            def product = whitesourceConfiguration.product
 
             executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product, pomPath:'application/pom.xml'
         } else {
@@ -18,11 +16,17 @@ def call(Map parameters = [:]) {
         }
 
         // NPM
-        if (fileExists('whitesource.config.json')) {
-            executeWhitesourceScanNpm script: script
+        if (whitesourceConfiguration && fileExists('package.json')) {
+            def orgToken = whitesourceConfiguration.orgToken
+            def product = whitesourceConfiguration.product
+
+            executeWhitesourceScanNpm(
+                script: script,
+                orgToken: orgToken,
+                product: product,
+            )
         } else {
-            println 'Skip WhiteSource NPM Plugin, because no "whitesource.config.json" file was found in project.\n' +
-                    'Please refer to http://docs.whitesourcesoftware.com/display/serviceDocs/NPM+Plugin for usage information.'
+            println 'Skipping WhiteSource NPM Plugin because no "package.json" file was found in project or the stage "whitesourceScan" is not configured.\n'
         }
     }
 }

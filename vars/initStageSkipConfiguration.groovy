@@ -24,7 +24,7 @@ def call(Map parameters) {
     }
 
     boolean isWhitesourceConfigured =
-        ConfigurationLoader.stageConfiguration(script, 'whitesourceScan') || fileExists('whitesource.config.json')
+        ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
 
     if (isProductiveBranch(script: script) && isWhitesourceConfigured) {
         script.commonPipelineEnvironment.configuration.skipping.WHITESOURCE_SCAN = true
