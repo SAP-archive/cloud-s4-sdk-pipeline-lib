@@ -39,6 +39,12 @@ def call(Map parameters = [:]) {
                     'SRCCLR_SCM_REF_TYPE': 'branch',
                     'SRCCLR_SCM_REV'     : parameters.commitId
                 ]) {
+                if (fileExists('srcclr.yml')) {
+                    error("'srcclr.yml' file found in the project.\n" +
+                        "This is not allowed, because the pipeline needs to write its own configuration file.\n" +
+                        "Instead, you can specify your configuration in 'pipeline_config.yml' as described in " +
+                        "https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#sourceclearscan.")
+                }
                 writeYaml file: 'srcclr.yml', data: sourceClearConfig
                 echo "Effective SourceClear Agent configuration:"
                 sh 'cat srcclr.yml'
