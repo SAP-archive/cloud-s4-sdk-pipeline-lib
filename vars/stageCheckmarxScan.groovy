@@ -26,7 +26,9 @@ def call(Map parameters = [:]) {
         if (stageConfiguration) {
             configuration.script = script
             try {
-                executeCheckmarxScan configuration
+                dir('application') {
+                    executeCheckmarxScan configuration
+                }
             } finally {
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/Checkmarx/Reports/ScanReport*'
             }

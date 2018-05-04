@@ -45,9 +45,9 @@ def call(Map parameters = [:]) {
             waitForResultsEnabled        : true
         ]
 
-        dir('application') {
-            // Checkmarx scan
-            if (checkmarxCredentialsId) withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: checkmarxCredentialsId, passwordVariable: 'password', usernameVariable: 'user']]) {
+        // Checkmarx scan
+        if (checkmarxCredentialsId) {
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: checkmarxCredentialsId, passwordVariable: 'password', usernameVariable: 'user']]) {
                 if (checkmarxServerUrl?.trim()) {
                     checkMarxOptions.serverUrl = checkmarxServerUrl
                 } else {
@@ -57,8 +57,25 @@ def call(Map parameters = [:]) {
                 checkMarxOptions.username = user
                 checkMarxOptions.password = encryptPassword(password)
                 checkMarxOptions.useOwnServerCredentials = true
-                step(checkMarxOptions)
-            } else step(checkMarxOptions)
+            }
+        }
+
+        step(checkMarxOptions)
+
+        /*
+        The checkmarx plugin sets the build result to UNSTABLE if the scan fails technically (e.g. connection error).
+        In such a case, we actively fail the build.
+        */
+        if (currentBuild.result == 'UNSTABLE') {
+            String successString = "---Checkmarx Scan Results(CxSAST)---"
+            String logFilePath = currentBuild.rawBuild.logFile.absolutePath
+            boolean checkmarxExecuted =
+                (0 == sh(script: "grep --max-count 1 --fixed-strings '${successString}' ${logFilePath}", returnStatus: true))
+
+            if (!checkmarxExecuted) {
+                currentBuild.result = 'FAILURE'
+                error "Aborting the build because Checkmarx scan did not execute successfully."
+            }
         }
     }
 }
