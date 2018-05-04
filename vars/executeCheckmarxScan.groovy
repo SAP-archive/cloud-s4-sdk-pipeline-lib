@@ -67,14 +67,17 @@ def call(Map parameters = [:]) {
         In such a case, we actively fail the build.
         */
         if (currentBuild.result == 'UNSTABLE') {
-            String successString = "---Checkmarx Scan Results(CxSAST)---"
-            String logFilePath = currentBuild.rawBuild.logFile.absolutePath
-            boolean checkmarxExecuted =
-                (0 == sh(script: "grep --max-count 1 --fixed-strings -- '${successString}' ${logFilePath}", returnStatus: true))
+            // Execute on master - only here the log is accessible
+            node('master') {
+                String successString = "---Checkmarx Scan Results(CxSAST)---"
+                String logFilePath = currentBuild.rawBuild.logFile.absolutePath
+                boolean checkmarxExecuted =
+                    (0 == sh(script: "grep --max-count 1 --fixed-strings -- '${successString}' ${logFilePath}", returnStatus: true))
 
-            if (!checkmarxExecuted) {
-                currentBuild.result = 'FAILURE'
-                error "Aborting the build because Checkmarx scan did not execute successfully."
+                if (!checkmarxExecuted) {
+                    currentBuild.result = 'FAILURE'
+                    error "Aborting the build because Checkmarx scan did not execute successfully."
+                }
             }
         }
     }
