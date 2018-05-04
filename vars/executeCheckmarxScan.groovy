@@ -70,7 +70,7 @@ def call(Map parameters = [:]) {
             String successString = "---Checkmarx Scan Results(CxSAST)---"
             String logFilePath = currentBuild.rawBuild.logFile.absolutePath
             boolean checkmarxExecuted =
-                (0 == sh(script: "grep --max-count 1 --fixed-strings '${successString}' ${logFilePath}", returnStatus: true))
+                (0 == sh(script: "grep --max-count 1 --fixed-strings -- '${successString}' ${logFilePath}", returnStatus: true))
 
             if (!checkmarxExecuted) {
                 currentBuild.result = 'FAILURE'
