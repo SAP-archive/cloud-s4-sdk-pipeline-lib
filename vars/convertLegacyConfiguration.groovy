@@ -1,18 +1,18 @@
 import com.sap.piper.ConfigurationLoader
 
-def call(Map parameters){
+def call(Map parameters) {
     def script = parameters.script
 
     renameMavenStep(script)
     removeMavenGlobalSettings(script)
 }
 
-def renameMavenStep(script){
+def renameMavenStep(script) {
     def stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
 
-    if(stepsConfiguration?.executeMaven){
+    if (stepsConfiguration?.executeMaven) {
 
-        if(stepsConfiguration.mavenExecute){
+        if (stepsConfiguration.mavenExecute) {
             error("Your pipeline configuration may only contain the step configuration mavenExecute. " +
                 "The key executeMaven should not be used anymore.")
         }
@@ -24,28 +24,27 @@ def renameMavenStep(script){
     }
 }
 
-def removeMavenGlobalSettings(script){
+def removeMavenGlobalSettings(script) {
     Map mavenConfiguration = ConfigurationLoader.stepConfiguration(script, 'mavenExecute')
 
     // Maven globalSettings obsolete since introduction of DL-Cache
-    if(mavenConfiguration.globalSettingsFile) {
+    if (mavenConfiguration.globalSettingsFile) {
         // switch to project settings if not also defined by user
         String projectSettingsFile = mavenConfiguration.projectSettingsFile
-        if(!projectSettingsFile) {
+        if (!projectSettingsFile) {
             println("[WARNING]: Your pipeline configuration contains the obsolete configuration parameter " +
                 "'executeMaven.globalSettingsFile=${mavenConfiguration.globalSettingsFile}'. The S/4HANA Cloud " +
-                "SDK Pipeline uses an own global settings file to inject its download proxy as maven repository mirror. "+
+                "SDK Pipeline uses an own global settings file to inject its download proxy as maven repository mirror. " +
                 "Since you did not specify a project settings file, your settings file will be used as " +
                 "'executeMaven.projectSettingsFile'.")
 
             mavenConfiguration.projectSettingsFile = mavenConfiguration.globalSettingsFile
             mavenConfiguration.remove('globalSettingsFile')
-        }
-        else {
+        } else {
             currentBuild.result = 'FAILURE'
             error("Your pipeline configuration contains the obsolete configuration parameter " +
                 "'executeMaven.globalSettingsFile=${mavenConfiguration.globalSettingsFile}' together with " +
-                "'executeMaven.projectSettingsFile=${mavenConfiguration.projectSettingsFile}'. "+
+                "'executeMaven.projectSettingsFile=${mavenConfiguration.projectSettingsFile}'. " +
                 "The S/4HANA Cloud SDK Pipeline uses an own global settings file to inject its download proxy " +
                 "as maven repository mirror. Please reduce your settings to one file and specify " +
                 "it under 'executeMaven.globalSettingsFile'.")

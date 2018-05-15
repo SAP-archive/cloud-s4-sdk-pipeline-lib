@@ -2,7 +2,7 @@ package com.sap.cloud.sdk.s4hana.pipeline
 
 import com.sap.piper.ConfigurationHelper
 
-class NeoDeployCommandHelper implements Serializable{
+class NeoDeployCommandHelper implements Serializable {
     private List mandatoryParameters = [
         'host',
         'account',
@@ -19,86 +19,85 @@ class NeoDeployCommandHelper implements Serializable{
     private String password
     private String source
 
-    NeoDeployCommandHelper(Map deploymentDescriptor, String username, String password, String source){
+    NeoDeployCommandHelper(Map deploymentDescriptor, String username, String password, String source) {
         this.deploymentDescriptor = deploymentDescriptor
         this.username = username
         this.password = password
         this.source = source
     }
 
-    void assertMandatoryParameters(){
-        for(int i=0; i<mandatoryParameters.size(); i++){
+    void assertMandatoryParameters() {
+        for (int i = 0; i < mandatoryParameters.size(); i++) {
             String parameterName = mandatoryParameters[i]
-            if(!new ConfigurationHelper(deploymentDescriptor).isPropertyDefined(parameterName)){
+            if (!new ConfigurationHelper(deploymentDescriptor).isPropertyDefined(parameterName)) {
                 error("Please define the parameter ${parameterName} in your deployment configuration")
             }
         }
     }
 
 
-    String getNeoToolDirectory(){
+    String getNeoToolDirectory() {
         return neoToolDirectory
     }
 
-    String cloudCockpitLink(){
-        return "https://account.${deploymentDescriptor.host}/cockpit#"+
+    String cloudCockpitLink() {
+        return "https://account.${deploymentDescriptor.host}/cockpit#" +
             "/acc/${deploymentDescriptor.account}/app/${deploymentDescriptor.application}/dashboard"
     }
 
-    String resourceLock(){
+    String resourceLock() {
         return "${deploymentDescriptor.host}/${deploymentDescriptor.account}/${deploymentDescriptor.application}"
     }
 
-    String statusCommand(){
+    String statusCommand() {
         return "${neoTool} status ${mainArgs()}"
     }
 
-    String rollingUpdateCommand(){
+    String rollingUpdateCommand() {
         return "${neoTool} rolling-update ${mainArgs()} -s ${source} ${additionalCommonArgs()}"
     }
 
-    String deployCommand(){
+    String deployCommand() {
         String command = "${neoTool} deploy ${mainArgs()} -s ${source} ${additionalCommonArgs()}"
 
         return command
     }
 
-    String restartCommand(){
+    String restartCommand() {
         return "${neoTool} restart --synchronous ${mainArgs()}"
     }
 
-    private String mainArgs(){
+    private String mainArgs() {
         return "-h ${deploymentDescriptor.host} -a ${deploymentDescriptor.account} -b ${deploymentDescriptor.application} -u ${username} -p ${password}"
     }
 
-    private String additionalCommonArgs(){
+    private String additionalCommonArgs() {
         String args = ""
 
-        if(deploymentDescriptor.containsKey('ev')){
+        if (deploymentDescriptor.containsKey('ev')) {
             def value = deploymentDescriptor.ev
-            if(value instanceof List){
-                for(String singleValue: value){
+            if (value instanceof List) {
+                for (String singleValue : value) {
                     args += " --ev ${singleValue}"
                 }
-            }
-            else {
+            } else {
                 args += " --ev ${value}"
             }
         }
 
-        if(deploymentDescriptor.containsKey('runtime')){
+        if (deploymentDescriptor.containsKey('runtime')) {
             args += " --runtime ${deploymentDescriptor.runtime}"
         }
 
-        if(deploymentDescriptor.containsKey('runtimeVersion')){
+        if (deploymentDescriptor.containsKey('runtimeVersion')) {
             args += " --runtime-version ${deploymentDescriptor.runtimeVersion}"
         }
 
-        if(deploymentDescriptor.containsKey('vmArguments')){
+        if (deploymentDescriptor.containsKey('vmArguments')) {
             args += " --vm-arguments \"${deploymentDescriptor.vmArguments}\""
         }
 
-        if(deploymentDescriptor.containsKey('size')){
+        if (deploymentDescriptor.containsKey('size')) {
             args += " --size ${deploymentDescriptor.size}"
         }
 

@@ -6,7 +6,7 @@ enum EndToEndTestType {
 
     final String npmScriptName
 
-    EndToEndTestType(String npmScriptName){
+    EndToEndTestType(String npmScriptName) {
         this.npmScriptName = npmScriptName
     }
 }

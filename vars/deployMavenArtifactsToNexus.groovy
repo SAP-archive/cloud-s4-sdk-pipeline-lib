@@ -8,18 +8,18 @@ def call(Map parameters = [:]) {
         def defaultConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'deployMavenArtifactsToNexus')
 
         Set parameterKeys = [
-                'url',
-                'repository',
-                'nexusVersion',
-                'credentialsId',
-                'pomPath',
-                'targetFolder',
-                'additionalClassifiers'
+            'url',
+            'repository',
+            'nexusVersion',
+            'credentialsId',
+            'pomPath',
+            'targetFolder',
+            'additionalClassifiers'
         ]
 
         def configuration = ConfigurationMerger.merge(parameters, parameterKeys, defaultConfiguration)
 
-        def pomFile = configuration.pomPath?"${configuration.pomPath}/pom.xml":"pom.xml"
+        def pomFile = configuration.pomPath ? "${configuration.pomPath}/pom.xml" : "pom.xml"
         def pom = readPom(script, configuration, pomFile)
 
         List artifacts = []
@@ -66,10 +66,10 @@ def call(Map parameters = [:]) {
     }
 }
 
-def generateEffectivePom(script, pomFile, configuration){
+def generateEffectivePom(script, pomFile, configuration) {
     mavenExecute(
         script: script,
-        flags: '-B',
+        flags: '--batch-mode',
         pomPath: "$pomFile",
         m2Path: s4SdkGlobals.m2Directory,
         goals: 'help:effective-pom',
@@ -77,15 +77,15 @@ def generateEffectivePom(script, pomFile, configuration){
         defines: "-Doutput=effectivePom.xml"
     )
 
-    return configuration.pomPath?"${configuration.pomPath}/effectivePom.xml":"effectivePom.xml"
+    return configuration.pomPath ? "${configuration.pomPath}/effectivePom.xml" : "effectivePom.xml"
 }
 
-def readPom(script, configuration, pomFile){
+def readPom(script, configuration, pomFile) {
     def pom
-    if(configuration.pomPath){
+    if (configuration.pomPath) {
         def effectivePomPath = generateEffectivePom(script, pomFile, configuration)
         pom = readMavenPom file: effectivePomPath
-    } else{
+    } else {
         pom = readMavenPom file: pomFile
     }
     return pom

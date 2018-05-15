@@ -13,11 +13,11 @@ def call(Map parameters = [:]) {
         if (stageConfig.nexus) {
 
             Set stageConfigurationKeys = [
-                    'url',
-                    'repository',
-                    'version',
-                    'credentialsId',
-                    'additionalClassifiers'
+                'url',
+                'repository',
+                'version',
+                'credentialsId',
+                'additionalClassifiers'
             ]
 
             Map nexusConfiguration = ConfigurationMerger.merge(stageConfig.nexus, stageConfigurationKeys, defaultConfig.nexus)
@@ -28,24 +28,24 @@ def call(Map parameters = [:]) {
             String nexusVersion = nexusConfiguration.version
 
             deployMavenArtifactsToNexus(
-                    script: script,
-                    url: url,
-                    nexusVersion: nexusVersion,
-                    repository: repository,
-                    credentialsId: credentialsId,
-                    pomPath: '',
-                    targetFolder: 'target'
+                script: script,
+                url: url,
+                nexusVersion: nexusVersion,
+                repository: repository,
+                credentialsId: credentialsId,
+                pomPath: '',
+                targetFolder: 'target'
             )
 
             deployMavenArtifactsToNexus(
-                    script: script,
-                    url: url,
-                    nexusVersion: nexusVersion,
-                    repository: repository,
-                    credentialsId: credentialsId,
-                    pomPath: 'application',
-                    targetFolder: 'application/target',
-                    additionalClassifiers: nexusConfiguration.additionalClassifiers
+                script: script,
+                url: url,
+                nexusVersion: nexusVersion,
+                repository: repository,
+                credentialsId: credentialsId,
+                pomPath: 'application',
+                targetFolder: 'application/target',
+                additionalClassifiers: nexusConfiguration.additionalClassifiers
             )
 
         } else {

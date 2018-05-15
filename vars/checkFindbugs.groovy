@@ -53,7 +53,7 @@ def executeMavenFindbugsForConfiguredModules(script, filterOptions, Map configur
 def executeMavenFindbugs(script, filterOptions, Map configuration, String pomPath) {
     mavenExecute(
         script: script,
-        flags: '-B -U',
+        flags: '--update-snapshots --batch-mode',
         pomPath: pomPath,
         m2Path: s4SdkGlobals.m2Directory,
         goals: 'findbugs:findbugs',

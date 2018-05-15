@@ -34,7 +34,7 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.skipping.NODE_SECURITY_SCAN = true
     }
 
-    if(ConfigurationLoader.stageConfiguration(script, 'sourceClearScan').credentialsId) {
+    if (ConfigurationLoader.stageConfiguration(script, 'sourceClearScan').credentialsId) {
         script.commonPipelineEnvironment.configuration.skipping.SOURCE_CLEAR_SCAN = true
     }
 

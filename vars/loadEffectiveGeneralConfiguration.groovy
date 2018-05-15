@@ -1,7 +1,7 @@
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
-def call(Map parameters){
+def call(Map parameters) {
     def script = parameters.script
 
     Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)

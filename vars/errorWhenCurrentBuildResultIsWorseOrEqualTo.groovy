@@ -6,7 +6,7 @@ def call(Map parameters = [:]) {
         def errorStatus = parameters.errorStatus
         def errorHandler = parameters.errorHandler
         def errorHandlerParameter = parameters.errorHandlerParameter
-        def errorMessage = parameters.errorMessage?:''
+        def errorMessage = parameters.errorMessage ?: ''
 
         if (script.currentBuild.result && script.currentBuild.resultIsWorseOrEqualTo(errorStatus)) {
             if (errorHandler) {

@@ -11,12 +11,12 @@ class CredentialCollection implements Serializable {
     public CredentialCollection() {}
 
     @NonCPS
-    def toCredentialJson(){
+    def toCredentialJson() {
         return "{ \"credentials\": [\n  ${credentials.join(",\n  ")}\n]}\n"
     }
 
     @NonCPS
-    def addCredential(Credential credential){
+    def addCredential(Credential credential) {
         this.credentials.add(credential)
     }
 }

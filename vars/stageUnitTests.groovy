@@ -9,14 +9,14 @@ def call(Map parameters = [:]) {
         try {
             mavenExecute(
                 script: script,
-                flags: '-B',
+                flags: '--batch-mode',
                 pomPath: 'unit-tests/pom.xml',
                 m2Path: s4SdkGlobals.m2Directory,
                 goals: 'org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent test',
                 dockerImage: configuration.dockerImage,
                 defines: '-Dsurefire.forkCount=1C'
             )
-        } catch(Exception e) {
+        } catch (Exception e) {
             executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Unit Tests', errorMessage: "Please examine Backend Unit Tests report.") {
                 script.currentBuild.result = 'FAILURE'
             }

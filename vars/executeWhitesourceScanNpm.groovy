@@ -6,18 +6,18 @@ def call(Map parameters = [:]) {
         final script = parameters.script
 
         Map whiteSourceConfiguration = [
-            apiKey: parameters.orgToken,
-            productName: parameters.product,
-            devDep: false,
+            apiKey       : parameters.orgToken,
+            productName  : parameters.product,
+            devDep       : false,
             checkPolicies: true,
         ]
 
-        if(parameters.projectName){
+        if (parameters.projectName) {
             whiteSourceConfiguration.projectName = parameters.projectName
         }
 
-        if(fileExists('whitesource.config.json')){
-            error ("File whitesource.config.json already exists. " +
+        if (fileExists('whitesource.config.json')) {
+            error("File whitesource.config.json already exists. " +
                 "Please delete it and only use the file pipeline_config.yml to configure Whitesource.")
         }
 

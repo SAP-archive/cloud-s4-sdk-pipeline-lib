@@ -3,7 +3,7 @@ import com.sap.piper.ConfigurationLoader
 def call(Map parameters = [:]) {
     def stageName = 's4SdkQualityChecks'
     def script = parameters.script
-    runAsStage (stageName: stageName, script: script) {
+    runAsStage(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         checkDependencies script: script

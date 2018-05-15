@@ -12,7 +12,7 @@ def call(Map parameters = [:]) {
                 '-Dorg.whitesource.failOnError=true'
             ]
 
-            if(parameters.projectName){
+            if (parameters.projectName) {
                 defines.add("-Dorg.whitesource.aggregateProjectName=${BashUtils.escape(parameters.projectName)}")
                 defines.add('-Dorg.whitesource.aggregateModules=true')
             }

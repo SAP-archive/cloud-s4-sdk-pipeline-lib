@@ -4,13 +4,13 @@ def call(Map parameters) {
 
         loadPiper script: script
 
-        if(!parameters.configFile){
+        if (!parameters.configFile) {
             parameters.configFile = 'pipeline_config.yml'
         }
 
         setupCommonPipelineEnvironment(parameters)
 
-        loadS4sdkDefaultValues script:  script
+        loadS4sdkDefaultValues script: script
 
         convertLegacyConfiguration script: script
 

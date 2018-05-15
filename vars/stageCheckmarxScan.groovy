@@ -9,16 +9,16 @@ def call(Map parameters = [:]) {
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
 
         Set stageConfigurationKeys = ['groupId',
-                                       'vulnerabilityThresholdMedium',
-                                       'checkMarxProjectName',
-                                       'vulnerabilityThresholdLow',
-                                       'filterPattern',
-                                       'fullScansScheduled',
-                                       'generatePdfReport',
-                                       'incremental',
-                                       'preset',
-                                       'checkmarxCredentialsId',
-                                       'checkmarxServerUrl']
+                                      'vulnerabilityThresholdMedium',
+                                      'checkMarxProjectName',
+                                      'vulnerabilityThresholdLow',
+                                      'filterPattern',
+                                      'fullScansScheduled',
+                                      'generatePdfReport',
+                                      'incremental',
+                                      'preset',
+                                      'checkmarxCredentialsId',
+                                      'checkmarxServerUrl']
 
         Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 

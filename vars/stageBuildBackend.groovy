@@ -9,10 +9,10 @@ def call(Map parameters = [:]) {
 
         mavenExecute(
             script: script,
-            flags: '-U -B',
+            flags: '--update-snapshots --batch-mode',
             m2Path: s4SdkGlobals.m2Directory,
             goals: 'clean install',
-            defines:'-Dmaven.test.skip=true',
+            defines: '-Dmaven.test.skip=true',
             dockerImage: configuration.dockerImage
         )
     }
