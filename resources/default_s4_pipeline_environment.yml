@@ -20,7 +20,7 @@ steps:
     dockerImage: s4sdk/docker-node-browsers
 
   executeGradle:
-    dockerImage: gradle:4.0.1-jdk8
+    dockerImage: gradle:4.7.0-jdk8
 
   executeSourceClearScan:
     dockerImage: s4sdk/docker-maven-npm
