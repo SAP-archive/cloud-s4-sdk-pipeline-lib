@@ -16,7 +16,7 @@ def call(Map parameters = [:]) {
         // and uses our settings file and m2 directory.
         Map sourceClearConfig = parameters.projectDefinedConfig ?: [:]
         Map pipelineDefinedSourceClearConfig = [
-            fail_on             : 'high',
+            fail_on             : 'methods',
             compile_first       : false,
             install_first       : false,
             custom_maven_command: assembleCustomMavenCommands(script)
