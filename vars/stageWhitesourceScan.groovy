@@ -7,22 +7,22 @@ def call(Map parameters = [:]) {
         // Maven
         Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         if (whitesourceConfiguration) {
-            def orgToken = whitesourceConfiguration.orgToken
+            def credentialsId = whitesourceConfiguration.credentialsId
             def product = whitesourceConfiguration.product
 
-            executeWhitesourceScanMaven script: script, orgToken: orgToken, product: product, pomPath: 'application/pom.xml'
+            executeWhitesourceScanMaven script: script, credentialsId: credentialsId, product: product, pomPath: 'application/pom.xml'
         } else {
             println('Skip WhiteSource Maven scan because the stage "whitesourceScan" is not configured.')
         }
 
         // NPM
         if (whitesourceConfiguration && fileExists('package.json')) {
-            def orgToken = whitesourceConfiguration.orgToken
+            def credentialsId = whitesourceConfiguration.credentialsId
             def product = whitesourceConfiguration.product
 
             executeWhitesourceScanNpm(
                 script: script,
-                orgToken: orgToken,
+                credentialsId: credentialsId,
                 product: product,
             )
         } else {

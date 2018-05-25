@@ -18,8 +18,6 @@ def call(Map parameters = [:]) {
         Result currentBuildResult = Result.fromString(currentBuild.currentResult)
         Result previousBuildResult = latestBuildResult(currentBuild)
 
-        echo "${currentBuildResult} ${previousBuildResult}"
-
         if (isBackToSuccess(currentBuildResult, previousBuildResult) || isUnsuccessful(currentBuildResult)) {
             sendEmail(currentBuildResult, previousBuildResult, configuration.recipients)
         }

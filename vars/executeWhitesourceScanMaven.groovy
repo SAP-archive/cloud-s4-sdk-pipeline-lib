@@ -5,26 +5,28 @@ def call(Map parameters = [:]) {
         final script = parameters.script
         def pomPath = parameters.pomPath ?: 'pom.xml'
         try {
-            List defines = [
-                "-Dorg.whitesource.orgToken=${BashUtils.escape(parameters.orgToken)}",
-                "-Dorg.whitesource.product=${BashUtils.escape(parameters.product)}",
-                '-Dorg.whitesource.checkPolicies=true',
-                '-Dorg.whitesource.failOnError=true'
-            ]
+            withCredentials([string(credentialsId: parameters.credentialsId, variable: 'orgToken')]) {
+                List defines = [
+                    "-Dorg.whitesource.orgToken=${BashUtils.escape(orgToken)}",
+                    "-Dorg.whitesource.product=${BashUtils.escape(parameters.product)}",
+                    '-Dorg.whitesource.checkPolicies=true',
+                    '-Dorg.whitesource.failOnError=true'
+                ]
 
-            if (parameters.projectName) {
-                defines.add("-Dorg.whitesource.aggregateProjectName=${BashUtils.escape(parameters.projectName)}")
-                defines.add('-Dorg.whitesource.aggregateModules=true')
+                if (parameters.projectName) {
+                    defines.add("-Dorg.whitesource.aggregateProjectName=${BashUtils.escape(parameters.projectName)}")
+                    defines.add('-Dorg.whitesource.aggregateModules=true')
+                }
+
+                mavenExecute(
+                    script: script,
+                    m2Path: s4SdkGlobals.m2Directory,
+                    pomPath: pomPath,
+                    goals: 'org.whitesource:whitesource-maven-plugin:update',
+                    flags: '--batch-mode',
+                    defines: defines.join(' ')
+                )
             }
-
-            mavenExecute(
-                script: script,
-                m2Path: s4SdkGlobals.m2Directory,
-                pomPath: pomPath,
-                goals: 'org.whitesource:whitesource-maven-plugin:update',
-                flags: '--batch-mode',
-                defines: defines.join(' ')
-            )
         } finally {
             archiveArtifacts artifacts: 'target/site/whitesource/**', allowEmptyArchive: true
             publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: true,

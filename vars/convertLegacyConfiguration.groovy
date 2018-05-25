@@ -5,6 +5,7 @@ def call(Map parameters) {
 
     renameMavenStep(script)
     removeMavenGlobalSettings(script)
+    whiteSourceLegacyCheck(script)
 }
 
 def renameMavenStep(script) {
@@ -48,6 +49,19 @@ def removeMavenGlobalSettings(script) {
                 "The S/4HANA Cloud SDK Pipeline uses an own global settings file to inject its download proxy " +
                 "as maven repository mirror. Please reduce your settings to one file and specify " +
                 "it under 'executeMaven.globalSettingsFile'.")
+        }
+    }
+}
+
+def whiteSourceLegacyCheck(script) {
+    Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
+    if (stageConfig) {
+        if (stageConfig?.orgToken) {
+            error("Your pipeline configuration may not use 'orgtoken' in whiteSourceScan stage. "+
+                "Store it as a 'Secret Text' in Jenkins and use the 'credentialsId' field.")
+        }
+        if (!stageConfig?.credentialsId) {
+            error("Your pipeline is using 'whiteSourceScan' and has a mandatory parameter 'credentialsId' not configured.")
         }
     }
 }
