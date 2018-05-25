@@ -51,7 +51,7 @@ def call(Map parameters = [:]) {
                 def sourceClearStatus = sh script: 'curl -sSL  https://download.sourceclear.com/ci.sh | bash -s -- scan --recursive', returnStatus: true
                 // Status codes are documented here: https://www.sourceclear.com/docs/scan-directives/#agent
                 if (sourceClearStatus != 0) {
-                    error("SourceClear scan has severe findings. Please examine the the full report.")
+                    error("SourceClear scan has severe findings. Please examine the full report.")
                 }
             }
         }
