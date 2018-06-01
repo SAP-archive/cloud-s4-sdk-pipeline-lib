@@ -23,7 +23,7 @@ class DownloadCacheUtils implements Serializable {
 
     static appendDownloadCacheNetworkOption(def script, List dockerOptions) {
         String network = DefaultValueCache.getInstance().getDefaultValues().dockerNetwork
-        if(network) {
+        if (network) {
             dockerOptions.add("--network=${network}")
         }
     }

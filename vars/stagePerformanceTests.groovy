@@ -11,7 +11,7 @@ def call(Map parameters = [:]) {
             lock(script.commonPipelineEnvironment.configuration.performanceTestLock) {
                 deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, stage: stageName
                 def jMeterConfig = ConfigurationLoader.stepConfiguration(script, 'checkJMeter')
-                if ( jMeterConfig && jMeterConfig.enabled!=false) {
+                if (jMeterConfig && jMeterConfig.enabled != false) {
                     def performanceTestReports = new File("${workspace}/${script.s4SdkGlobals.performanceReports}/JMeter")
                     performanceTestReports.mkdirs()
                     checkJMeter script: script, reportDirectory: performanceTestReports

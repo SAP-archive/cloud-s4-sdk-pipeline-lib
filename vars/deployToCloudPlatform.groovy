@@ -12,7 +12,7 @@ def call(Map parameters = [:]) {
                 def target = parameters.cfTargets[i]
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
                     node(env.NODE_NAME) {
-                        unstashFiles script: script, stage: stageName  
+                        unstashFiles script: script, stage: stageName
                         deployToCfWithCli script: parameters.script, appName: target.appName, org: target.org, space: target.space, apiEndpoint: target.apiEndpoint, manifest: target.manifest, credentialsId: target.credentialsId, deploymentType: parameters.isProduction ? DeploymentType.getDepolymentTypeForProduction(CloudPlatform.CLOUD_FOUNDRY) : DeploymentType.STANDARD
                         stashFiles script: script, stage: stageName
                     }

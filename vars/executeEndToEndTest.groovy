@@ -11,7 +11,7 @@ def call(Map parameters = [:]) {
         def parallelE2ETests = [:]
         def index = 1
 
-        def dockerOptions = [ '--shm-size 512MB' ]
+        def dockerOptions = ['--shm-size 512MB']
         DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
 
         if (appUrls) {

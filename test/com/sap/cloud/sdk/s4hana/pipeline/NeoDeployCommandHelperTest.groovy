@@ -14,14 +14,14 @@ class NeoDeployCommandHelperTest {
     @Before
     void setUp() throws Exception {
         Map deploymentDescriptor = [
-                host          : 'host_value',
-                account       : 'account_value',
-                application   : 'application_value',
-                ev            : ['ENV1=value1', 'ENV2=value2'],
-                vmArguments   : '-Dargument1=value1 -Dargument2=value2',
-                runtime       : 'neо-javaee6-wp',
-                runtimeVersion: '2',
-                size          : 'lite'
+            host          : 'host_value',
+            account       : 'account_value',
+            application   : 'application_value',
+            ev            : ['ENV1=value1', 'ENV2=value2'],
+            vmArguments   : '-Dargument1=value1 -Dargument2=value2',
+            runtime       : 'neо-javaee6-wp',
+            runtimeVersion: '2',
+            size          : 'lite'
         ]
         String username = 'username'
         String password = 'password'

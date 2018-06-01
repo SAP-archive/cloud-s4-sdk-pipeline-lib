@@ -9,16 +9,16 @@ class Credential implements Serializable {
     def username
     def password
 
-    public Credential(alias, username, password){
+    public Credential(alias, username, password) {
         this.alias = alias
         this.username = username
         this.password = password
     }
 
     @NonCPS
-    def String toString(){
+    def String toString() {
         return "{\"alias\":\"" + this.alias + "\"," +
-                "\"username\":\"" + this.username + "\"," +
-                "\"password\":\"" + this.password + "\"}"
+            "\"username\":\"" + this.username + "\"," +
+            "\"password\":\"" + this.password + "\"}"
     }
 }

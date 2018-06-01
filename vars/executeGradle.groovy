@@ -27,7 +27,7 @@ def call(Map parameters = [:]) {
         String command = "gradle"
 
         def localCache = configuration.localCache
-        if(localCache?.trim()) {
+        if (localCache?.trim()) {
             command += " --project-cache-dir ${localCache}"
         }
 

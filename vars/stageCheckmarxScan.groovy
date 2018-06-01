@@ -9,16 +9,16 @@ def call(Map parameters = [:]) {
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
 
         Set stageConfigurationKeys = ['groupId',
-                                       'vulnerabilityThresholdMedium',
-                                       'checkMarxProjectName',
-                                       'vulnerabilityThresholdLow: 999999',
-                                       'filterPattern',
-                                       'fullScansScheduled',
-                                       'generatePdfReport',
-                                       'incremental',
-                                       'preset',
-                                       'checkmarxCredentialsId',
-                                       'checkmarxServerUrl']
+                                      'vulnerabilityThresholdMedium',
+                                      'checkMarxProjectName',
+                                      'vulnerabilityThresholdLow',
+                                      'filterPattern',
+                                      'fullScansScheduled',
+                                      'generatePdfReport',
+                                      'incremental',
+                                      'preset',
+                                      'checkmarxCredentialsId',
+                                      'checkmarxServerUrl']
 
         Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
@@ -26,7 +26,9 @@ def call(Map parameters = [:]) {
         if (stageConfiguration) {
             configuration.script = script
             try {
-                executeCheckmarxScan configuration
+                dir('application') {
+                    executeCheckmarxScan configuration
+                }
             } finally {
                 archiveArtifacts allowEmptyArchive: true, artifacts: '**/Checkmarx/Reports/ScanReport*'
             }

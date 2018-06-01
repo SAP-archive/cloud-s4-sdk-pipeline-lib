@@ -1,4 +1,4 @@
-def call(Map parameters){
+def call(Map parameters) {
     def script = parameters.script
 
     Map s4SdkStashConfiguration = readYaml(text: libraryResource('stash_settings.yml'))

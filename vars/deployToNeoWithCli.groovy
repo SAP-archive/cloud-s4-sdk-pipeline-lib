@@ -69,7 +69,7 @@ private deploy(dockerImage, DeploymentType deploymentType, NeoDeployCommandHelpe
                     sh commandHelper.restartCommand()
                 }
             }
-            catch(Exception ex){
+            catch (Exception ex) {
                 echo "Error while deploying to SAP Cloud Platform. Here are the neo.sh logs:"
                 sh "cat ${commandHelper.getNeoToolDirectory()}/log/*"
                 throw ex

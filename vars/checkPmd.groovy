@@ -56,7 +56,7 @@ def executeMavenPMDForConfiguredModules(script, options, Map configuration) {
 def executeMavenPMD(script, options, Map configuration, String pomPath) {
     mavenExecute(
         script: script,
-        flags: '-B -U',
+        flags: '--update-snapshots --batch-mode',
         pomPath: pomPath,
         m2Path: s4SdkGlobals.m2Directory,
         goals: "com.sap.cloud.s4hana.quality:pmd-plugin:RELEASE:pmd",

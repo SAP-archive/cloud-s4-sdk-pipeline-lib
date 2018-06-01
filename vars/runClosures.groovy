@@ -1,6 +1,6 @@
 def call(Map closures, script) {
     handleStepErrors(stepName: 'runClosures', stepParameters: [:]) {
-        if (isFeatureActive(script: script, feature:'parallelTestExecution')) {
+        if (isFeatureActive(script: script, feature: 'parallelTestExecution')) {
             parallel closures
         } else {
             def closuresToRun = closures.values().asList()

@@ -30,7 +30,7 @@ def call(Map parameters) {
 
         Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
 
-        if(!generalConfiguration){
+        if (!generalConfiguration) {
             generalConfiguration = [:]
             script.commonPipelineEnvironment.configuration.general = generalConfiguration
         }
@@ -41,7 +41,7 @@ def call(Map parameters) {
         }
 
         Map configWithDefault = loadEffectiveGeneralConfiguration script: script
-        if (isProductiveBranch(script:script) && configWithDefault.automaticVersioning){
+        if (isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
             artifactSetVersion script: script
         }
         generalConfiguration.gitCommitId = getGitCommitId()

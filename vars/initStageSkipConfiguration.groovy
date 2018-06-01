@@ -1,6 +1,6 @@
 import com.sap.piper.ConfigurationLoader
 
-def call(Map parameters){
+def call(Map parameters) {
     def script = parameters.script
 
     script.commonPipelineEnvironment.configuration.skipping = [:]
@@ -19,11 +19,14 @@ def call(Map parameters){
     if (script.commonPipelineEnvironment.configuration.skipping.E2E_TESTS || script.commonPipelineEnvironment.configuration.skipping.PERFORMANCE_TESTS) {
         script.commonPipelineEnvironment.configuration.skipping.REMOTE_TESTS = true
     }
-    if (ConfigurationLoader.stageConfiguration(script, 'checkmarxScan')) {
+    if (ConfigurationLoader.stageConfiguration(script, 'checkmarxScan') && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.skipping.CHECKMARX_SCAN = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'whitesourceScan') || fileExists('whitesource.config.json')) {
+    boolean isWhitesourceConfigured =
+        ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
+
+    if (isProductiveBranch(script: script) && isWhitesourceConfigured) {
         script.commonPipelineEnvironment.configuration.skipping.WHITESOURCE_SCAN = true
     }
 
@@ -31,8 +34,13 @@ def call(Map parameters){
         script.commonPipelineEnvironment.configuration.skipping.NODE_SECURITY_SCAN = true
     }
 
+    if (ConfigurationLoader.stageConfiguration(script, 'sourceClearScan').credentialsId) {
+        script.commonPipelineEnvironment.configuration.skipping.SOURCE_CLEAR_SCAN = true
+    }
+
     if (script.commonPipelineEnvironment.configuration.skipping.CHECKMARX_SCAN
-        || script.commonPipelineEnvironment.configuration.skipping.WHITESOURCE_SCAN) {
+        || script.commonPipelineEnvironment.configuration.skipping.WHITESOURCE_SCAN
+        || script.commonPipelineEnvironment.configuration.skipping.SOURCE_CLEAR_SCAN) {
         script.commonPipelineEnvironment.configuration.skipping.THIRD_PARTY_CHECKS = true
     }
 
@@ -47,7 +55,7 @@ def call(Map parameters){
     }
 
     def sendNotification = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
-    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))){
+    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.skipping.SEND_NOTIFICATION = true
     }
 }

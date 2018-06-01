@@ -94,11 +94,11 @@ class CfTarget implements Serializable {
     def validate() {
         if (this.org == null || this.space == null || this.apiEndpoint == null || this.appName == null || this.manifest == null) {
             String message = "All of the variables below must NOT be NULL: \n" +
-                    "org : ${this.org} \n" +
-                    "space : ${this.space} \n" +
-                    "apiEndpoint : ${this.apiEndpoint} \n" +
-                    "appName : ${this.appName} \n" +
-                    "manifest : ${this.manifest} \n"
+                "org : ${this.org} \n" +
+                "space : ${this.space} \n" +
+                "apiEndpoint : ${this.apiEndpoint} \n" +
+                "appName : ${this.appName} \n" +
+                "manifest : ${this.manifest} \n"
             throw new RuntimeException(message)
         }
     }

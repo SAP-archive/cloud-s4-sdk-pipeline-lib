@@ -9,7 +9,7 @@ def call(Map parameters = [:]) {
 
         echo "Unstashing ${toUnstash}"
 
-        for (int x=0; x < toUnstash.size(); x++) {
+        for (int x = 0; x < toUnstash.size(); x++) {
             unstash toUnstash.get(x)
         }
     }

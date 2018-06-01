@@ -17,8 +17,7 @@ def call(Map parameters = [:]) {
                     unstash stash.name
                     steps.stash name: name, includes: include, exclude: exclude, allowEmpty: true
                 }
-            }
-            else {
+            } else {
                 steps.stash name: name, includes: include, exclude: exclude, allowEmpty: true
             }
         }

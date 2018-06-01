@@ -25,26 +25,29 @@ def call(Map parameters = [:]) {
         def vulnerabilityThresholdLow = parameters.vulnerabilityThresholdLow
         def vulnerabilityThresholdMedium = parameters.vulnerabilityThresholdMedium
 
-        Map checkMarxOptions = [$class                       : 'CxScanBuilder',
-                                avoidDuplicateProjectScans   : true,
-                                filterPattern                : filterPattern,
-                                fullScanCycle                : 10,
-                                fullScansScheduled           : fullScansScheduled,
-                                generatePdfReport            : generatePdfReport,
-                                groupId                      : checkmarxGroupId,
-                                highThreshold                : vulnerabilityThresholdHigh,
-                                incremental                  : incremental,
-                                lowThreshold                 : vulnerabilityThresholdLow,
-                                mediumThreshold              : vulnerabilityThresholdMedium,
-                                preset                       : preset,
-                                projectName                  : checkmarxProject,
-                                vulnerabilityThresholdEnabled: true,
-                                vulnerabilityThresholdResult : 'FAILURE',
-                                waitForResultsEnabled        : true]
+        Map checkMarxOptions = [
+            $class                       : 'CxScanBuilder',
+            // if this is set to true, the scan is not repeated for the same input even if the scan settings (e.g. thresholds) change
+            avoidDuplicateProjectScans   : false,
+            filterPattern                : filterPattern,
+            fullScanCycle                : 10,
+            fullScansScheduled           : fullScansScheduled,
+            generatePdfReport            : generatePdfReport,
+            groupId                      : checkmarxGroupId,
+            highThreshold                : vulnerabilityThresholdHigh,
+            incremental                  : incremental,
+            lowThreshold                 : vulnerabilityThresholdLow,
+            mediumThreshold              : vulnerabilityThresholdMedium,
+            preset                       : preset,
+            projectName                  : checkmarxProject,
+            vulnerabilityThresholdEnabled: true,
+            vulnerabilityThresholdResult : 'FAILURE',
+            waitForResultsEnabled        : true
+        ]
 
-        dir('application') {
-            // Checkmarx scan
-            if (checkmarxCredentialsId) withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: checkmarxCredentialsId, passwordVariable: 'password', usernameVariable: 'user']]) {
+        // Checkmarx scan
+        if (checkmarxCredentialsId) {
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: checkmarxCredentialsId, passwordVariable: 'password', usernameVariable: 'user']]) {
                 if (checkmarxServerUrl?.trim()) {
                     checkMarxOptions.serverUrl = checkmarxServerUrl
                 } else {
@@ -54,8 +57,28 @@ def call(Map parameters = [:]) {
                 checkMarxOptions.username = user
                 checkMarxOptions.password = encryptPassword(password)
                 checkMarxOptions.useOwnServerCredentials = true
-                step(checkMarxOptions)
-            } else step(checkMarxOptions)
+            }
+        }
+
+        step(checkMarxOptions)
+
+        /*
+        The checkmarx plugin sets the build result to UNSTABLE if the scan fails technically (e.g. connection error).
+        In such a case, we actively fail the build.
+        */
+        if (currentBuild.result == 'UNSTABLE') {
+            // Execute on master - only here the log is accessible
+            node('master') {
+                String successString = "---Checkmarx Scan Results(CxSAST)---"
+                String logFilePath = currentBuild.rawBuild.logFile.absolutePath
+                boolean checkmarxExecuted =
+                    (0 == sh(script: "grep --max-count 1 --fixed-strings -- '${successString}' ${logFilePath}", returnStatus: true))
+
+                if (!checkmarxExecuted) {
+                    currentBuild.result = 'FAILURE'
+                    error "Aborting the build because Checkmarx scan did not execute successfully."
+                }
+            }
         }
     }
 }

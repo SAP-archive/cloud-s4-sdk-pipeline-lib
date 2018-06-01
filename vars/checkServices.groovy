@@ -4,7 +4,7 @@ import com.sap.piper.ConfigurationMerger
 import static com.xlson.groovycsv.CsvParser.parseCsv
 
 def call(Map parameters = [:]) {
-    handleStepErrors (stepName: 'checkServices', stepParameters: parameters) {
+    handleStepErrors(stepName: 'checkServices', stepParameters: parameters) {
         Set parameterKeys = ['nonErpDestinations']
 
         final Map configuration = parameters.subMap(parameterKeys)
@@ -59,7 +59,6 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
         'FC_GLOBAL_PARAMS_EXPORT_RFC'
     ]
 
-
     //println "Allowed BAPI / RFC Services: " + allowedServiceNames
 
     String reportFileAsString = readFile("${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_rfc_audit.log")
@@ -83,7 +82,7 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
     final Set<String> unallowedUsedServices = usedServiceNames.collect()
     unallowedUsedServices.removeAll(allowedServiceNames)
 
-    if(!unallowedUsedServices.isEmpty()) {
+    if (!unallowedUsedServices.isEmpty()) {
         currentBuild.result = 'FAILURE'
         error("Your project uses non-official RFC services: ${unallowedUsedServices}")
     }
@@ -119,7 +118,7 @@ private void checkODataServices(Set<String> nonErpDestinations) {
     final Set<String> unallowedUsedServices = usedServiceNames.collect()
     unallowedUsedServices.removeAll(allowedServiceNames)
 
-    if(!unallowedUsedServices.isEmpty()) {
+    if (!unallowedUsedServices.isEmpty()) {
         currentBuild.result = 'FAILURE'
         error("Your project uses non-official OData services: ${unallowedUsedServices}")
     }

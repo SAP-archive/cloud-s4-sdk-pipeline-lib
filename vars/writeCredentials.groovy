@@ -5,7 +5,7 @@ def call(List credentialItems) {
     handleStepErrors(stepName: 'writeCredentials', stepParameters: credentialItems) {
         final String CREDENTIALS_FILE_NAME = 'credentials.json'
 
-        if(credentialItems == null || credentialItems.isEmpty()) {
+        if (credentialItems == null || credentialItems.isEmpty()) {
             echo "Not writing any credentials."
             return
         }

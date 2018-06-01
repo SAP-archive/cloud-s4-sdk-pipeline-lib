@@ -18,23 +18,21 @@ def call(Map parameters = [:]) {
         Result currentBuildResult = Result.fromString(currentBuild.currentResult)
         Result previousBuildResult = latestBuildResult(currentBuild)
 
-        echo "${currentBuildResult} ${previousBuildResult}"
-
-        if( isBackToSuccess(currentBuildResult, previousBuildResult) || isUnsuccessful(currentBuildResult) ) {
+        if (isBackToSuccess(currentBuildResult, previousBuildResult) || isUnsuccessful(currentBuildResult)) {
             sendEmail(currentBuildResult, previousBuildResult, configuration.recipients)
         }
     }
 }
 
-def sendEmail(Result buildStatus, Result previousStatus, List recipients){
+def sendEmail(Result buildStatus, Result previousStatus, List recipients) {
     String subject = "Result of Job ${env.JOB_NAME} is ${buildStatus}"
     String body = "Build result of ${env.JOB_NAME} is ${buildStatus} (was ${previousStatus}). For more information, see: ${env.BUILD_URL}"
     String recipientsAsString = recipients.join(", ")
 
-    emailext (recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-            to: recipientsAsString,
-            subject: subject,
-            body: body
+    emailext(recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+        to: recipientsAsString,
+        subject: subject,
+        body: body
     )
 }
 
@@ -44,15 +42,14 @@ def sendEmail(Result buildStatus, Result previousStatus, List recipients){
 @NonCPS
 Result latestBuildResult(def currentBuildRef) {
     def buildPointer = currentBuildRef.previousBuild
-    while(buildPointer != null && isRunningOrAborted(stringAsResult(buildPointer.result))) {
+    while (buildPointer != null && isRunningOrAborted(stringAsResult(buildPointer.result))) {
         buildPointer = buildPointer.previousBuild
     }
 
-    if(buildPointer == null) {
+    if (buildPointer == null) {
         // No earlier build result
         return null;
-    }
-    else {
+    } else {
         return Result.fromString(buildPointer.result)
     }
 }
