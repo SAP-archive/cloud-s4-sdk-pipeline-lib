@@ -35,7 +35,15 @@ def call(Map parameters = [:]) {
                     error("retry: ${configuration.retry} must be an integer")
                 }
                 def forkCount = configuration.forkCount
-                mavenExecute script: script, flags: "--batch-mode", pomPath: "integration-tests/pom.xml", m2Path: s4SdkGlobals.m2Directory, goals: "org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent  test", dockerImage: configuration.dockerImage, defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
+                mavenExecute(
+                    script: script,
+                    flags: "--batch-mode",
+                    pomPath: "integration-tests/pom.xml",
+                    m2Path: s4SdkGlobals.m2Directory,
+                    goals: "org.jacoco:jacoco-maven-plugin:prepare-agent test",
+                    dockerImage: configuration.dockerImage,
+                    defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
+                )
 
             } catch (Exception e) {
                 executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Integration Tests', errorMessage: "Please examine Backend Integration Tests report.") {
