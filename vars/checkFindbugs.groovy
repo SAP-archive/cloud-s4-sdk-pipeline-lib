@@ -53,7 +53,7 @@ def executeMavenSpotBugsForConfiguredModules(script, filterOptions, Map configur
 def executeMavenSpotBugs(script, filterOptions, Map configuration, String pomPath) {
     mavenExecute(
         script: script,
-        flags: '--update-snapshots --batch-mode',
+        flags: '--batch-mode',
         pomPath: pomPath,
         m2Path: s4SdkGlobals.m2Directory,
         goals: 'com.github.spotbugs:spotbugs-maven-plugin:3.1.3.1:spotbugs',
