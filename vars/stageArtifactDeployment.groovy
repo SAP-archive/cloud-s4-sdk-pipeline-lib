@@ -49,7 +49,8 @@ def call(Map parameters = [:]) {
             )
 
         } else {
-            println("Can't deploy to nexus because the configuration is missing.")
+            error("Can't deploy to nexus because the configuration is missing. " +
+                "Please ensure the `artifactDeployment` section has a `nexus` sub-section.")
         }
     }
 }
