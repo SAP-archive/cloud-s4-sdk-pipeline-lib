@@ -9,10 +9,10 @@ def call(Map parameters = [:]) {
 
         lock(script.commonPipelineEnvironment.configuration.productionDeploymentLock) {
             if (fileExists('package.json')) {
-                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName, forceDowntimeDeployment: stageConfiguration.forceDowntimeDeployment
+                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
                 executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST, stage: stageName
             } else {
-                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName, forceDowntimeDeployment: stageConfiguration.forceDowntimeDeployment
+                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
                 echo "Smoke tests skipped, because package.json does not exist!"
             }
         }

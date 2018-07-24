@@ -63,6 +63,3 @@ stages:
   artifactDeployment:
     nexus:
       version: nexus3
-
-  productionDeployment:
-    forceDowntimeDeployment: false

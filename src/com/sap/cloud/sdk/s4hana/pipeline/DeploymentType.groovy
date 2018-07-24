@@ -3,8 +3,8 @@ package com.sap.cloud.sdk.s4hana.pipeline
 enum DeploymentType {
     ROLLING_UPDATE, BLUE_GREEN, STANDARD
 
-    static DeploymentType selectFor(CloudPlatform cloudPlatform, boolean isProduction, boolean forceDowntimeDeployment = false) {
-        if ((!isProduction) || forceDowntimeDeployment) {
+    static DeploymentType selectFor(CloudPlatform cloudPlatform, boolean isProduction) {
+        if (!isProduction) {
             return STANDARD
         } else {
             switch (cloudPlatform) {
