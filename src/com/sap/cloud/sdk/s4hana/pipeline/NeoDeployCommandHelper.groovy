@@ -6,7 +6,9 @@ class NeoDeployCommandHelper implements Serializable {
     private List mandatoryParameters = [
         'host',
         'account',
-        'application'
+        'application',
+        'runtime',
+        'runtimeVersion'
     ]
 
 

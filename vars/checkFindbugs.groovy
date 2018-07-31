@@ -23,40 +23,40 @@ def call(Map parameters = [:]) {
 
         def excludeFilterFile = configuration.excludeFilterFile
         if (excludeFilterFile?.trim() && fileExists(excludeFilterFile)) {
-            filterOptions += "-Dfindbugs.excludeFilterFile=${excludeFilterFile} "
+            filterOptions += "-Dspotbugs.excludeFilterFile=${excludeFilterFile} "
         }
 
         def includeFilterFile = configuration.includeFilterFile
         def localIncludeFilerPath = "../s4hana_pipeline/${includeFilterFile}"
         writeFile file: localIncludeFilerPath, text: libraryResource(includeFilterFile)
-        filterOptions += "-Dfindbugs.includeFilterFile=${localIncludeFilerPath}"
+        filterOptions += "-Dspotbugs.includeFilterFile=${localIncludeFilerPath}"
 
-        executeMavenFindbugsForConfiguredModules(script, filterOptions, configuration)
+        executeMavenSpotBugsForConfiguredModules(script, filterOptions, configuration)
 
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Please examine the Findbugs reports.") {
-            findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/findbugsXml.xml'
+        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Please examine the FindBugs/SpotBugs reports.") {
+            findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/spotbugsXml.xml'
         }
     }
 }
 
-def executeMavenFindbugsForConfiguredModules(script, filterOptions, Map configuration) {
+def executeMavenSpotBugsForConfiguredModules(script, filterOptions, Map configuration) {
     if (configuration.scanModules) {
         for (int i = 0; i < configuration.scanModules.size(); i++) {
             def scanModule = configuration.scanModules[i]
-            executeMavenFindbugs(script, filterOptions, configuration, "$scanModule/pom.xml")
+            executeMavenSpotBugs(script, filterOptions, configuration, "$scanModule/pom.xml")
         }
     } else {
-        executeMavenFindbugs(script, filterOptions, configuration, "pom.xml")
+        executeMavenSpotBugs(script, filterOptions, configuration, "pom.xml")
     }
 }
 
-def executeMavenFindbugs(script, filterOptions, Map configuration, String pomPath) {
+def executeMavenSpotBugs(script, filterOptions, Map configuration, String pomPath) {
     mavenExecute(
         script: script,
-        flags: '--update-snapshots --batch-mode',
+        flags: '--batch-mode',
         pomPath: pomPath,
         m2Path: s4SdkGlobals.m2Directory,
-        goals: 'findbugs:findbugs',
+        goals: 'com.github.spotbugs:spotbugs-maven-plugin:3.1.3.1:spotbugs',
         defines: filterOptions,
         dockerImage: configuration.dockerImage
     )

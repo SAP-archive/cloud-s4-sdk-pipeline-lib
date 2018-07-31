@@ -12,7 +12,7 @@ def call(Map parameters = [:]) {
                 flags: '--batch-mode',
                 pomPath: 'unit-tests/pom.xml',
                 m2Path: s4SdkGlobals.m2Directory,
-                goals: 'org.jacoco:jacoco-maven-plugin:0.7.9:prepare-agent test',
+                goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent test',
                 dockerImage: configuration.dockerImage,
                 defines: '-Dsurefire.forkCount=1C'
             )

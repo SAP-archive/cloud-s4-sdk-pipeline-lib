@@ -13,7 +13,7 @@ def call(Map parameters = [:]) {
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
                     node(env.NODE_NAME) {
                         unstashFiles script: script, stage: stageName
-                        deployToCfWithCli script: parameters.script, appName: target.appName, org: target.org, space: target.space, apiEndpoint: target.apiEndpoint, manifest: target.manifest, credentialsId: target.credentialsId, deploymentType: parameters.isProduction ? DeploymentType.getDepolymentTypeForProduction(CloudPlatform.CLOUD_FOUNDRY) : DeploymentType.STANDARD
+                        deployToCfWithCli script: parameters.script, appName: target.appName, org: target.org, space: target.space, apiEndpoint: target.apiEndpoint, manifest: target.manifest, credentialsId: target.credentialsId, deploymentType: DeploymentType.selectFor(CloudPlatform.CLOUD_FOUNDRY, parameters.isProduction.asBoolean())
                         stashFiles script: script, stage: stageName
                     }
                 }
@@ -29,7 +29,7 @@ def call(Map parameters = [:]) {
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
                     node(env.NODE_NAME) {
                         unstashFiles script: script, stage: stageName
-                        deployToNeoWithCli script: parameters.script, target: target, deploymentType: parameters.isProduction ? DeploymentType.getDepolymentTypeForProduction(CloudPlatform.NEO) : DeploymentType.STANDARD, source: source
+                        deployToNeoWithCli script: parameters.script, target: target, deploymentType: DeploymentType.selectFor(CloudPlatform.NEO, parameters.isProduction.asBoolean()), source: source
                         stashFiles script: script, stage: stageName
                     }
                 }

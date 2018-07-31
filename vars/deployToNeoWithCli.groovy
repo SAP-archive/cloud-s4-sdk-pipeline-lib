@@ -37,6 +37,7 @@ def call(Map parameters = [:]) {
         if (deploymentDescriptor.isPropertyDefined("credentialsId")) {
             NeoDeployCommandHelper commandHelper
             withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.getConfigProperty('credentialsId'), passwordVariable: 'NEO_PASSWORD', usernameVariable: 'NEO_USERNAME']]) {
+                assertPasswordRules(NEO_PASSWORD)
                 commandHelper = new NeoDeployCommandHelper(deploymentDescriptors, NEO_USERNAME, BashUtils.escape(NEO_PASSWORD), source)
                 deploy(dockerImage, configuration.deploymentType, commandHelper)
             }
@@ -44,6 +45,16 @@ def call(Map parameters = [:]) {
             throw new Exception("ERROR - SPECIFY credentialsId")
         }
 
+    }
+}
+
+private assertPasswordRules(String password){
+    if(password.startsWith("@")){
+        error("Your password for the deployment to SAP Cloud Platform contains characters which are not " +
+            "supported by the neo tools. " +
+            "For example it is not allowed that the password starts with @. " +
+            "Please consult the documentation for the neo command line tool for more information: " +
+            "https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/8900b22376f84c609ee9baf5bf67130a.html")
     }
 }
 

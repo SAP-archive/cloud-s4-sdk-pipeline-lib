@@ -12,6 +12,9 @@ def call(Map parameters) {
     */
     runAsStage(stageName: stageName, script: script, node: 'master') {
         checkout scm
+
+        loadAdditionalLibraries script: script
+
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
 
