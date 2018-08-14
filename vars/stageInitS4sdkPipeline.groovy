@@ -57,6 +57,16 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.productionDeploymentLock = "${prefix}/productionDeployment"
         script.commonPipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles"
 
+        String extensionRepository = generalConfiguration.extensionsRepository
+
+        if (extensionRepository != null) {
+            try {
+                sh "git clone ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
+            } catch (Exception e) {
+                error("Error while executing git clone when accessing repository ${extensionRepository}.")
+            }
+        }
+
         initStageSkipConfiguration script: script
     }
 }

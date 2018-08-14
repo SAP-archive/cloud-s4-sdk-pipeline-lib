@@ -50,12 +50,33 @@ def call(Map parameters = [:], body) {
 }
 
 private executeStage(Closure originalStage, String stageName, Map stageConfiguration, Map generalConfiguration) {
-    def stageInterceptor = "pipeline/extensions/${stageName}.groovy"
-    if (fileExists(stageInterceptor)) {
-        Script interceptor = load(stageInterceptor)
-        echo "Running interceptor for ${stageName}."
-        interceptor(originalStage, stageName, stageConfiguration, generalConfiguration)
+    /* Defining the sources where to look for a project extension and a repository extension.
+     * Files need to be named like the executed stage to be recognized.
+     */
+    def projectInterceptorFile = "${s4SdkGlobals.projectExtensionsDirectory}/${stageName}.groovy"
+    def repositoryInterceptorFile = "${s4SdkGlobals.repositoryExtensionsDirectory}/${stageName}.groovy"
+
+    // Pre-defining the real originalStage in body variable, might be overwritten later if extensions exist
+    def body = originalStage
+
+    // First, check if a repository extension exists
+    if (fileExists(repositoryInterceptorFile)) {
+        Script repositoryInterceptorScript = load(repositoryInterceptorFile)
+        echo "Found repository interceptor for ${stageName}."
+        // If we call the repository interceptor, we will pass on originalStage as parameter
+        body = {
+            repositoryInterceptorScript(originalStage, stageName, stageConfiguration, generalConfiguration)
+        }
+    }
+
+    // Second, check if a project extension exists
+    if (fileExists(projectInterceptorFile)) {
+        Script projectInterceptorScript = load(projectInterceptorFile)
+        echo "Found project interceptor for ${stageName}."
+        // If we call the project interceptor, we will pass on body as parameter which contains either originalStage or the repository interceptor
+        projectInterceptorScript(body, stageName, stageConfiguration, generalConfiguration)
     } else {
-        originalStage()
+        // This calls either originalStage if no interceptors where found, or repository interceptor if no project interceptor was found
+        body()
     }
 }
