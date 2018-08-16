@@ -1,4 +1,4 @@
 def call(Map parameters = [:]) {
     // If you change the version please also update build.gradle and the corresponding jar file
-    library 'piper-library-os@6dc13801b0223b9d4ea93eb36098773edf504883'
+    library 'piper-library-os@2716054392ead88ecba5c984967d1ab64279db02'
 }

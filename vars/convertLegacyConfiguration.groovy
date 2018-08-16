@@ -2,14 +2,29 @@ import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters) {
     def script = parameters.script
+    
+    checkNotUsingWhiteSourceOrgToken(script)
+    
+    boolean configurationConverted = false
+    configurationConverted = renameMavenStep(script) || configurationConverted
+    configurationConverted = removeMavenGlobalSettings(script) || configurationConverted
+    configurationConverted = convertCloudfoundryDeployment(script) || configurationConverted
 
-    renameMavenStep(script)
-    removeMavenGlobalSettings(script)
-    whiteSourceLegacyCheck(script)
+    if(configurationConverted) {
+        offerMigratedConfigurationAsArtifact(script)
+    }
+}
+
+def offerMigratedConfigurationAsArtifact(script){
+    writeYaml file: 'pipeline_config_new.yml', data: script.commonPipelineEnvironment.configuration
+    archiveArtifacts artifacts:'pipeline_config_new.yml'
+    echo "[WARNING]: You are using a legacy configuration parameter which might not be supported in the future. "
+        "Please change the configuration in your pipeline_config.yml using the content of the file pipeline_config_new.yml " +
+        "in the artifacts of this build as inspiration."
 }
 
 def renameMavenStep(script) {
-    def stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
+    Map stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
 
     if (stepsConfiguration?.executeMaven) {
 
@@ -22,7 +37,11 @@ def renameMavenStep(script) {
 
         echo "[WARNING]: The configuration key executeMaven in the steps configuration should not be used anymore. " +
             "Please use mavenExecute instead."
+
+        stepsConfiguration.remove('executeMaven')
+        return true
     }
+    return false
 }
 
 def removeMavenGlobalSettings(script) {
@@ -50,10 +69,12 @@ def removeMavenGlobalSettings(script) {
                 "as maven repository mirror. Please reduce your settings to one file and specify " +
                 "it under 'executeMaven.globalSettingsFile'.")
         }
+        return true
     }
+    return false
 }
 
-def whiteSourceLegacyCheck(script) {
+def checkNotUsingWhiteSourceOrgToken(script) {
     Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
     if (stageConfig) {
         if (stageConfig?.orgToken) {
@@ -64,4 +85,28 @@ def whiteSourceLegacyCheck(script) {
             error("Your pipeline is using 'whiteSourceScan' and has a mandatory parameter 'credentialsId' not configured.")
         }
     }
+}
+
+def convertCloudfoundryDeployment(script){
+    Map stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
+
+    if(stepsConfiguration?.deployToCfWithCli) {
+        Map oldStepConfiguration = stepsConfiguration?.deployToCfWithCli
+        stepsConfiguration.cloudFoundryDeploy = [
+            dockerImage        : oldStepConfiguration.dockerImage,
+            smokeTestStatusCode: oldStepConfiguration.smokeTestStatusCode,
+            cloudFoundry       : [
+                org          : oldStepConfiguration.org,
+                space        : oldStepConfiguration.space,
+                appName      : oldStepConfiguration.appName,
+                manifest     : oldStepConfiguration.manifest,
+                credentialsId: oldStepConfiguration.credentialsId,
+                apiEndpoint  : oldStepConfiguration.apiEndpoint
+            ]
+        ]
+
+        stepsConfiguration.remove('deployToCfWithCli')
+        return true
+    }
+    return false
 }

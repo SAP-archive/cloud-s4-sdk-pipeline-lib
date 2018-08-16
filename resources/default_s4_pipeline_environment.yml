@@ -3,6 +3,8 @@ general:
   productiveBranch: master
   defaultNode: ''
   automaticVersioning: true
+  collectTelemetryData: false
+
 
 #Steps Specific Configuration
 steps:
@@ -41,9 +43,8 @@ steps:
     failThreshold: 100
     unstableThreshold: 90
 
-  deployToCfWithCli:
-    dockerImage: s4sdk/docker-cf-cli
-    smokeTestStatusCode: '200'
+  cloudFoundryDeploy:
+      stashContent: []
 
 #Stage Specific Configurations
 stages:
