@@ -44,7 +44,7 @@ steps:
     unstableThreshold: 90
 
   cloudFoundryDeploy:
-      stashContent: []
+    stashContent: []
 
 #Stage Specific Configurations
 stages:
