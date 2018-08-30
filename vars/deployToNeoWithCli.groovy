@@ -1,7 +1,6 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
 import com.sap.cloud.sdk.s4hana.pipeline.NeoDeployCommandHelper
-
 import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
@@ -39,7 +38,7 @@ def call(Map parameters = [:]) {
             withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.getConfigProperty('credentialsId'), passwordVariable: 'NEO_PASSWORD', usernameVariable: 'NEO_USERNAME']]) {
                 assertPasswordRules(NEO_PASSWORD)
                 commandHelper = new NeoDeployCommandHelper(deploymentDescriptors, NEO_USERNAME, BashUtils.escape(NEO_PASSWORD), source)
-                deploy(dockerImage, configuration.deploymentType, commandHelper)
+                deploy(script, dockerImage, configuration.deploymentType, commandHelper)
             }
         } else {
             throw new Exception("ERROR - SPECIFY credentialsId")
@@ -58,9 +57,9 @@ private assertPasswordRules(String password){
     }
 }
 
-private deploy(dockerImage, DeploymentType deploymentType, NeoDeployCommandHelper commandHelper) {
+private deploy(script, dockerImage, DeploymentType deploymentType, NeoDeployCommandHelper commandHelper) {
     commandHelper.assertMandatoryParameters()
-    dockerExecute(dockerImage: dockerImage) {
+    dockerExecute(script: script, dockerImage: dockerImage) {
         lock("deployToNeoWithCli:${commandHelper.resourceLock()}") {
 
             if (deploymentType == DeploymentType.ROLLING_UPDATE) {

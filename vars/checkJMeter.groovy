@@ -26,7 +26,10 @@ def call(Map parameters = [:]) {
         def defaultOptions = "-n -t ${configuration.testPlan} -l JMeter-report.jtl -e -o ${configuration.reportDirectory}"
         def command = "jmeter ${configuration.options?.trim() ?: ''} ${defaultOptions}"
 
-        dockerExecute(dockerImage: configuration.dockerImage) { sh command }
+        dockerExecute(script: script, dockerImage: configuration.dockerImage) {
+            sh "mkdir -p ${configuration.reportDirectory}"
+            sh command
+        }
 
         executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Check JMeter', errorMessage: "Please examine Performance Test results.") {
             performanceReport(parsers: [[$class: 'JMeterParser', glob: "JMeter-report.jtl"]],

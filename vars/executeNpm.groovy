@@ -18,12 +18,11 @@ def call(Map parameters = [:], body) {
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
-        dockerExecute(dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) {
+        dockerExecute(script: script, dockerImage: configuration.dockerImage, dockerOptions: configuration.dockerOptions) {
             try {
                 if (configuration.defaultNpmRegistry) {
                     sh "npm config set registry ${configuration.defaultNpmRegistry}"
                 }
-
                 body()
             }
             catch (Exception e) {

@@ -44,7 +44,11 @@ steps:
     unstableThreshold: 90
 
   cloudFoundryDeploy:
+    dockerImage: s4sdk/docker-cf-cli
     stashContent: []
+
+  checkNodeSecurityPlatform:
+    dockerImage: allthings/nsp
 
 #Stage Specific Configurations
 stages:

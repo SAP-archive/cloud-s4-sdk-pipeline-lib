@@ -41,7 +41,7 @@ def call(Map parameters = [:]) {
             command += " ${goals}"
         }
 
-        dockerExecute(dockerImage: configuration.dockerImage) { sh command }
+        dockerExecute(script: script, dockerImage: configuration.dockerImage) { sh command }
     }
 }
 

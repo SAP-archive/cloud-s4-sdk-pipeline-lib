@@ -1,12 +1,14 @@
 import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
+import com.sap.piper.k8s.ContainerMap
+
+import java.util.UUID
 
 def call(Map parameters = [:], body) {
     ConfigurationHelper configurationHelper = new ConfigurationHelper(parameters)
     def stageName = configurationHelper.getMandatoryProperty('stageName')
     def script = configurationHelper.getMandatoryProperty('script')
-
     Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
     Map projectGeneralConfiguration = ConfigurationLoader.generalConfiguration(script)
 
@@ -27,23 +29,33 @@ def call(Map parameters = [:], body) {
         stageConfiguration.keySet(),
         stageDefaultConfiguration
     )
+    mergedStageConfiguration.uniqueId = UUID.randomUUID().toString()
+    String nodeLabel = generalConfiguration.defaultNode
 
-    def nodeLabel = generalConfiguration.defaultNode
-
+    def containerMap = ContainerMap.instance.getMap().get(stageName) ?: [:]
     if (mergedStageConfiguration.node) {
         nodeLabel = mergedStageConfiguration.node
     }
-
     handleStepErrors(stepName: stageName, stepParameters: [:]) {
-        node(nodeLabel) {
-            try {
-                unstashFiles script: script, stage: stageName
-                executeStage(body, stageName, mergedStageConfiguration, generalConfiguration)
-                stashFiles script: script, stage: stageName
-                echo "Current build result in stage $stageName is ${script.currentBuild.result}."
+        if (Boolean.valueOf(env.ON_K8S) && containerMap.size() > 0) {
+            withEnv(["POD_NAME=${stageName}"]) {
+                dockerExecuteOnKubernetes(script: script, containerMap: containerMap) {
+                        unstashFiles script: script, stage: stageName
+                        executeStage(body, stageName, mergedStageConfiguration, generalConfiguration)
+                        stashFiles script: script, stage: stageName
+                        echo "Current build result in stage $stageName is ${script.currentBuild.result}."
+                }
             }
-            finally {
-                deleteDir()
+        } else {
+            node(nodeLabel) {
+                try {
+                    unstashFiles script: script, stage: stageName
+                    executeStage(body, stageName, mergedStageConfiguration, generalConfiguration)
+                    stashFiles script: script, stage: stageName
+                    echo "Current build result in stage $stageName is ${script.currentBuild.result}."
+                } finally {
+                    deleteDir()
+                }
             }
         }
     }
@@ -80,3 +92,4 @@ private executeStage(Closure originalStage, String stageName, Map stageConfigura
         body()
     }
 }
+

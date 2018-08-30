@@ -1,6 +1,7 @@
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 import com.sap.cloud.sdk.s4hana.pipeline.E2ETestCommandHelper
 import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
+import com.sap.piper.k8s.ContainerMap
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeEndToEndTest', stepParameters: parameters) {
@@ -31,30 +32,37 @@ def call(Map parameters = [:]) {
                 } else {
                     error("Each appUrl in the configuration must be either a String or a Map containing a property url and a property credentialId.")
                 }
-
-                parallelE2ETests["E2E Tests ${index > 1 ? index : ''}"] = {
-                    node(env.NODE_NAME) {
-                        unstashFiles script: script, stage: parameters.stage
-                        try {
-                            withCredentials(credentials) {
-                                executeNpm(script: script, dockerOptions: dockerOptions) {
-                                    sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
-                                    withEnv(['DISPLAY=:99']) {
-                                        sh shScript
-                                    }
+                Closure e2eTest = {
+                    unstashFiles script: script, stage: parameters.stage
+                    try {
+                        withCredentials(credentials) {
+                            executeNpm(script: script, dockerOptions: dockerOptions) {
+                                sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
+                                withEnv(['DISPLAY=:99']) {
+                                    sh shScript
                                 }
                             }
+                        }
 
-                        } catch (Exception e) {
-                            executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'End to End Tests', errorMessage: "Please examine End to End Test reports.") {
-                                script.currentBuild.result = 'FAILURE'
-                            }
-                            throw e
-
-                        } finally {
-                            archiveArtifacts artifacts: "${s4SdkGlobals.endToEndReports}/**", allowEmptyArchive: true
-                            step($class: 'CucumberTestResultArchiver', testResults: "${s4SdkGlobals.endToEndReports}/*.json")
-                            stashFiles script: script, stage: parameters.stage
+                    } catch (Exception e) {
+                        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'End to End Tests', errorMessage: "Please examine End to End Test reports.") {
+                            script.currentBuild.result = 'FAILURE'
+                        }
+                        throw e
+                    } finally {
+                        archiveArtifacts artifacts: "${s4SdkGlobals.endToEndReports}/**", allowEmptyArchive: true
+                        step($class: 'CucumberTestResultArchiver', testResults: "${s4SdkGlobals.endToEndReports}/*.json")
+                        stashFiles script: script, stage: parameters.stage
+                    }
+                }
+                parallelE2ETests["E2E Tests ${index > 1 ? index : ''}"] = {
+                    if (env.POD_NAME) {
+                        dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(parameters.stage) ?: [:]) {
+                            e2eTest.run()
+                        }
+                    } else {
+                        node(env.NODE_NAME) {
+                            e2eTest.run()
                         }
                     }
                 }

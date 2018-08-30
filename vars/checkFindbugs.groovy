@@ -27,7 +27,7 @@ def call(Map parameters = [:]) {
         }
 
         def includeFilterFile = configuration.includeFilterFile
-        def localIncludeFilerPath = "../s4hana_pipeline/${includeFilterFile}"
+        def localIncludeFilerPath = "s4hana_pipeline/${includeFilterFile}"
         writeFile file: localIncludeFilerPath, text: libraryResource(includeFilterFile)
         filterOptions += "-Dspotbugs.includeFilterFile=${localIncludeFilerPath}"
 

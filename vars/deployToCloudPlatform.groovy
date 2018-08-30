@@ -1,5 +1,6 @@
 import com.sap.cloud.sdk.s4hana.pipeline.CloudPlatform
 import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
+import com.sap.piper.k8s.ContainerMap
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'deployToCloudPlatform', stepParameters: parameters) {
@@ -10,17 +11,25 @@ def call(Map parameters = [:]) {
         if (parameters.cfTargets) {
             for (int i = 0; i < parameters.cfTargets.size(); i++) {
                 def target = parameters.cfTargets[i]
+                Closure deployment = {
+                    unstashFiles script: script, stage: stageName
+                    String deploymentType = DeploymentType.selectFor(
+                        CloudPlatform.CLOUD_FOUNDRY,
+                        parameters.isProduction.asBoolean()
+                    ).toString()
+
+                    cloudFoundryDeploy(script: parameters.script, deployType: deploymentType, cloudFoundry: target)
+                    stashFiles script: script, stage: stageName
+                }
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
-                    node(env.NODE_NAME) {
-                        unstashFiles script: script, stage: stageName
-
-                        String deploymentType = DeploymentType.selectFor(
-                            CloudPlatform.CLOUD_FOUNDRY,
-                            parameters.isProduction.asBoolean()
-                        ).toString()
-
-                        cloudFoundryDeploy(script: parameters.script, deployType: deploymentType, cloudFoundry: target)
-                        stashFiles script: script, stage: stageName
+                    if (env.POD_NAME) {
+                        dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(stageName) ?: [:]) {
+                            deployment.run()
+                        }
+                    } else {
+                        node(env.NODE_NAME) {
+                            deployment.run()
+                        }
                     }
                 }
                 index++
@@ -32,16 +41,25 @@ def call(Map parameters = [:]) {
             def source = "application/target/${pom.getArtifactId()}.${pom.getPackaging()}"
             for (int i = 0; i < parameters.neoTargets.size(); i++) {
                 def target = parameters.neoTargets[i]
+                Closure deployment = {
+                    unstashFiles script: script, stage: stageName
+                    deployToNeoWithCli(
+                        script: parameters.script,
+                        target: target,
+                        deploymentType: DeploymentType.selectFor(CloudPlatform.NEO, parameters.isProduction.asBoolean()),
+                        source: source
+                    )
+                    stashFiles script: script, stage: stageName
+                }
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
-                    node(env.NODE_NAME) {
-                        unstashFiles script: script, stage: stageName
-                        deployToNeoWithCli(
-                            script: parameters.script,
-                            target: target,
-                            deploymentType: DeploymentType.selectFor(CloudPlatform.NEO, parameters.isProduction.asBoolean()),
-                            source: source
-                        )
-                        stashFiles script: script, stage: stageName
+                    if (env.POD_NAME) {
+                        dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(stageName) ?: [:]) {
+                            deployment.run()
+                        }
+                    } else {
+                        node(env.NODE_NAME) {
+                            deployment.run()
+                        }
                     }
                 }
                 index++
