@@ -18,10 +18,6 @@ def call(Map parameters = [:]) {
         Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
         try {
-            if (configuration.crendentials != null) {
-                configuration.credentials = configuration.crendentials
-            }
-
             try {
                 if (configuration.credentials != null) {
                     dir("integration-tests/src/test/resources") { writeCredentials(configuration.credentials) }
