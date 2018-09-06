@@ -25,11 +25,7 @@ def call(Map parameters = [:]) {
 
             try {
                 executeNpm(script: script, dockerOptions: DownloadCacheUtils.downloadCacheNetworkParam()) {
-                    sh """
-                npm install whitesource --save-dev --ignore-scripts
-                alias whitesource='node node_modules/whitesource/bin/whitesource.js'
-                whitesource run
-                """.trim()
+                    sh 'npx whitesource run'
                 }
             } finally {
                 archiveArtifacts artifacts: 'ws-l*', allowEmptyArchive: true
