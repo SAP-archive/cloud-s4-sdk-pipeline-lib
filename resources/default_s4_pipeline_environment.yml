@@ -46,6 +46,10 @@ steps:
   cloudFoundryDeploy:
     dockerImage: s4sdk/docker-cf-cli
     stashContent: []
+    mtaDeployParameters: '-f --no-confirm --version-rule ALL'
+
+  mtaBuild:
+    buildTarget: 'CF'
 
   checkNodeSecurityPlatform:
     dockerImage: allthings/nsp

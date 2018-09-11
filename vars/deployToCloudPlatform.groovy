@@ -8,6 +8,7 @@ def call(Map parameters = [:]) {
         def deployments = [:]
         def stageName = parameters.get('stage')
         def script = parameters.get('script')
+
         if (parameters.cfTargets) {
             for (int i = 0; i < parameters.cfTargets.size(); i++) {
                 def target = parameters.cfTargets[i]
@@ -18,7 +19,17 @@ def call(Map parameters = [:]) {
                         parameters.isProduction.asBoolean()
                     ).toString()
 
-                    cloudFoundryDeploy(script: parameters.script, deployType: deploymentType, cloudFoundry: target)
+                    def deployTool =
+                        (script.commonPipelineEnvironment.configuration.isMta) ? 'mtaDeployPlugin' : 'cf_native'
+
+                    cloudFoundryDeploy(
+                        script: parameters.script,
+                        deployType: deploymentType,
+                        cloudFoundry: target,
+                        mtaPath: script.commonPipelineEnvironment.mtarFilePath,
+                        deployTool: deployTool
+                    )
+
                     stashFiles script: script, stage: stageName
                 }
                 deployments["Deployment ${index > 1 ? index : ''}"] = {

@@ -18,7 +18,6 @@ def call(Map parameters) {
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
 
-
         def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
         def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)
 
@@ -39,14 +38,22 @@ def call(Map parameters) {
             script.commonPipelineEnvironment.configuration.general = generalConfiguration
         }
 
-        if (!generalConfiguration.projectName?.trim() && fileExists('pom.xml')) {
-            pom = readMavenPom file: 'pom.xml'
-            generalConfiguration.projectName = pom.artifactId
+        def isMtaProject = fileExists('mta.yaml')
+        if (isMtaProject) {
+            setupMtaProject(script: script, generalConfiguration: generalConfiguration)
+        } else if (fileExists('pom.xml')) {
+            if (!generalConfiguration.projectName?.trim()) {
+                pom = readMavenPom file: 'pom.xml'
+                generalConfiguration.projectName = pom.artifactId
+            }
+        } else {
+            throw new Exception("No pom.xml or mta.yaml has been found in the root of the project. Currently the pipeline only supports Maven and Mta projects.")
         }
 
         Map configWithDefault = loadEffectiveGeneralConfiguration script: script
+
         if (isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
-            artifactSetVersion script: script
+            artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
         }
         generalConfiguration.gitCommitId = getGitCommitId()
 

@@ -4,6 +4,8 @@ import net.sf.json.JSONObject
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeWhitesourceScanNpm', stepParameters: parameters) {
         final script = parameters.script
+        String basePath = parameters.basePath
+
         withCredentials([string(credentialsId: parameters.credentialsId, variable: 'orgToken')]) {
             Map whiteSourceConfiguration = [
                 apiKey       : orgToken,
@@ -21,11 +23,13 @@ def call(Map parameters = [:]) {
                     "Please delete it and only use the file pipeline_config.yml to configure Whitesource.")
             }
 
-            writeJSON json: JSONObject.fromObject(whiteSourceConfiguration), file: 'whitesource.config.json'
+            writeJSON json: JSONObject.fromObject(whiteSourceConfiguration), file: basePath + '/whitesource.config.json'
 
             try {
                 executeNpm(script: script, dockerOptions: DownloadCacheUtils.downloadCacheNetworkParam()) {
-                    sh 'npx whitesource run'
+                    dir(basePath){
+                        sh 'npx whitesource run'
+                    }
                 }
             } finally {
                 archiveArtifacts artifacts: 'ws-l*', allowEmptyArchive: true
