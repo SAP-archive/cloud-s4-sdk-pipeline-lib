@@ -13,10 +13,19 @@ def call(Map parameters) {
     runAsStage(stageName: stageName, script: script, node: 'master') {
         checkout scm
 
-        loadAdditionalLibraries script: script
-
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
+
+        String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionsRepository
+        if (extensionRepository != null) {
+            try {
+                sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
+            } catch (Exception e) {
+                error("Error while executing git clone when accessing repository ${extensionRepository}.")
+            }
+        }
+
+        loadAdditionalLibraries script: script
 
         def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
         def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)
@@ -68,16 +77,6 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.endToEndTestLock = "${prefix}/endToEndTest"
         script.commonPipelineEnvironment.configuration.productionDeploymentLock = "${prefix}/productionDeployment"
         script.commonPipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles"
-
-        String extensionRepository = generalConfiguration.extensionsRepository
-
-        if (extensionRepository != null) {
-            try {
-                sh "git clone ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
-            } catch (Exception e) {
-                error("Error while executing git clone when accessing repository ${extensionRepository}.")
-            }
-        }
 
         initStageSkipConfiguration script: script
     }
