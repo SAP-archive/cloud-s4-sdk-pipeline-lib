@@ -15,8 +15,6 @@ def call(Map parameters = [:]) {
 }
 
 private void executeUnitTest(def script, String basePath, Map configuration){
-
-    String localPath
     try {
         String image = configuration.dockerImage
 
@@ -39,13 +37,12 @@ private void executeUnitTest(def script, String basePath, Map configuration){
     }
     finally {
         junit allowEmptyResults: true, testResults: "${basePath}/unit-tests/target/surefire-reports/TEST-*.xml"
-
     }
 
     copyExecFile execFiles: [
-        localPath + '/target/jacoco.exec',
-        localPath + '/target/coverage-reports/jacoco.exec',
-        localPath + '/target/coverage-reports/jacoco-ut.exec'
+        "${basePath}/unit-tests/target/jacoco.exec",
+        "${basePath}/unit-tests/target/coverage-reports/jacoco.exec",
+        "${basePath}/unit-tests/target/coverage-reports/jacoco-ut.exec"
     ], targetFolder:basePath, targetFile: 'unit-tests.exec'
 
     if (script.commonPipelineEnvironment.configuration.isMta) {
