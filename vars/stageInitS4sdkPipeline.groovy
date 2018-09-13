@@ -16,7 +16,7 @@ def call(Map parameters) {
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
 
-        String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionsRepository
+        String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionRepository
         if (extensionRepository != null) {
             try {
                 sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
