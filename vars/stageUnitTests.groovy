@@ -36,7 +36,13 @@ private void executeUnitTest(def script, String basePath, Map configuration){
         throw e
     }
     finally {
-        junit allowEmptyResults: true, testResults: "${basePath}/unit-tests/target/surefire-reports/TEST-*.xml"
+        String testResultPattern = "${basePath}/unit-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
+
+        if(testResultPattern.startsWith("./")){
+            testResultPattern = testResultPattern.substring(2)
+        }
+
+        junit allowEmptyResults: true, testResults: testResultPattern
     }
 
     copyExecFile execFiles: [

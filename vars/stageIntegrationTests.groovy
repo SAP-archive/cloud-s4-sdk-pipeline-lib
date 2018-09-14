@@ -61,7 +61,13 @@ private void executeIntegrationTest(def script, String basePath, String stageNam
             }
             throw e
         } finally {
-            junit allowEmptyResults: true, testResults: "$basePath/integration-tests/target/surefire-reports/TEST-*.xml"
+            String testResultPattern = "${basePath}/integration-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
+
+            if(testResultPattern.startsWith("./")){
+                testResultPattern = testResultPattern.substring(2)
+            }
+
+            junit allowEmptyResults: true, testResults: testResultPattern
         }
     } finally {
         dir("$basePath/integration-tests/src/test/resources") {
