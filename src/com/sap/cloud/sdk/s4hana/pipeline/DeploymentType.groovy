@@ -1,7 +1,18 @@
 package com.sap.cloud.sdk.s4hana.pipeline
 
 enum DeploymentType {
-    ROLLING_UPDATE, BLUE_GREEN, STANDARD
+    ROLLING_UPDATE('rolling-update'), BLUE_GREEN('blue-green'), STANDARD('standard')
+
+    private String value
+
+    public DeploymentType(String value){
+        this.value = value
+    }
+
+    @Override
+    public String toString(){
+        return value
+    }
 
     static DeploymentType selectFor(CloudPlatform cloudPlatform, boolean isProduction) {
         if (!isProduction) {

@@ -4,6 +4,7 @@ import com.sap.piper.ConfigurationMerger
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkPmd', stepParameters: parameters) {
         def script = parameters.script
+        String basePath = parameters.basePath
 
         final def stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'checkPmd')
 
@@ -34,7 +35,7 @@ def call(Map parameters = [:]) {
 
         def options = "$excludeOption $ruleSetsOption"
 
-        executeMavenPMDForConfiguredModules(script, options, configuration)
+        executeMavenPMDForConfiguredModules(script, options, configuration, basePath)
 
         executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'PMD', errorMessage: "Please examine the PMD reports.") {
             pmd(failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/pmd.xml')
@@ -42,14 +43,15 @@ def call(Map parameters = [:]) {
     }
 }
 
-def executeMavenPMDForConfiguredModules(script, options, Map configuration) {
+def executeMavenPMDForConfiguredModules(script, options, Map configuration, String basePath = './') {
+    basePath = basePath ?: './'
     if (configuration.scanModules) {
         for (int i = 0; i < configuration.scanModules.size(); i++) {
             def scanModule = configuration.scanModules[i]
-            executeMavenPMD(script, options, configuration, "$scanModule/pom.xml")
+            executeMavenPMD(script, options, configuration, "$basePath/$scanModule/pom.xml")
         }
     } else {
-        executeMavenPMD(script, options, configuration, "pom.xml")
+        executeMavenPMD(script, options, configuration, "$basePath/pom.xml")
     }
 }
 

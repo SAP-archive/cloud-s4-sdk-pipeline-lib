@@ -38,9 +38,14 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.skipping.SOURCE_CLEAR_SCAN = true
     }
 
+    if (ConfigurationLoader.stageConfiguration(script, 'fortifyScan') && isProductiveBranch(script: script)) {
+        script.commonPipelineEnvironment.configuration.skipping.FORTIFY_SCAN = true
+    }
+
     if (script.commonPipelineEnvironment.configuration.skipping.CHECKMARX_SCAN
         || script.commonPipelineEnvironment.configuration.skipping.WHITESOURCE_SCAN
-        || script.commonPipelineEnvironment.configuration.skipping.SOURCE_CLEAR_SCAN) {
+        || script.commonPipelineEnvironment.configuration.skipping.SOURCE_CLEAR_SCAN
+        || script.commonPipelineEnvironment.configuration.skipping.FORTIFY_SCAN) {
         script.commonPipelineEnvironment.configuration.skipping.THIRD_PARTY_CHECKS = true
     }
 

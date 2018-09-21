@@ -1,18 +1,31 @@
-import com.sap.piper.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
+import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
     def stageName = 'frontendUnitTests'
     def script = parameters.script
 
+
     runAsStage(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        def dockerOptions = ['--cap-add=SYS_ADMIN']
-        DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+        runOverModules(script: script, moduleType: 'html5') { basePath ->
+            executeFrontendUnitTest(script, basePath, stageConfiguration)
+        }
+    }
+}
 
-        if (fileExists('package.json')) {
+private void executeFrontendUnitTest(def script, String basePath, Map stageConfiguration){
+
+    def dockerOptions = ['--cap-add=SYS_ADMIN']
+    DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+
+    String packageJsonPath = basePath + '/package.json'
+
+    dir(basePath) {
+        if (fileExists(packageJsonPath)) {
             try {
+
                 executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: dockerOptions) {
                     sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
                     withEnv(['DISPLAY=:99']) {

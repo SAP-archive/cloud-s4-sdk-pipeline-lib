@@ -4,18 +4,30 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkNodeSecurityPlatform', stepParameters: parameters) {
         final script = parameters.script
 
-        try {
-            def dockerOptions = ["--entrypoint=''"]
-            DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+        runOverModules(script: script, moduleType: "html5") { basePath ->
+            executeNodeSecurityPlatformCommand(script, basePath)
+        }
+    }
+}
 
-            executeNpm(script: script, dockerImage: 'allthings/nsp', dockerOptions: dockerOptions) {
-                sh '''
+private void executeNodeSecurityPlatformCommand(def script, String basePath = './') {
+    String command = ""
+    if (basePath != null & !basePath.isEmpty()) {
+        command = "cd $basePath"
+    }
+    command += '''
                 set -o pipefail
                 nsp check 2>&1 | tee nsp.log
                 '''.stripIndent()
-            }
-        } finally {
-            archiveArtifacts artifacts: 'nsp.log', allowEmptyArchive: true
+
+    try {
+        def dockerOptions = ["--entrypoint=''"]
+        DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+
+        executeNpm(script: script, dockerImage: 'allthings/nsp', dockerOptions: dockerOptions) {
+            sh command
         }
+    } finally {
+        archiveArtifacts artifacts: 'nsp.log', allowEmptyArchive: true
     }
 }

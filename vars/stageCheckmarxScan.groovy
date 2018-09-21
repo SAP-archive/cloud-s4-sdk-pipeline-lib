@@ -5,33 +5,39 @@ def call(Map parameters = [:]) {
     def stageName = 'checkmarxScan'
     def script = parameters.script
     runAsStage(stageName: stageName, script: script) {
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-        final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
+        executeCheckmarxScan(script, stageName, "")
+    }
+}
 
-        Set stageConfigurationKeys = ['groupId',
-                                      'vulnerabilityThresholdMedium',
-                                      'checkMarxProjectName',
-                                      'vulnerabilityThresholdLow',
-                                      'filterPattern',
-                                      'fullScansScheduled',
-                                      'generatePdfReport',
-                                      'incremental',
-                                      'preset',
-                                      'checkmarxCredentialsId',
-                                      'checkmarxServerUrl']
+private void executeCheckmarxScan( def script, String stageName, String basePath) {
 
-        Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
+    final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+    final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
 
-        // only applicable if customized config exists
-        if (stageConfiguration) {
-            configuration.script = script
-            try {
-                dir('application') {
-                    executeCheckmarxScan configuration
-                }
-            } finally {
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/Checkmarx/Reports/ScanReport*'
+    Set stageConfigurationKeys = ['groupId',
+                                  'vulnerabilityThresholdMedium',
+                                  'checkMarxProjectName',
+                                  'vulnerabilityThresholdLow',
+                                  'filterPattern',
+                                  'fullScansScheduled',
+                                  'generatePdfReport',
+                                  'incremental',
+                                  'preset',
+                                  'checkmarxCredentialsId',
+                                  'checkmarxServerUrl']
+
+    Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
+
+    // only applicable if customized config exists
+    if (stageConfiguration) {
+        String directory = basePath != null && !basePath.isEmpty() ? basePath : 'application'
+        configuration.script = script
+        try {
+            dir(directory) {
+                executeCheckmarxScan configuration
             }
+        } finally {
+            archiveArtifacts allowEmptyArchive: true, artifacts: '**/Checkmarx/Reports/ScanReport*'
         }
     }
 }

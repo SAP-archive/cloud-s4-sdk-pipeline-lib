@@ -8,12 +8,9 @@ def call(Map parameters) {
             parameters.configFile = 'pipeline_config.yml'
         }
 
+        parameters.customDefaults = ['default_s4_pipeline_environment.yml']
         setupCommonPipelineEnvironment(parameters)
-
-        loadS4sdkDefaultValues script: script
-
         convertLegacyConfiguration script: script
-
         setupDownloadCache script: script
     }
 }

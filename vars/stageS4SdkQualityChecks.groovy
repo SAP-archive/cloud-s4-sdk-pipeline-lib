@@ -6,12 +6,19 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        checkDependencies script: script
-
-        aggregateListenerLogs()
-
-        checkCodeCoverage script: script, jacocoExcludes: stageConfiguration.jacocoExcludes
-        checkHystrix()
-        checkServices script: script, nonErpDestinations: stageConfiguration.nonErpDestinations
+        runOverModules(script: script, moduleType: "java") { String basePath ->
+            executeQualityChecks(script, basePath, stageConfiguration)
+        }
     }
+}
+
+private void executeQualityChecks(def script, String basePath, Map configuration) {
+
+    checkDependencies script: script, basePath: basePath
+
+    aggregateListenerLogs()
+
+    checkCodeCoverage script: script, jacocoExcludes: configuration.jacocoExcludes, basePath: basePath
+    checkHystrix()
+    checkServices script: script, nonErpDestinations: configuration.nonErpDestinations
 }

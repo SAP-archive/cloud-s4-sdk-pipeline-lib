@@ -28,7 +28,7 @@ def call(Map parameters = [:]) {
 
         // Assumption: This is run in the project-root folder
         withCredentials([string(credentialsId: parameters.credentialsId, variable: 'TOKEN')]) {
-            dockerExecute(
+            dockerExecute(script: script,
                 dockerImage: configuration.dockerImage,
                 dockerOptions: dockerOptions,
                 dockerEnvVars: [

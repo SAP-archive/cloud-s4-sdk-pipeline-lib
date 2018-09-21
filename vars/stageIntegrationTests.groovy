@@ -4,65 +4,83 @@ import com.sap.piper.ConfigurationMerger
 def call(Map parameters = [:]) {
     def stageName = 'integrationTests'
     def script = parameters.script
+
     runAsStage(stageName: stageName, script: script) {
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        runOverModules(script: script, moduleType: "java") { String basePath ->
+            executeIntegrationTest(script, basePath, stageName)
+        }
+    }
+}
 
-        final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
+private void executeIntegrationTest(def script, String basePath, String stageName) {
+    final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+    final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
+    Set stageConfigurationKeys = [
+        'retry',
+        'credentials',
+        'forkCount'
+    ]
+    Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
-        Set stageConfigurationKeys = [
-            'retry',
-            'credentials',
-            'forkCount'
-        ]
-
-        Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
-
+    try {
         try {
-            if (configuration.crendentials != null) {
-                configuration.credentials = configuration.crendentials
+            if (configuration.credentials != null) {
+                dir("$basePath/integration-tests/src/test/resources") {
+                    writeCredentials(configuration.credentials)
+                }
             }
 
+            int count = 0
             try {
-                if (configuration.credentials != null) {
-                    dir("integration-tests/src/test/resources") { writeCredentials(configuration.credentials) }
-                }
-
-                int count
-                try {
-                    count = configuration.retry.toInteger()
-                }
-                catch (Exception e) {
-                    error("retry: ${configuration.retry} must be an integer")
-                }
-                def forkCount = configuration.forkCount
-                mavenExecute(
-                    script: script,
-                    flags: "--batch-mode",
-                    pomPath: "integration-tests/pom.xml",
-                    m2Path: s4SdkGlobals.m2Directory,
-                    goals: "org.jacoco:jacoco-maven-plugin:prepare-agent test",
-                    dockerImage: configuration.dockerImage,
-                    defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
-                )
-
-            } catch (Exception e) {
-                executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Integration Tests', errorMessage: "Please examine Backend Integration Tests report.") {
-                    script.currentBuild.result = 'FAILURE'
-                }
-                throw e
+                count = configuration.retry.toInteger()
             }
-            finally {
-                junit allowEmptyResults: true, testResults: 'integration-tests/target/surefire-reports/TEST-*.xml'
+            catch (Exception e) {
+                error("retry: ${configuration.retry} must be an integer")
             }
-        }
-        finally {
-            dir("integration-tests/src/test/resources") { deleteCredentials() }
-        }
+            def forkCount = configuration.forkCount
 
-        copyExecFile execFiles: [
-            'integration-tests/target/jacoco.exec',
-            'integration-tests/target/coverage-reports/jacoco.exec',
-            'integration-tests/target/coverage-reports/jacoco-ut.exec'
-        ], target: 'integration-tests.exec'
+            mavenExecute(
+                script: script,
+                flags: "--batch-mode",
+                pomPath: "${basePath}/integration-tests/pom.xml",
+                m2Path: s4SdkGlobals.m2Directory,
+                goals: "org.jacoco:jacoco-maven-plugin:prepare-agent test",
+                dockerImage: configuration.dockerImage,
+                defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
+            )
+
+        } catch (Exception e) {
+            executeWithLockedCurrentBuildResult(
+                script: script,
+                errorStatus: 'FAILURE',
+                errorHandler: script.buildFailureReason.setFailureReason,
+                errorHandlerParameter: 'Backend Integration Tests',
+                errorMessage: "Please examine Backend Integration Tests report."
+            ) {
+                script.currentBuild.result = 'FAILURE'
+            }
+            throw e
+        } finally {
+            String testResultPattern = "${basePath}/integration-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
+
+            if(testResultPattern.startsWith("./")){
+                testResultPattern = testResultPattern.substring(2)
+            }
+
+            junit allowEmptyResults: true, testResults: testResultPattern
+        }
+    } finally {
+        dir("$basePath/integration-tests/src/test/resources") {
+            deleteCredentials()
+        }
+    }
+    copyExecFile execFiles: [
+        "$basePath/integration-tests/target/jacoco.exec",
+        "$basePath/integration-tests/target/coverage-reports/jacoco.exec",
+        "$basePath/integration-tests/target/coverage-reports/jacoco-ut.exec"
+    ], targetFolder:basePath, targetFile: 'integration-tests.exec'
+
+    if (script.commonPipelineEnvironment.configuration.isMta) {
+        sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp $basePath/s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")
     }
 }

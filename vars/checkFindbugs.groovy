@@ -4,6 +4,7 @@ import com.sap.piper.ConfigurationMerger
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkFindbugs', stepParameters: parameters) {
         def script = parameters.script
+        String basePath = parameters.basePath
 
         final def stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'checkFindbugs')
 
@@ -27,11 +28,11 @@ def call(Map parameters = [:]) {
         }
 
         def includeFilterFile = configuration.includeFilterFile
-        def localIncludeFilerPath = "../s4hana_pipeline/${includeFilterFile}"
+        def localIncludeFilerPath = "s4hana_pipeline/${includeFilterFile}"
         writeFile file: localIncludeFilerPath, text: libraryResource(includeFilterFile)
         filterOptions += "-Dspotbugs.includeFilterFile=${localIncludeFilerPath}"
 
-        executeMavenSpotBugsForConfiguredModules(script, filterOptions, configuration)
+        executeMavenSpotBugsForConfiguredModules(script, filterOptions, configuration, basePath)
 
         executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Please examine the FindBugs/SpotBugs reports.") {
             findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/spotbugsXml.xml'
@@ -39,14 +40,14 @@ def call(Map parameters = [:]) {
     }
 }
 
-def executeMavenSpotBugsForConfiguredModules(script, filterOptions, Map configuration) {
+def executeMavenSpotBugsForConfiguredModules(script, filterOptions, Map configuration, String basePath = './') {
     if (configuration.scanModules) {
         for (int i = 0; i < configuration.scanModules.size(); i++) {
             def scanModule = configuration.scanModules[i]
-            executeMavenSpotBugs(script, filterOptions, configuration, "$scanModule/pom.xml")
+            executeMavenSpotBugs(script, filterOptions, configuration, "$basePath/$scanModule/pom.xml")
         }
     } else {
-        executeMavenSpotBugs(script, filterOptions, configuration, "pom.xml")
+        executeMavenSpotBugs(script, filterOptions, configuration, "$basePath/pom.xml")
     }
 }
 
