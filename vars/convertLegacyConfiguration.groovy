@@ -1,10 +1,11 @@
 import com.sap.piper.ConfigurationLoader
+import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 
 def call(Map parameters) {
     def script = parameters.script
-    
+
     checkNotUsingWhiteSourceOrgToken(script)
-    
+
     boolean configurationConverted = false
     configurationConverted = renameMavenStep(script) || configurationConverted
     configurationConverted = removeMavenGlobalSettings(script) || configurationConverted
@@ -12,6 +13,7 @@ def call(Map parameters) {
 
     if(configurationConverted) {
         offerMigratedConfigurationAsArtifact(script)
+        Analytics.instance.legacyConfig(configurationConverted)
     }
 }
 

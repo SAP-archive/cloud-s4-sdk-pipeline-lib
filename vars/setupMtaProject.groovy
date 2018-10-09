@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 def call(Map parameters = [:]) {
     def script = parameters.script
     def generalConfiguration = parameters.generalConfiguration
@@ -13,6 +14,8 @@ def call(Map parameters = [:]) {
     script.commonPipelineEnvironment.configuration.isMta = true
     script.commonPipelineEnvironment.configuration.mta = modules
     script.commonPipelineEnvironment.configuration.artifactId = mta.ID
+    // TODO Need salt
+    Analytics.instance.hashProject(mta.ID, null)
 }
 
 private HashMap<String, ArrayList<String>> getMtaModules(ArrayList mta) {

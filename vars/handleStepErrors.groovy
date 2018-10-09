@@ -3,9 +3,7 @@ def call(Map parameters = [:], body) {
     def stepParameters = parameters.stepParameters //mandatory
     def stepName = parameters.stepName //mandatory
     def echoParameters = parameters.get('echoParameters', true)
-
     try {
-
         if (stepParameters == null && stepName == null)
             error "step handleStepError requires following mandatory parameters: stepParameters, stepName"
 
