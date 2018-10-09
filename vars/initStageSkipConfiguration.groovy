@@ -23,6 +23,15 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.skipping.CHECKMARX_SCAN = true
     }
 
+    def projectInterceptorFile = "${s4SdkGlobals.projectExtensionsDirectory}/additionalTools.groovy"
+    def repositoryInterceptorFile = "${s4SdkGlobals.repositoryExtensionsDirectory}/additionalTools.groovy"
+
+    if((fileExists(projectInterceptorFile) || fileExists(repositoryInterceptorFile))
+        && isProductiveBranch(script: script)
+        && ConfigurationLoader.stageConfiguration(script, 'additionalTools')){
+        script.commonPipelineEnvironment.configuration.skipping.ADDITIONAL_TOOLS = true
+    }
+
     boolean isWhitesourceConfigured =
         ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
 
@@ -45,7 +54,8 @@ def call(Map parameters) {
     if (script.commonPipelineEnvironment.configuration.skipping.CHECKMARX_SCAN
         || script.commonPipelineEnvironment.configuration.skipping.WHITESOURCE_SCAN
         || script.commonPipelineEnvironment.configuration.skipping.SOURCE_CLEAR_SCAN
-        || script.commonPipelineEnvironment.configuration.skipping.FORTIFY_SCAN) {
+        || script.commonPipelineEnvironment.configuration.skipping.FORTIFY_SCAN
+        || script.commonPipelineEnvironment.configuration.skipping.ADDITIONAL_TOOLS) {
         script.commonPipelineEnvironment.configuration.skipping.THIRD_PARTY_CHECKS = true
     }
 
