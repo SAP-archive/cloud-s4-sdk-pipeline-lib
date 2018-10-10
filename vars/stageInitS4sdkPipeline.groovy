@@ -53,7 +53,13 @@ def call(Map parameters) {
             script.commonPipelineEnvironment.configuration.general = generalConfiguration
         }
 
-        Analytics.instance.hashBuildUrl(env.'JOB_URL')
+        if (env.'JOB_URL') {
+            Analytics.instance.hashBuildUrl(env.'JOB_URL')
+        } else {
+            Analytics.instance.hashBuildUrl(env.'JOB_NAME')
+        }
+
+        Analytics.instance.hashBuildNumber(env.'BUILD_NUMBER')
 
         def isMtaProject = fileExists('mta.yaml')
         if (isMtaProject) {

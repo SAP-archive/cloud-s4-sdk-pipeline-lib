@@ -24,8 +24,10 @@ class Analytics implements Serializable {
     }
 
     void initSystemInfo() {
-        systemInfo.osName = System.getProperty('os.name')
-        systemInfo.osVersion = System.getProperty('os.version')
+        systemInfo.custom11 = 'os_name'
+        systemInfo.e_11 = System.getProperty('os.name')
+        systemInfo.custom12 = 'os_version'
+        systemInfo.e_12 = System.getProperty('os.version')
         systemInfo.locale = System.getenv('LANG')
         systemInfo.custom7 = 'jenkins_version'
         systemInfo.e_7 = System.getenv('JENKINS_VERSION')
@@ -46,6 +48,11 @@ class Analytics implements Serializable {
 
     Map getJobConfiguration() {
         return jobConfiguration
+    }
+
+    void hashBuildNumber(def buildNumber){
+        telemetryData.custom10 = 'build_number'
+        telemetryData.e_10 = hash(buildNumber)
     }
 
     void hashBuildUrl(def jobUrl) {
