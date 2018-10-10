@@ -37,12 +37,14 @@ def call(Map parameters = [:]) {
             echo "Sending telemetry data: ${telemetryData}"
 
             sh(returnStatus: true, script: "#!/bin/sh +x\ncurl ${options.join(' ')} > /dev/null 2>&1 ")
+        } else {
+            echo "Sending telemetry data is disabled."
         }
     } catch (ignore) {
     }
 }
 
-boolean analyticsEnabled(script){
+boolean analyticsEnabled(script) {
     Map configWithDefault = loadEffectiveGeneralConfiguration script: script
     return configWithDefault['collectTelemetryData']
 }
