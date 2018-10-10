@@ -72,6 +72,9 @@ class Analytics implements Serializable {
             // Don't hash without salt to don't compromise on privacy
             return 'NOT-HASHABLE'
         }
+        if (input == null) {
+            return ''
+        }
         MessageDigest messageDigest = MessageDigest.getInstance('SHA-1')
         messageDigest.reset()
         messageDigest.update(salt.bytes)
