@@ -32,12 +32,9 @@ private void executeCheckmarxScan( def script, String stageName, String basePath
     if (stageConfiguration) {
         String directory = basePath != null && !basePath.isEmpty() ? basePath : 'application'
         configuration.script = script
-        try {
             dir(directory) {
                 executeCheckmarxScan configuration
             }
-        } finally {
-            archiveArtifacts allowEmptyArchive: true, artifacts: '**/Checkmarx/Reports/ScanReport*'
-        }
+
     }
 }
