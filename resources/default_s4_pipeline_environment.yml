@@ -1,9 +1,9 @@
 #Project Setup
 general:
   productiveBranch: master
+  collectTelemetryData: true
   defaultNode: ''
   automaticVersioning: true
-  collectTelemetryData: false
 
 
 #Steps Specific Configuration

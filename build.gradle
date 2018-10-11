@@ -1,6 +1,5 @@
 buildscript { repositories { mavenCentral() } }
 
-plugins { id "com.diffplug.gradle.spotless" version "3.5.1" }
 
 apply plugin: 'groovy'
 
@@ -21,21 +20,6 @@ dependencies {
     compile 'org.apache.ivy:ivy:2.4.0'
     testCompile 'junit:junit:4.12'
 }
-
-spotless {
-    groovy {
-        excludeJava() // excludes all Java sources within the Groovy source dirs from formatting
-        paddedCell() // Avoid cyclic ambiguities
-        greclipse().configFile('greclipse.properties')
-    }
-    groovyGradle {
-        // same as groovy, but for .gradle (defaults to '*.gradle')
-        target '*.gradle'
-        paddedCell() // Avoid cyclic ambiguities
-        greclipse().configFile('greclipse.properties')
-    }
-}
-
 
 sourceSets {
     main {

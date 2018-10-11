@@ -1,3 +1,5 @@
+import com.sap.cloud.sdk.s4hana.pipeline.Analytics
+
 def call(Map parameters) {
     def stageName = 'initS4sdkPipeline'
     def script = parameters.script
@@ -15,6 +17,10 @@ def call(Map parameters) {
 
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
+
+        initSalt()
+
+        Analytics.instance.initAnalytics(isProductiveBranch(script: script))
 
         String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionRepository
         if (extensionRepository != null) {
@@ -47,12 +53,22 @@ def call(Map parameters) {
             script.commonPipelineEnvironment.configuration.general = generalConfiguration
         }
 
+        if (env.'JOB_URL') {
+            Analytics.instance.hashBuildUrl(env.'JOB_URL')
+        } else {
+            Analytics.instance.hashBuildUrl(env.'JOB_NAME')
+        }
+
+        Analytics.instance.hashBuildNumber(env.'BUILD_NUMBER')
+
         def isMtaProject = fileExists('mta.yaml')
         if (isMtaProject) {
             setupMtaProject(script: script, generalConfiguration: generalConfiguration)
         } else if (fileExists('pom.xml')) {
+            pom = readMavenPom file: 'pom.xml'
+
+            Analytics.instance.hashProject(pom.groupId + pom.artifactId, null) // todo read project specific salt from POM
             if (!generalConfiguration.projectName?.trim()) {
-                pom = readMavenPom file: 'pom.xml'
                 generalConfiguration.projectName = pom.artifactId
             }
         } else {
@@ -82,4 +98,28 @@ def call(Map parameters) {
     }
 }
 
+private void initSalt() {
+    try {
+        String salt
+        if (!fileExists('/var/jenkins_home/s4sdk-salt')) {
+            salt = generateSalt()
+            sh "echo ${salt} > /var/jenkins_home/s4sdk-salt"
+        } else {
+            salt = sh script: 'cat /var/jenkins_home/s4sdk-salt', returnStdout: true
+        }
+        Analytics.instance.salt = salt
+    } catch (Exception e) {
+        // Proceed without salt, don't hash sensitive values
+    }
+}
 
+private String generateSalt() {
+    byte[] salt = new byte[20]
+    Random random = new Random()
+    random.nextBytes(salt)
+    String saltHex = ''
+    for (character in salt) {
+        saltHex += String.format("%02x", character)
+    }
+    return saltHex
+}
