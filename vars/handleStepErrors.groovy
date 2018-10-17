@@ -16,10 +16,10 @@ def call(Map parameters = [:], body) {
         if (echoParameters)
             paramString = """FOLLOWING PARAMETERS WERE AVAILABLE TO THIS STEP:
 ***
-${stepParameters}
+${stepParameters?.toString()}
 ***"""
         echo """----------------------------------------------------------
---- ERROR OCCURED IN LIBRARY STEP: ${stepName}
+--- ERROR OCCURRED IN LIBRARY STEP: ${stepName}
 ----------------------------------------------------------
 
 ${paramString}
