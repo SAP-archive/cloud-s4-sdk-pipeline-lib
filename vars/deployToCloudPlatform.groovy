@@ -6,18 +6,26 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'deployToCloudPlatform', stepParameters: parameters) {
         def index = 1
         def deployments = [:]
-        def stageName = parameters.get('stage')
-        def script = parameters.get('script')
+        def stageName = parameters.stage
+        def script = parameters.script
+        def enableZeroDowntimeDeployment = parameters.enableZeroDowntimeDeployment
 
         if (parameters.cfTargets) {
             for (int i = 0; i < parameters.cfTargets.size(); i++) {
                 def target = parameters.cfTargets[i]
                 Closure deployment = {
                     unstashFiles script: script, stage: stageName
-                    String deploymentType = DeploymentType.selectFor(
-                        CloudPlatform.CLOUD_FOUNDRY,
-                        parameters.isProduction.asBoolean()
-                    ).toString()
+
+                    String deploymentType
+                    if(enableZeroDowntimeDeployment) {
+                        deploymentType = DeploymentType.BLUE_GREEN.toString()
+                    }
+                    else {
+                        deploymentType = DeploymentType.selectFor(
+                            CloudPlatform.CLOUD_FOUNDRY,
+                            parameters.isProduction.asBoolean()
+                        ).toString()
+                    }
 
                     def deployTool =
                         (script.commonPipelineEnvironment.configuration.isMta) ? 'mtaDeployPlugin' : 'cf_native'
@@ -54,10 +62,19 @@ def call(Map parameters = [:]) {
                 def target = parameters.neoTargets[i]
                 Closure deployment = {
                     unstashFiles script: script, stage: stageName
+
+                    DeploymentType deploymentType
+                    if(enableZeroDowntimeDeployment) {
+                        deploymentType = DeploymentType.ROLLING_UPDATE
+                    }
+                    else {
+                        deploymentType = DeploymentType.selectFor(CloudPlatform.NEO, parameters.isProduction.asBoolean())
+                    }
+
                     deployToNeoWithCli(
                         script: parameters.script,
                         target: target,
-                        deploymentType: DeploymentType.selectFor(CloudPlatform.NEO, parameters.isProduction.asBoolean()),
+                        deploymentType: deploymentType,
                         source: source
                     )
                     stashFiles script: script, stage: stageName
