@@ -26,16 +26,20 @@ def call(Map parameters = [:]) {
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
-        ConfigurationHelper configurationHelper = new ConfigurationHelper(configuration)
+        Map configurationHelper = new ConfigurationHelper(configuration)
+            .withMandatoryProperty('dockerImage')
+            .withMandatoryProperty('target')
+            .withMandatoryProperty('source')
+            .use()
 
-        def dockerImage = configurationHelper.getMandatoryProperty('dockerImage')
-        def deploymentDescriptors = configurationHelper.getMandatoryProperty('target')
-        def source = configurationHelper.getMandatoryProperty('source')
+        def dockerImage = configurationHelper.dockerImage
+        def deploymentDescriptors = configurationHelper.target
+        def source = configurationHelper.source
 
-        ConfigurationHelper deploymentDescriptor = new ConfigurationHelper(deploymentDescriptors)
-        if (deploymentDescriptor.isPropertyDefined("credentialsId")) {
+        Map deploymentDescriptor = new ConfigurationHelper(deploymentDescriptors).use()
+        if (deploymentDescriptor.credentialsId) {
             NeoDeployCommandHelper commandHelper
-            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.getConfigProperty('credentialsId'), passwordVariable: 'NEO_PASSWORD', usernameVariable: 'NEO_USERNAME']]) {
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.credentialsId, passwordVariable: 'NEO_PASSWORD', usernameVariable: 'NEO_USERNAME']]) {
                 assertPasswordRules(NEO_PASSWORD)
                 commandHelper = new NeoDeployCommandHelper(deploymentDescriptors, NEO_USERNAME, BashUtils.escape(NEO_PASSWORD), source)
                 deploy(script, dockerImage, configuration.deploymentType, commandHelper)
