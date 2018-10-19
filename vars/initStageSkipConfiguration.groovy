@@ -9,9 +9,9 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.FRONT_END_BUILD = true
         script.commonPipelineEnvironment.configuration.runStage.FRONT_END_TESTS = true
     }
-    if (ConfigurationLoader.stageConfiguration(script, 'endToEndTests') && script.commonPipelineEnvironment.configuration.runStage.FRONT_END_BUILD) {
-        script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS = true
-    }
+
+    script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS = endToEndTestsShouldRun(script)
+
     if (ConfigurationLoader.stageConfiguration(script, 'performanceTests')) {
         script.commonPipelineEnvironment.configuration.runStage.PERFORMANCE_TESTS = true
     }
@@ -26,9 +26,9 @@ def call(Map parameters) {
     def projectInterceptorFile = "${s4SdkGlobals.projectExtensionsDirectory}/additionalTools.groovy"
     def repositoryInterceptorFile = "${s4SdkGlobals.repositoryExtensionsDirectory}/additionalTools.groovy"
 
-    if((fileExists(projectInterceptorFile) || fileExists(repositoryInterceptorFile))
+    if ((fileExists(projectInterceptorFile) || fileExists(repositoryInterceptorFile))
         && isProductiveBranch(script: script)
-        && ConfigurationLoader.stageConfiguration(script, 'additionalTools')){
+        && ConfigurationLoader.stageConfiguration(script, 'additionalTools')) {
         script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS = true
     }
 
@@ -73,4 +73,14 @@ def call(Map parameters) {
     if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.runStage.SEND_NOTIFICATION = true
     }
+}
+
+private static boolean endToEndTestsShouldRun(script) {
+    Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'endToEndTests')
+
+    if (!script.isProductiveBranch(script: script) && stageConfig?.onlyRunInProductiveBranch) {
+        return false
+    }
+
+    return stageConfig && script.commonPipelineEnvironment.configuration.runStage.FRONT_END_BUILD
 }

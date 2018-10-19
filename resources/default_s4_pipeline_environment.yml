@@ -62,6 +62,7 @@ stages:
 
   endToEndTests:
     enableZeroDowntimeDeployment: false
+    onlyRunInProductiveBranch: false
 
   checkmarxScan:
     filterPattern: '!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, **/*.js, **/*.java, **/*.ts'
