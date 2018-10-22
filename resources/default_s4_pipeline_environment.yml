@@ -60,6 +60,10 @@ stages:
     retry: 1
     forkCount: 1C
 
+  endToEndTests:
+    enableZeroDowntimeDeployment: false
+    onlyRunInProductiveBranch: false
+
   checkmarxScan:
     filterPattern: '!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, **/*.js, **/*.java, **/*.ts'
     fullScansScheduled: false

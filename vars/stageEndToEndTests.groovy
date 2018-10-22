@@ -8,7 +8,7 @@ def call(Map parameters = [:]) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         if (stageConfiguration) {
             lock(script.commonPipelineEnvironment.configuration.endToEndTestLock) {
-                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, stage: stageName
+                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, enableZeroDowntimeDeployment: stageConfiguration.enableZeroDowntimeDeployment, stage: stageName
                 executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.END_TO_END_TEST, stage: stageName
             }
 

@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
+import com.sap.piper.ConfigurationLoader
 import hudson.model.Result
 
 def call(Map parameters = [:]) {
@@ -25,6 +26,11 @@ def call(Map parameters = [:]) {
                 telemetryData.e_6 = currentBuild.duration
             }
             telemetryData << Analytics.instance.getTelemetryData()
+
+            Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
+            if(generalConfiguration.idsite){
+                telemetryData.idsite = generalConfiguration.idsite
+            }
 
             def options = []
             options.push("--get")

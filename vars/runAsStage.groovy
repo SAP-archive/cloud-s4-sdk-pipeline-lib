@@ -7,9 +7,12 @@ import hudson.model.Result
 import java.util.UUID
 
 def call(Map parameters = [:], body) {
-    ConfigurationHelper configurationHelper = new ConfigurationHelper(parameters)
-    def stageName = configurationHelper.getMandatoryProperty('stageName')
-    def script = configurationHelper.getMandatoryProperty('script')
+    Map configurationHelper = new ConfigurationHelper(parameters)
+        .withMandatoryProperty('stageName')
+        .withMandatoryProperty('script')
+        .use()
+    def stageName = configurationHelper.stageName
+    def script = configurationHelper.script
     Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
     Map projectGeneralConfiguration = ConfigurationLoader.generalConfiguration(script)
 

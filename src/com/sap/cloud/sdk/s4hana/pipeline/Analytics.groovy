@@ -20,6 +20,7 @@ class Analytics implements Serializable {
         telemetryData.swaUrl = 'https://webanalytics.cfapps.eu10.hana.ondemand.com/tracker/log'
         telemetryData.action_name = 'SAP S/4HANA Cloud SDK'
         telemetryData.idsite = '70aeb424-0d69-0265-c486-b5471b014ba8'
+        telemetryData.idsitesub = 'pipeline'
         telemetryData.url = 'https://github.com/SAP/cloud-s4-sdk-pipeline/tree/master/doc/operations/analytics.md'
     }
 

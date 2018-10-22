@@ -29,11 +29,11 @@ class NeoDeployCommandHelper implements Serializable {
     }
 
     void assertMandatoryParameters() {
+        def configurationHelper = new ConfigurationHelper(deploymentDescriptor)
         for (int i = 0; i < mandatoryParameters.size(); i++) {
             String parameterName = mandatoryParameters[i]
-            if (!new ConfigurationHelper(deploymentDescriptor).isPropertyDefined(parameterName)) {
-                error("Please define the parameter ${parameterName} in your deployment configuration")
-            }
+            def errorMessage = "Please define the parameter ${parameterName} in your deployment configuration"
+            configurationHelper.withMandatoryProperty(parameterName, errorMessage)
         }
     }
 
