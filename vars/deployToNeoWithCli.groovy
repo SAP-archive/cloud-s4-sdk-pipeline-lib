@@ -32,11 +32,11 @@ def call(Map parameters = [:]) {
             .withMandatoryProperty('source')
             .use()
 
-        configuration.target.ev = transformEnvVarMapToStringList(configuration.target.ev)
-
         def dockerImage = configurationHelper.dockerImage
         def deploymentDescriptors = configurationHelper.target
         def source = configurationHelper.source
+
+        verifyNeoEnvironmentVariables(deploymentDescriptors.environment)
 
         Map deploymentDescriptor = new ConfigurationHelper(deploymentDescriptors).use()
         if (deploymentDescriptor.credentialsId) {
@@ -51,16 +51,6 @@ def call(Map parameters = [:]) {
         }
 
     }
-}
-
-private List transformEnvVarMapToStringList(def envVarMap) {
-    List envVarsStringList = []
-    def keys = envVarMap.keySet()
-    for (int i = 0; i < keys.size(); i++) {
-        envVarsStringList << "${BashUtils.escape(keys[i])}=${BashUtils.escape(envVarMap.get(keys[i]))}"
-    }
-
-    return envVarsStringList
 }
 
 private assertPasswordRules(String password){
@@ -107,4 +97,13 @@ private deploy(script, dockerImage, DeploymentType deploymentType, NeoDeployComm
 private boolean isAppRunning(NeoDeployCommandHelper commandHelper) {
     def status = sh script: "${commandHelper.statusCommand()} || true", returnStdout: true
     return status.contains('Status: STARTED')
+}
+
+private void verifyNeoEnvironmentVariables(def targetEnvironmentVariables) {
+    if (targetEnvironmentVariables && !(targetEnvironmentVariables in Map)) {
+        throw new Exception("""The environment variables of the neoTargets configured in pipeline_config.yml are not correct defined.
+Please use correct yaml description as documented here: https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment
+
+Affected variables: ${targetEnvironmentVariables}""")
+    }
 }
