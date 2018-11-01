@@ -32,6 +32,8 @@ def call(Map parameters = [:]) {
             .withMandatoryProperty('source')
             .use()
 
+        configuration.target.ev = transformEnvVarMapToStringList(configuration.target.ev)
+
         def dockerImage = configurationHelper.dockerImage
         def deploymentDescriptors = configurationHelper.target
         def source = configurationHelper.source
@@ -49,6 +51,16 @@ def call(Map parameters = [:]) {
         }
 
     }
+}
+
+private List transformEnvVarMapToStringList(def envVarMap) {
+    List envVarsStringList = []
+    def keys = envVarMap.keySet()
+    for (int i = 0; i < keys.size(); i++) {
+        envVarsStringList << "${BashUtils.escape(keys[i])}=${BashUtils.escape(envVarMap.get(keys[i]))}"
+    }
+
+    return envVarsStringList
 }
 
 private assertPasswordRules(String password){

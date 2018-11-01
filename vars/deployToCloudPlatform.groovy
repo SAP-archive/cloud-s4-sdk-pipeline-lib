@@ -60,6 +60,9 @@ def call(Map parameters = [:]) {
             def source = "application/target/${pom.getArtifactId()}.${pom.getPackaging()}"
             for (int i = 0; i < parameters.neoTargets.size(); i++) {
                 def target = parameters.neoTargets[i]
+                verifyNeoEnvironmentVariables(target.environment)
+                transformEnvironmentToLegacyNaming(target)
+
                 Closure deployment = {
                     unstashFiles script: script, stage: stageName
 
@@ -97,5 +100,24 @@ def call(Map parameters = [:]) {
             currentBuild.result = 'FAILURE'
             error("Test Deployment skipped because no targets defined!")
         }
+    }
+}
+
+private void transformEnvironmentToLegacyNaming(def target) {
+    def tmp = target.environment
+    target.remove('environment')
+    target['ev'] = tmp
+}
+
+private void verifyNeoEnvironmentVariables(def targetEnvironmentVariables) {
+    if (!(targetEnvironmentVariables in Map)) {
+        throw new Exception("""The environment variables of the neoTargets configured in pipeline_config.yml are not correct defined.
+Please use correct yaml description like:
+neoTargets:
+  environment: 
+    KEY: \"VALUE\"
+    KEY: \"VALUE\" 
+
+Affected variables: ${targetEnvironmentVariables}""")
     }
 }
