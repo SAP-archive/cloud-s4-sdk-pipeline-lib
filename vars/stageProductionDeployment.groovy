@@ -8,6 +8,8 @@ def call(Map parameters = [:]) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         lock(script.commonPipelineEnvironment.configuration.productionDeploymentLock) {
+            //other milestones are defined in the pipeline
+            milestone 80
             if (fileExists('package.json')) {
                 deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
                 executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST, stage: stageName
