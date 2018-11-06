@@ -14,6 +14,8 @@ def call(Map parameters = [:]) {
 
 private void executeQualityChecks(def script, String basePath, Map configuration) {
 
+    checkDeploymentDescriptors script: script
+
     checkDependencies script: script, basePath: basePath
 
     aggregateListenerLogs()
