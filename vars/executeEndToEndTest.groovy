@@ -25,7 +25,8 @@ def call(Map parameters = [:]) {
                     shScript = E2ETestCommandHelper.generate(type, appUrl)
                 } else if (appUrl instanceof Map && appUrl.url && appUrl.credentialId) {
                     String url = appUrl.url
-                    shScript = E2ETestCommandHelper.generate(type, url)
+					String e2eParameters = appUrl.parameters ?: ""
+                    shScript = E2ETestCommandHelper.generate(type, url, e2eParameters)
 
                     String credentialId = appUrl.credentialId
                     credentials.add([$class: 'UsernamePasswordMultiBinding', credentialsId: credentialId, passwordVariable: 'e2e_password', usernameVariable: 'e2e_username'])
