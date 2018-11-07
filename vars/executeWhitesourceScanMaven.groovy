@@ -18,6 +18,19 @@ def call(Map parameters = [:]) {
                     defines.add('-Dorg.whitesource.aggregateModules=true')
                 }
 
+                if (parameters.whitesourceUserTokenCredentialsId) {
+                    withCredentials([string(credentialsId: parameters.whitesourceUserTokenCredentialsId, variable: 'userKey')]) {
+                        defines.add("-Dorg.whitesource.userKey=${BashUtils.escape(userKey)}")
+                        mavenExecute(
+                            script: script,
+                            m2Path: s4SdkGlobals.m2Directory,
+                            pomPath: pomPath,
+                            goals: 'org.whitesource:whitesource-maven-plugin:update',
+                            flags: '--batch-mode',
+                            defines: defines.join(' ')
+                        )
+                    }
+                } else {
                 mavenExecute(
                     script: script,
                     m2Path: s4SdkGlobals.m2Directory,
@@ -26,6 +39,7 @@ def call(Map parameters = [:]) {
                     flags: '--batch-mode',
                     defines: defines.join(' ')
                 )
+                }
             }
         } finally {
             archiveArtifacts artifacts: 'target/site/whitesource/**', allowEmptyArchive: true

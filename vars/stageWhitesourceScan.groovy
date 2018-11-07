@@ -27,21 +27,27 @@ private void executeWhitesourceScan(def script, String stageName, String basePat
     // Maven
     Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
     if (whitesourceConfiguration && fileExists(pomXmlPath)) {
-        def credentialsId = whitesourceConfiguration.credentialsId
-        def product = whitesourceConfiguration.product
+        def whiteSourceArguments = [:]
+        whiteSourceArguments['script'] = script
+        whiteSourceArguments['pomPath'] = pomXmlPath
+        whiteSourceArguments['credentialsId'] = whitesourceConfiguration.credentialsId
+        whiteSourceArguments['product'] = whitesourceConfiguration.product
+        if(whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
+            whiteSourceArguments['whitesourceUserTokenCredentialsId'] = whitesourceConfiguration.whitesourceUserTokenCredentialsId
+        }
 
-        print("Executing MAVEN Whitesource scan for module " + basePath)
-        executeWhitesourceScanMaven script: script, credentialsId: credentialsId, product: product, pomPath: pomXmlPath
+        println("Executing Maven WhiteSource scan for module " + basePath)
+        executeWhitesourceScanMaven whiteSourceArguments
     } else {
-        println('Skip WhiteSource Maven scan because the stage "whitesourceScan" is not configured.')
+        println("Skip WhiteSource Maven scan because the stage 'whitesourceScan' is not configured.")
     }
 
-    // NPM
+    // npm
     if (whitesourceConfiguration && fileExists(packageJsonPath)) {
         def credentialsId = whitesourceConfiguration.credentialsId
         def product = whitesourceConfiguration.product
 
-        print("Executing NPM Whitesource scan for module " + basePath)
+        println("Executing npm WhiteSource scan for module " + basePath)
 
         executeWhitesourceScanNpm(
             script: script,
@@ -50,6 +56,6 @@ private void executeWhitesourceScan(def script, String stageName, String basePat
             basePath: basePath
         )
     } else {
-        println 'Skipping WhiteSource NPM Plugin because no "package.json" file was found in project or the stage "whitesourceScan" is not configured.\n'
+        println("Skipping WhiteSource npm plugin because no 'package.json' file was found in project or the stage 'whitesourceScan' is not configured")
     }
 }
