@@ -44,17 +44,18 @@ private void executeWhitesourceScan(def script, String stageName, String basePat
 
     // npm
     if (whitesourceConfiguration && fileExists(packageJsonPath)) {
-        def credentialsId = whitesourceConfiguration.credentialsId
-        def product = whitesourceConfiguration.product
+        def whiteSourceArguments = [:]
+        whiteSourceArguments['script'] = script
+        whiteSourceArguments['basePath'] = basePath
+        whiteSourceArguments['credentialsId'] = whitesourceConfiguration.credentialsId
+        whiteSourceArguments['product'] = whitesourceConfiguration.product
+        if(whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
+            whiteSourceArguments['whitesourceUserTokenCredentialsId'] = whitesourceConfiguration.whitesourceUserTokenCredentialsId
+        }
 
         println("Executing npm WhiteSource scan for module " + basePath)
 
-        executeWhitesourceScanNpm(
-            script: script,
-            credentialsId: credentialsId,
-            product: product,
-            basePath: basePath
-        )
+        executeWhitesourceScanNpm whiteSourceArguments
     } else {
         println("Skipping WhiteSource npm plugin because no 'package.json' file was found in project or the stage 'whitesourceScan' is not configured")
     }

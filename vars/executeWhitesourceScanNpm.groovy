@@ -20,10 +20,18 @@ def call(Map parameters = [:]) {
 
             if (fileExists('whitesource.config.json')) {
                 error("File whitesource.config.json already exists. " +
-                    "Please delete it and only use the file pipeline_config.yml to configure Whitesource.")
+                    "Please delete it and only use the file pipeline_config.yml to configure WhiteSource.")
             }
 
-            writeJSON json: JSONObject.fromObject(whiteSourceConfiguration), file: basePath + '/whitesource.config.json'
+            if (parameters.whitesourceUserTokenCredentialsId) {
+                withCredentials([string(credentialsId: parameters.whitesourceUserTokenCredentialsId, variable: 'userKey')]) {
+                    whiteSourceConfiguration.userKey = userKey
+
+                    writeJSON json: JSONObject.fromObject(whiteSourceConfiguration), file: basePath + '/whitesource.config.json'
+                }
+            } else {
+                writeJSON json: JSONObject.fromObject(whiteSourceConfiguration), file: basePath + '/whitesource.config.json'
+            }
 
             try {
                 executeNpm(script: script, dockerOptions: DownloadCacheUtils.downloadCacheNetworkParam()) {
