@@ -56,17 +56,23 @@ private def extractDeploymentdescriptorEnvironment(def deploymentDescriptor, Dep
         switch (deploymentDescriptorType) {
             case DeploymentDescriptorType.MANIFEST:
                 for (int i = 0; i < deploymentDescriptor.applications.size(); i++) {
-                    extractedEnvironmentVariables.addAll(deploymentDescriptor.applications[i].env?.keySet())
+                    if (deploymentDescriptor.applications[i].env) {
+                        extractedEnvironmentVariables.addAll(deploymentDescriptor.applications[i].env.keySet())
+                    }
                 }
                 return extractedEnvironmentVariables
             case DeploymentDescriptorType.MTA:
                 for (int i = 0; i < deploymentDescriptor.modules.size(); i++) {
-                    extractedEnvironmentVariables.addAll(deploymentDescriptor.modules[i].properties?.keySet())
+                    if (deploymentDescriptor.modules[i].properties) {
+                        extractedEnvironmentVariables.addAll(deploymentDescriptor.modules[i].properties.keySet())
+                    }
                 }
                 return extractedEnvironmentVariables
             case DeploymentDescriptorType.NEOTARGETS:
                 for (int i = 0; i < deploymentDescriptor.size(); i++) {
-                    extractedEnvironmentVariables.addAll(deploymentDescriptor[i].environment?.keySet())
+                    if (deploymentDescriptor[i].environment) {
+                        extractedEnvironmentVariables.addAll(deploymentDescriptor[i].environment.keySet())
+                    }
                 }
                 return extractedEnvironmentVariables
             default:
