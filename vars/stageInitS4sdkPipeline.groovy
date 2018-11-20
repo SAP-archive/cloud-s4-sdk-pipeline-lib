@@ -20,7 +20,7 @@ def call(Map parameters) {
 
         initSalt()
 
-        Analytics.instance.initAnalytics(isProductiveBranch(script: script))
+        Analytics.instance.initAnalytics(isProductiveBranch(script: script), script.commonPipelineEnvironment.configuration.general.idsite)
 
         String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionRepository
         if (extensionRepository != null) {

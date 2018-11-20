@@ -1,5 +1,6 @@
 #Project Setup
 general:
+  unsafeMode: false
   productiveBranch: master
   collectTelemetryData: true
   defaultNode: ''

@@ -36,6 +36,8 @@ def call(Map parameters = [:]) {
         def deploymentDescriptors = configurationHelper.target
         def source = configurationHelper.source
 
+        verifyNeoEnvironmentVariables(deploymentDescriptors.environment)
+
         Map deploymentDescriptor = new ConfigurationHelper(deploymentDescriptors).use()
         if (deploymentDescriptor.credentialsId) {
             NeoDeployCommandHelper commandHelper
@@ -95,4 +97,13 @@ private deploy(script, dockerImage, DeploymentType deploymentType, NeoDeployComm
 private boolean isAppRunning(NeoDeployCommandHelper commandHelper) {
     def status = sh script: "${commandHelper.statusCommand()} || true", returnStdout: true
     return status.contains('Status: STARTED')
+}
+
+private void verifyNeoEnvironmentVariables(def targetEnvironmentVariables) {
+    if (targetEnvironmentVariables && !(targetEnvironmentVariables in Map)) {
+        throw new Exception("""The environment variables of the neoTargets configured in pipeline_config.yml are not correct defined.
+Please use correct yaml description as documented here: https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment
+
+Affected variables: ${targetEnvironmentVariables}""")
+    }
 }

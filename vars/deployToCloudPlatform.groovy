@@ -60,6 +60,7 @@ def call(Map parameters = [:]) {
             def source = "application/target/${pom.getArtifactId()}.${pom.getPackaging()}"
             for (int i = 0; i < parameters.neoTargets.size(); i++) {
                 def target = parameters.neoTargets[i]
+
                 Closure deployment = {
                     unstashFiles script: script, stage: stageName
 

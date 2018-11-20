@@ -10,16 +10,16 @@ class Analytics implements Serializable {
     Map jobConfiguration = [:]
     String salt = null
 
-    void initAnalytics(boolean isProductive) {
-        initTelemetryData()
+    void initAnalytics(boolean isProductive, String idSite) {
+        initTelemetryData(idSite)
         initSystemInfo()
         initJobConfiguration(isProductive)
     }
 
-    void initTelemetryData() {
+    void initTelemetryData(String idSite) {
         telemetryData.swaUrl = 'https://webanalytics.cfapps.eu10.hana.ondemand.com/tracker/log'
         telemetryData.action_name = 'SAP S/4HANA Cloud SDK'
-        telemetryData.idsite = '70aeb424-0d69-0265-c486-b5471b014ba8'
+        telemetryData.idsite = idSite ?: '70aeb424-0d69-0265-c486-b5471b014ba8'
         telemetryData.idsitesub = 'pipeline'
         telemetryData.url = 'https://github.com/SAP/cloud-s4-sdk-pipeline/tree/master/doc/operations/analytics.md'
     }

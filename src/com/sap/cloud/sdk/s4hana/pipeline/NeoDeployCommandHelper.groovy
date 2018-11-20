@@ -76,14 +76,14 @@ class NeoDeployCommandHelper implements Serializable {
     private String additionalCommonArgs() {
         String args = ""
 
-        if (deploymentDescriptor.containsKey('ev')) {
-            def value = deploymentDescriptor.ev
-            if (value instanceof List) {
-                for (String singleValue : value) {
-                    args += " --ev ${singleValue}"
-                }
-            } else {
-                args += " --ev ${value}"
+        if (deploymentDescriptor.containsKey('environment')) {
+            def environment = deploymentDescriptor.environment
+            def keys = environment.keySet()
+
+            for (int i = 0; i < keys.size(); i++) {
+                def key = keys[i]
+                def value = environment.get(keys[i])
+                args += " --ev ${BashUtils.escape(key)}=${BashUtils.escape(value)}"
             }
         }
 

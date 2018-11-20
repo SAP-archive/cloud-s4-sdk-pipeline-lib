@@ -25,7 +25,7 @@ def call(Map parameters = [:]) {
 
         if (excludes == null) {
             excludeOption = ''
-        } else if (excludes.class == List) {
+        } else if (excludes instanceof List) {
             excludeOption = "-Dpmd.excludes=${excludes.join(',')}"
         } else {
             excludeOption = "-Dpmd.excludes=${excludes}"
