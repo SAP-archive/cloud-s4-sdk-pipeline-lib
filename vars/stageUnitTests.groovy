@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
@@ -17,11 +18,13 @@ def call(Map parameters = [:]) {
 private void executeUnitTest(def script, String basePath, Map configuration){
     try {
         String image = configuration.dockerImage
+        //Remove ./ in path as it does not work with surefire 3.0.0-M1
+        String pomPath = PathUtils.normalize(basePath, "unit-tests/pom.xml")
 
         mavenExecute(
             script: script,
             flags: "--batch-mode",
-            pomPath: "${basePath}/unit-tests/pom.xml",
+            pomPath: pomPath,
             m2Path: s4SdkGlobals.m2Directory,
             goals: "org.jacoco:jacoco-maven-plugin:prepare-agent test",
             dockerImage: image,
