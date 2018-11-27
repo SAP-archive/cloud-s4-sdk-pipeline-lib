@@ -6,8 +6,12 @@ import hudson.model.Result
 
 import java.util.UUID
 
+import groovy.transform.Field
+
+@Field String STEP_NAME = 'runAsStage'
+
 def call(Map parameters = [:], body) {
-    Map configurationHelper = new ConfigurationHelper(parameters)
+    Map configurationHelper = ConfigurationHelper.newInstance(this, parameters)
         .withMandatoryProperty('stageName')
         .withMandatoryProperty('script')
         .use()
