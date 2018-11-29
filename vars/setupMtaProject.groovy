@@ -15,7 +15,7 @@ def call(Map parameters = [:]) {
     script.commonPipelineEnvironment.configuration.mta = modules
     script.commonPipelineEnvironment.configuration.artifactId = mta.ID
     // TODO Need salt
-    Analytics.instance.hashProject(mta.ID, null)
+    Analytics.instance.hashProject(mta.ID)
 }
 
 private HashMap<String, ArrayList<String>> getMtaModules(ArrayList mta) {
