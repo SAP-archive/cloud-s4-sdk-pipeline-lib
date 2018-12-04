@@ -33,6 +33,15 @@ steps:
     scanModules:
       - 'application'
 
+  executeFortifyScan:
+    pathToPom: 'application/pom.xml'
+    verbose: false
+    sourceVersion: 1.8
+    use64BitVersion: true
+    maximumMemoryUsage: 3000M
+    exclude: '**/resources/**/*,**/target/**/*,**/unit-tests/**/*,**/integration-tests/**/*'
+    skipNgComponents: true
+
   checkPmd:
     scanModules:
       - 'application'
