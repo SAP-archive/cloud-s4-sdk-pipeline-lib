@@ -34,7 +34,6 @@ steps:
       - 'application'
 
   executeFortifyScan:
-    pathToPom: 'application/pom.xml'
     verbose: false
     sourceVersion: 1.8
     use64BitVersion: true

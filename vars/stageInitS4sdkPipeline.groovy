@@ -1,5 +1,6 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
+import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 
 def call(Map parameters) {
     def stageName = 'initS4sdkPipeline'
@@ -99,7 +100,7 @@ def call(Map parameters) {
 private void readAndUpdateProjectSalt(script, pomFile) {
     try {
         def effectivePomFile = "effectivePom.xml"
-        generateEffectivePom(script, pomFile, effectivePomFile)
+        MavenUtils.generateEffectivePom(script, pomFile, effectivePomFile)
         if (fileExists(effectivePomFile)) {
             def projectSalt = getProjectSaltFromPom(readFile(effectivePomFile))
             if (projectSalt) {
@@ -109,16 +110,6 @@ private void readAndUpdateProjectSalt(script, pomFile) {
     } catch (ignore) {
 
     }
-}
-
-private void generateEffectivePom(script, pomFile, effectivePomFile) {
-    mavenExecute(script: script,
-            flags: '--batch-mode',
-            pomPath: pomFile,
-            m2Path: s4SdkGlobals.m2Directory,
-            goals: 'help:effective-pom',
-            dockerImage: script.commonPipelineEnvironment.configuration.steps.mavenExecute.dockerImage,
-            defines: "-Doutput=${effectivePomFile}")
 }
 
 @NonCPS

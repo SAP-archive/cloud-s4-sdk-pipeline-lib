@@ -1,6 +1,7 @@
-import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
-import com.sap.piper.ConfigurationLoader
 import com.cloudbees.groovy.cps.NonCPS
+import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
+import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
@@ -21,7 +22,6 @@ def call(Map parameters = [:]) {
         final Set stepConfigurationKeys = [
             'dockerImage',
             'dockerOptions',
-            'pathToPom',
             'projectSettingsFile',
             'verbose',
             'sourceVersion',
@@ -32,6 +32,8 @@ def call(Map parameters = [:]) {
             'skipNgComponents',
             'additionalScanOptions'
         ]
+        def pathToPom = "application/pom.xml"
+
         final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeFortifyScan')
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeFortifyScan')
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
@@ -39,15 +41,23 @@ def call(Map parameters = [:]) {
         if (!configuration.dockerImage) {
             error("Error while executing fortifyScan. The value for dockerImage is empty, please provide an appropriate fortify client docker image name.")
         }
-        if (!fileExists(configuration.pathToPom)) {
+        if (!fileExists(pathToPom)) {
             error("Fortify stage expected a pom.xml file at \"${pathToPom}\", but no such file was found.")
         }
 
-        def pom = readMavenPom file: configuration.pathToPom
+        def effectivePomFileLocation = './application/'
+        def effectivePomFileName = 'effectivePomFile.xml'
+
+        MavenUtils.generateEffectivePom(script, pathToPom, effectivePomFileName)
+        if (!fileExists(effectivePomFileLocation+effectivePomFileName)) {
+            error("Fortify stage expected an effective pom file, but no such file was generated.")
+        }
+        def pom = readMavenPom file: effectivePomFileLocation+effectivePomFileName
+
         // clean compile scan
         def fortifyMavenScanOptions = [:]
         fortifyMavenScanOptions.script = script
-        fortifyMavenScanOptions.pomPath = configuration.pathToPom
+        fortifyMavenScanOptions.pomPath = pathToPom
         fortifyMavenScanOptions.dockerImage = configuration.dockerImage
         fortifyMavenScanOptions.goals = [
             'clean com.hpe.security.fortify.maven.plugin:sca-maven-plugin:clean',
