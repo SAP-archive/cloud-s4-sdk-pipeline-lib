@@ -1,0 +1,38 @@
+containerMaps:
+  build:
+    - mavenExecute
+    - executeNpm
+  staticCodeChecks:
+    - mavenExecute
+  unitTests:
+    - mavenExecute
+  integrationTests:
+    - mavenExecute
+  frontendUnitTests:
+    - executeNpm
+  nodeSecurityPlatform:
+    - executeNpm
+  endToEndTests:
+    - mavenExecute
+    - executeNpm
+    - cloudFoundryDeploy
+    - deployToNeoWithCli
+  performanceTests:
+    - mavenExecute
+    - checkJMeter
+    - cloudFoundryDeploy
+    - deployToNeoWithCli
+  s4SdkQualityChecks:
+    - mavenExecute
+  artifactDeployment:
+    - mavenExecute
+  whitesourceScan:
+    - mavenExecute
+    - executeNpm
+  sourceClearScan:
+    - executeSourceClearScan
+  productionDeployment:
+    - mavenExecute
+    - executeNpm
+    - cloudFoundryDeploy
+    - deployToNeoWithCli
