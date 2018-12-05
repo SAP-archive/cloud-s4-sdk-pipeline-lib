@@ -90,9 +90,9 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
 
 private void checkODataServices(Set<String> nonErpDestinations) {
     final Set<String> allowedServiceNames = []
-    def serviceJson = readJSON(text: fetchUrl('https://api.sap.com/odata/1.0/catalog.svc/ContentEntities.ContentPackages(\'SAPS4HANACloud\')/Artifacts?$format=json&$select=Name'))
-    for (int x = 0; x < serviceJson.d.results.size(); x++) {
-        String serviceName = serviceJson.d.results[x].Name
+    List services = downloadServicesList()
+    for (int x = 0; x < services.size(); x++) {
+        String serviceName = services[x].Name
         allowedServiceNames.add(serviceName)
     }
     //println "Allowed OData Services: " + allowedServiceNames
@@ -122,4 +122,23 @@ private void checkODataServices(Set<String> nonErpDestinations) {
         currentBuild.result = 'FAILURE'
         error("Your project uses non-official OData services: ${unallowedUsedServices}")
     }
+}
+
+private List downloadServicesList() {
+    String serviceCatalogUrl = 'https://api.sap.com/odata/1.0/catalog.svc/ContentEntities.ContentPackages(\'SAPS4HANACloud\')/Artifacts?$format=json&$select=Name'
+
+    Map serviceJson = [:]
+
+    try {
+        serviceJson = readJSON(text: fetchUrl(serviceCatalogUrl))
+    } catch (Exception e) {
+        error("Failed to download the list of available services from API Business Hub (https://api.sap.com/). " +
+            "Please check if your Jenkins can reach this web resource.\nException: $e")
+    }
+
+    if (!serviceJson?.d?.results) {
+        error("Response from API Business Hub (https://api.sap.com/) did not fit the expected format.")
+    }
+
+    return serviceJson.d.results
 }

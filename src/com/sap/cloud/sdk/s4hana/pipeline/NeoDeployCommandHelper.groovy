@@ -1,7 +1,5 @@
 package com.sap.cloud.sdk.s4hana.pipeline
 
-import com.sap.piper.ConfigurationHelper
-
 class NeoDeployCommandHelper implements Serializable {
     private List mandatoryParameters = [
         'host',
@@ -14,7 +12,6 @@ class NeoDeployCommandHelper implements Serializable {
 
     private final String neoToolDirectory = "/sdk/tools"
     private final String neoTool = "$neoToolDirectory/neo.sh"
-
 
     private Map deploymentDescriptor
     private String username
@@ -29,14 +26,14 @@ class NeoDeployCommandHelper implements Serializable {
     }
 
     void assertMandatoryParameters() {
-        def configurationHelper = new ConfigurationHelper(deploymentDescriptor)
         for (int i = 0; i < mandatoryParameters.size(); i++) {
             String parameterName = mandatoryParameters[i]
-            def errorMessage = "Please define the parameter ${parameterName} in your deployment configuration"
-            configurationHelper.withMandatoryProperty(parameterName, errorMessage)
+            if (!this.deploymentDescriptor[parameterName]) {
+                def errorMessage = "Please define the parameter ${parameterName} in your deployment configuration"
+                throw new RuntimeException(errorMessage)
+            }
         }
     }
-
 
     String getNeoToolDirectory() {
         return neoToolDirectory

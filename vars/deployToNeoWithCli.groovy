@@ -2,48 +2,46 @@ import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
 import com.sap.cloud.sdk.s4hana.pipeline.NeoDeployCommandHelper
 import com.sap.piper.ConfigurationHelper
-import com.sap.piper.ConfigurationLoader
-import com.sap.piper.ConfigurationMerger
+
+import groovy.transform.Field
+
+@Field String STEP_NAME = 'deployToNeoWithCli'
+
+@Field Set PARAMETER_KEYS = [
+    'dockerImage',
+    'deploymentType',
+    'target',
+    'source'
+]
+
+@Field Set STEP_CONFIG_KEYS = ['dockerImage']
+
 
 def call(Map parameters = [:]) {
 
-    handleStepErrors(stepName: 'deployToNeoWithCli', stepParameters: parameters) {
+    handleStepErrors(stepName: STEP_NAME, stepParameters: parameters) {
 
         final script = parameters.script
-
-        final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'deployToNeoWithCli')
-
-        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'deployToNeoWithCli')
-
-        Set parameterKeys = [
-            'dockerImage',
-            'deploymentType',
-            'target',
-            'source'
-        ]
-
-        Set stepConfigurationKeys = ['dockerImage']
-
-        Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
-
-        Map configurationHelper = new ConfigurationHelper(configuration)
+        Map configuration = ConfigurationHelper.newInstance(this)
+            .loadStepDefaults()
+            .mixinStepConfig(script.commonPipelineEnvironment, STEP_CONFIG_KEYS)
+            .mixin(parameters, PARAMETER_KEYS)
             .withMandatoryProperty('dockerImage')
             .withMandatoryProperty('target')
             .withMandatoryProperty('source')
             .use()
 
-        def dockerImage = configurationHelper.dockerImage
-        def deploymentDescriptors = configurationHelper.target
-        def source = configurationHelper.source
+        def dockerImage = configuration.dockerImage
+        def deploymentDescriptor = configuration.target
+        def source = configuration.source
 
-        verifyNeoEnvironmentVariables(deploymentDescriptors.environment)
+        verifyNeoEnvironmentVariables(deploymentDescriptor.environment)
 
-        Map deploymentDescriptor = new ConfigurationHelper(deploymentDescriptors).use()
         if (deploymentDescriptor.credentialsId) {
             NeoDeployCommandHelper commandHelper
             withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: deploymentDescriptor.credentialsId, passwordVariable: 'NEO_PASSWORD', usernameVariable: 'NEO_USERNAME']]) {
                 assertPasswordRules(NEO_PASSWORD)
-                commandHelper = new NeoDeployCommandHelper(deploymentDescriptors, NEO_USERNAME, BashUtils.escape(NEO_PASSWORD), source)
+                commandHelper = new NeoDeployCommandHelper(deploymentDescriptor, NEO_USERNAME, BashUtils.escape(NEO_PASSWORD), source)
                 deploy(script, dockerImage, configuration.deploymentType, commandHelper)
             }
         } else {
@@ -66,7 +64,7 @@ private assertPasswordRules(String password){
 private deploy(script, dockerImage, DeploymentType deploymentType, NeoDeployCommandHelper commandHelper) {
     commandHelper.assertMandatoryParameters()
     dockerExecute(script: script, dockerImage: dockerImage) {
-        lock("deployToNeoWithCli:${commandHelper.resourceLock()}") {
+        lock("$STEP_NAME :${commandHelper.resourceLock()}") {
 
             if (deploymentType == DeploymentType.ROLLING_UPDATE) {
                 if (!isAppRunning(commandHelper)) {

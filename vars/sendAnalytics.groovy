@@ -28,7 +28,7 @@ def call(Map parameters = [:]) {
             telemetryData << Analytics.instance.getTelemetryData()
 
             Map generalConfiguration = ConfigurationLoader.generalConfiguration(script)
-            if(generalConfiguration.idsite){
+            if (generalConfiguration.idsite) {
                 telemetryData.idsite = generalConfiguration.idsite
             }
 

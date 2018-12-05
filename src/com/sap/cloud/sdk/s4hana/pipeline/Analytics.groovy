@@ -29,6 +29,8 @@ class Analytics implements Serializable {
         systemInfo.e_11 = System.getProperty('os.name')
         systemInfo.custom12 = 'os_version'
         systemInfo.e_12 = System.getProperty('os.version')
+        systemInfo.custom13 = 'swa_schema_version'
+        systemInfo.e_13 = '1'
         systemInfo.locale = System.getenv('LANG')
         systemInfo.custom7 = 'jenkins_version'
         systemInfo.e_7 = System.getenv('JENKINS_VERSION')
@@ -51,9 +53,9 @@ class Analytics implements Serializable {
         return jobConfiguration
     }
 
-    void hashBuildNumber(def buildNumber){
+    void buildNumber(def buildNumber) {
         telemetryData.custom10 = 'build_number'
-        telemetryData.e_10 = hash(buildNumber)
+        telemetryData.e_10 = buildNumber
     }
 
     void hashBuildUrl(def jobUrl) {
@@ -61,9 +63,9 @@ class Analytics implements Serializable {
         telemetryData.e_a = hash(jobUrl) // This is how SWA fields are defined: e_a, e_2, e_3 etc.
     }
 
-    void hashProject(String projectId, String salt) {
+    void hashProject(String projectId) {
         telemetryData.custom2 = 'project_id_hash'
-        telemetryData.e_2 = hash(projectId, salt ?: this.salt)
+        telemetryData.e_2 = hash(projectId, this.salt, 'SHA-256')
     }
 
     void legacyConfig(boolean legacy) {
@@ -71,21 +73,18 @@ class Analytics implements Serializable {
         jobConfiguration.e_8 = legacy
     }
 
-    private String hash(String input) {
-        return hash(input, salt)
-    }
-
-    private String hash(String input, String salt) {
-        if (salt == null || salt.isEmpty()) {
-            // Don't hash without salt to don't compromise on privacy
-            return 'NOT-HASHABLE'
-        }
+    private String hash(String input, String salt = null, String algorithm = 'SHA-1') {
         if (input == null) {
-            return ''
+            return 'EMPTY'
         }
-        MessageDigest messageDigest = MessageDigest.getInstance('SHA-1')
+
+        if (salt == null) {
+            salt = ''
+        }
+
+        MessageDigest messageDigest = MessageDigest.getInstance(algorithm)
         messageDigest.reset()
-        messageDigest.update(salt.bytes)
-        return messageDigest.digest(input.bytes).encodeHex().toString()
+        messageDigest.update((input + salt).bytes)
+        return messageDigest.digest().encodeHex().toString()
     }
 }

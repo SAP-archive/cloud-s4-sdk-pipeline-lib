@@ -6,8 +6,12 @@ import hudson.model.Result
 
 import java.util.UUID
 
+import groovy.transform.Field
+
+@Field String STEP_NAME = 'runAsStage'
+
 def call(Map parameters = [:], body) {
-    Map configurationHelper = new ConfigurationHelper(parameters)
+    Map configurationHelper = ConfigurationHelper.newInstance(this, parameters)
         .withMandatoryProperty('stageName')
         .withMandatoryProperty('script')
         .use()
@@ -106,7 +110,7 @@ private executeStage(def script,
     }
 }
 
-private prepareAndSendAnalytics(def script, String stageName, def startTime, boolean projectExtensions, boolean globalExtensions){
+private prepareAndSendAnalytics(def script, String stageName, def startTime, boolean projectExtensions, boolean globalExtensions) {
     def stageInfo = [:]
     stageInfo.event_type = 'pipeline_stage'
     stageInfo.custom3 = 'stage_name'
@@ -116,7 +120,7 @@ private prepareAndSendAnalytics(def script, String stageName, def startTime, boo
     stageInfo.e_4 = Result.fromString(currentBuild.currentResult)
 
     stageInfo.custom5 = 'start_time'
-    stageInfo.e_5= startTime
+    stageInfo.e_5 = startTime
 
     stageInfo.custom6 = 'duration'
     stageInfo.e_6 = System.currentTimeMillis() - startTime
@@ -125,7 +129,7 @@ private prepareAndSendAnalytics(def script, String stageName, def startTime, boo
     stageInfo.e_7 = projectExtensions
 
     stageInfo.custom8 = 'global_extensions'
-    stageInfo.e_8= globalExtensions
+    stageInfo.e_8 = globalExtensions
 
     sendAnalytics(script: script, telemetryData: stageInfo)
 }

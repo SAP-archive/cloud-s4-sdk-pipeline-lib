@@ -1,4 +1,6 @@
+import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
+import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 
 def call(Map parameters) {
     def stageName = 'initS4sdkPipeline'
@@ -18,8 +20,6 @@ def call(Map parameters) {
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
 
-        initSalt()
-
         Analytics.instance.initAnalytics(isProductiveBranch(script: script), script.commonPipelineEnvironment.configuration.general.idsite)
 
         String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionRepository
@@ -30,7 +30,6 @@ def call(Map parameters) {
                 error("Error while executing git clone when accessing repository ${extensionRepository}.")
             }
         }
-
         loadAdditionalLibraries script: script
 
         def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
@@ -53,27 +52,27 @@ def call(Map parameters) {
             script.commonPipelineEnvironment.configuration.general = generalConfiguration
         }
 
-        if (env.'JOB_URL') {
-            Analytics.instance.hashBuildUrl(env.'JOB_URL')
-        } else {
-            Analytics.instance.hashBuildUrl(env.'JOB_NAME')
-        }
-
-        Analytics.instance.hashBuildNumber(env.'BUILD_NUMBER')
-
         def isMtaProject = fileExists('mta.yaml')
+        def pomFile = 'pom.xml'
         if (isMtaProject) {
             setupMtaProject(script: script, generalConfiguration: generalConfiguration)
-        } else if (fileExists('pom.xml')) {
-            pom = readMavenPom file: 'pom.xml'
-
-            Analytics.instance.hashProject(pom.groupId + pom.artifactId, null) // todo read project specific salt from POM
+        } else if (fileExists(pomFile)) {
+            pom = readMavenPom file: pomFile
+            readAndUpdateProjectSalt(script, pomFile)
+            Analytics.instance.hashProject(pom.groupId + pom.artifactId)
             if (!generalConfiguration.projectName?.trim()) {
                 generalConfiguration.projectName = pom.artifactId
             }
         } else {
             throw new Exception("No pom.xml or mta.yaml has been found in the root of the project. Currently the pipeline only supports Maven and Mta projects.")
         }
+
+        if (env.JOB_URL) {
+            Analytics.instance.hashBuildUrl(env.JOB_URL)
+        } else {
+            Analytics.instance.hashBuildUrl(env.JOB_NAME)
+        }
+        Analytics.instance.buildNumber(env.BUILD_NUMBER)
 
         Map configWithDefault = loadEffectiveGeneralConfiguration script: script
 
@@ -98,28 +97,35 @@ def call(Map parameters) {
     }
 }
 
-private void initSalt() {
+private void readAndUpdateProjectSalt(script, pomFile) {
     try {
-        String salt
-        if (!fileExists('/var/jenkins_home/s4sdk-salt')) {
-            salt = generateSalt()
-            sh "echo ${salt} > /var/jenkins_home/s4sdk-salt"
-        } else {
-            salt = sh script: 'cat /var/jenkins_home/s4sdk-salt', returnStdout: true
+        def effectivePomFile = "effectivePom.xml"
+        MavenUtils.generateEffectivePom(script, pomFile, effectivePomFile)
+        if (fileExists(effectivePomFile)) {
+            def projectSalt = getProjectSaltFromPom(readFile(effectivePomFile))
+            if (projectSalt) {
+                Analytics.instance.salt = projectSalt
+            }
         }
-        Analytics.instance.salt = salt
-    } catch (Exception e) {
-        // Proceed without salt, don't hash sensitive values
+    } catch (ignore) {
+
     }
 }
 
-private String generateSalt() {
-    byte[] salt = new byte[20]
-    Random random = new Random()
-    random.nextBytes(salt)
-    String saltHex = ''
-    for (character in salt) {
-        saltHex += String.format("%02x", character)
+@NonCPS
+private String getProjectSaltFromPom(String pomfile) {
+    String salt = null
+    if (pomfile) {
+        def plugins = new XmlSlurper().parseText(pomfile).depthFirst().findAll { it.name() == 'plugin' }
+        for (def plugin : plugins) {
+            if (plugin.artifactId == "s4sdk-maven-plugin") {
+                salt = plugin.depthFirst().findAll {
+                    it.name() == 'salt'
+                }[0]
+                return salt
+            }
+        }
+
     }
-    return saltHex
+    return salt
 }

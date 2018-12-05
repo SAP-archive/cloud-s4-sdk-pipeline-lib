@@ -33,6 +33,14 @@ steps:
     scanModules:
       - 'application'
 
+  executeFortifyScan:
+    verbose: false
+    sourceVersion: 1.8
+    use64BitVersion: true
+    maximumMemoryUsage: 3000M
+    exclude: '**/resources/**/*,**/target/**/*,**/unit-tests/**/*,**/integration-tests/**/*'
+    skipNgComponents: true
+
   checkPmd:
     scanModules:
       - 'application'
@@ -46,6 +54,7 @@ steps:
 
   cloudFoundryDeploy:
     dockerImage: s4sdk/docker-cf-cli
+    keepOldInstance: true
     stashContent: []
     mtaDeployParameters: '-f --no-confirm --version-rule ALL'
 
