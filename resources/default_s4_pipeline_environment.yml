@@ -61,9 +61,6 @@ steps:
   mtaBuild:
     buildTarget: 'CF'
 
-  checkNodeSecurityPlatform:
-    dockerImage: allthings/nsp
-
 #Stage Specific Configurations
 stages:
   integrationTests:
