@@ -6,7 +6,6 @@ def call(Map parameters) {
     script.commonPipelineEnvironment.configuration.runStage = [:]
 
     if (fileExists('package.json')) {
-        script.commonPipelineEnvironment.configuration.runStage.FRONT_END_BUILD = true
         script.commonPipelineEnvironment.configuration.runStage.FRONT_END_TESTS = true
     }
 
@@ -82,5 +81,5 @@ private static boolean endToEndTestsShouldRun(script) {
         return false
     }
 
-    return stageConfig && script.commonPipelineEnvironment.configuration.runStage.FRONT_END_BUILD
+    return stageConfig && script.fileExists('package.json')
 }
