@@ -4,8 +4,6 @@ import com.sap.piper.ConfigurationMerger
 import com.sap.piper.k8s.ContainerMap
 import hudson.model.Result
 
-import java.util.UUID
-
 import groovy.transform.Field
 
 @Field String STEP_NAME = 'runAsStage'
