@@ -39,7 +39,7 @@ def call(Map parameters) {
     }
 
     if (fileExists('package.json')) {
-        script.commonPipelineEnvironment.configuration.runStage.NODE_SECURITY_SCAN = true
+        script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
     }
 
     if (ConfigurationLoader.stageConfiguration(script, 'sourceClearScan').credentialsId) {

@@ -1,7 +1,8 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
-import com.sap.piper.JenkinsUtils
+
+import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkDeploymentDescriptors', stepParameters: parameters) {
@@ -124,23 +125,9 @@ private logUnsafeUsage(usedForbiddenEnvironmentVariables) {
 """
 
         echo message
-        checkForBadgePlugin()
+        assertPluginIsActive('badge')
         addBadge(icon: "warning.gif", text: "Unsafe environment variables are used. Please have a look into the summary or log")
         createSummary(icon: "warning.gif", text: html)
-    }
-}
-
-@NonCPS
-// TODO Replace this method with a generic, centralized method to ensure plugin compliance in the pipeline/library
-private void checkForBadgePlugin() {
-    final String PLUGIN_ID_BADGE = 'badge'
-    if (!JenkinsUtils.isPluginActive(PLUGIN_ID_BADGE)) {
-        String exception = """[ERROR] Plugin '${PLUGIN_ID_BADGE}' is not installed or not active.
-Please update the Jenkins image to the latest available version. 
-For more information how to update the image please visit:
-https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/operations/operations-guide.md#update-image
-"""
-        throw new RuntimeException(exception)
     }
 }
 
