@@ -32,7 +32,7 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
             moderate: moderate.size()
         ]
 
-        if (vulnerabilitySummary.critical > 0 || vulnerabilitySummary.high > 1 || vulnerabilitySummary.moderate > 5) {
+        if (vulnerabilitySummary.critical > 0 || vulnerabilitySummary.high > 0 || vulnerabilitySummary.moderate > 2) {
             script.currentBuild.setResult('FAILURE')
             def npmAuditSummary = "npm dependency audit discovered ${vulnerabilitySummary.critical} crticial and ${vulnerabilitySummary.high} high vulnerabilities. " +
                 "Please execute 'npm audit' locally to identify and fix relevant findings.\n" +
