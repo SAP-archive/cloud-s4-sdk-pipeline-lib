@@ -57,6 +57,9 @@ private List splitBySeverity(Map advisories) {
 private Map filterUserAuditedAdvisories(Map configuration, Map advisories) {
     List userAuditedAdvisories = configuration?.auditedAdvisories
 
+    // Handle non-string list elements
+    userAuditedAdvisories = userAuditedAdvisories.collect {String.valueOf(it)}
+
     if (userAuditedAdvisories) {
         List unmatchedUserAuditedAdvisories = userAuditedAdvisories.minus(advisories.keySet())
         List matchedUserAuditedAdvisories = userAuditedAdvisories.minus(unmatchedUserAuditedAdvisories)
