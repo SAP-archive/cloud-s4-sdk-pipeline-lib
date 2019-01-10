@@ -11,6 +11,8 @@ containerMaps:
     - mavenExecute
   frontendUnitTests:
     - executeNpm
+  fortifyScan:
+    - executeFortifyScan  
   npmAudit:
     - executeNpm
   endToEndTests:
