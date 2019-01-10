@@ -21,15 +21,15 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
 
         def npmAuditResult = readJSON file: "npm-audit.json"
 
-
         Map advisories = filterUserAuditedAdvisories(configuration, npmAuditResult.advisories)
-
-        def (Map critical, Map high, Map moderate) = splitBySeverity(advisories)
+        Map criticalAdvisories = advisories.findAll { it.value.severity == 'critical' }
+        Map highAdvisories = advisories.findAll { it.value.severity == 'high' }
+        Map moderateAdvisories = advisories.findAll { it.value.severity == 'moderate' }
 
         Map vulnerabilitySummary = [
-            critical: critical.size(),
-            high    : high.size(),
-            moderate: moderate.size()
+            critical: criticalAdvisories.size(),
+            high    : highAdvisories.size(),
+            moderate: moderateAdvisories.size()
         ]
 
         if (vulnerabilitySummary.critical > 0 || vulnerabilitySummary.high > 0 || vulnerabilitySummary.moderate > 2) {
@@ -37,21 +37,14 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
             def npmAuditSummary = "npm dependency audit discovered ${vulnerabilitySummary.critical} crticial and ${vulnerabilitySummary.high} high vulnerabilities. " +
                 "Please execute 'npm audit' locally to identify and fix relevant findings.\n" +
                 "Summary of the findings:\n" +
-                "${formatRelevantAdvisoriesForLog(critical, high, moderate)}"
+                "${formatRelevantAdvisoriesForLog(criticalAdvisories, highAdvisories, moderateAdvisories)}"
             addBadge(icon: "error.gif", text: npmAuditSummary)
             createSummary(icon: "error.gif", text: "<h2>npm dependency audit discovered ${vulnerabilitySummary.critical} crticial and ${vulnerabilitySummary.high} high vulnerabilities</h2>\n" +
                 "Please execute <code>npm audit</code> locally to identify and fix relevant findings.\n" +
-                "<h3>Summary of the findings</h3>\n" + formatRelevantAdvisoriesForBadge(critical, high, moderate))
+                "<h3>Summary of the findings</h3>\n" + formatRelevantAdvisoriesForBadge(criticalAdvisories, highAdvisories, moderateAdvisories))
             error npmAuditSummary
         }
     }
-}
-
-private List splitBySeverity(Map advisories) {
-    Map critical = advisories.findAll { it.value.severity == 'critical' }
-    Map high = advisories.findAll { it.value.severity == 'high' }
-    Map moderate = advisories.findAll { it.value.severity == 'moderate' }
-    return [critical, high, moderate]
 }
 
 private Map filterUserAuditedAdvisories(Map configuration, Map advisories) {
@@ -59,7 +52,7 @@ private Map filterUserAuditedAdvisories(Map configuration, Map advisories) {
 
     if (userAuditedAdvisories && advisories) {
         // Handle non-string list elements
-        userAuditedAdvisories = userAuditedAdvisories.collect {String.valueOf(it)}
+        userAuditedAdvisories = userAuditedAdvisories.collect { String.valueOf(it) }
 
         List unmatchedUserAuditedAdvisories = userAuditedAdvisories.minus(advisories.keySet())
         List matchedUserAuditedAdvisories = userAuditedAdvisories.minus(unmatchedUserAuditedAdvisories)
