@@ -14,19 +14,24 @@ def call(Map parameters = [:]) {
 
 private void executeNpmAudit(def script, Map configuration, String basePath) {
     dir(basePath) {
-
         if (!(fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json'))) {
             error 'Expected npm package lock file to exist. This is a requirement for npm audit. See https://docs.npmjs.com/files/package-locks for background.'
         }
-
+        Map discoveredAdvisories
         executeNpm(script: script) {
             sh "echo 'Falling back to default public npm registry while executing npm audit check.' && npm config delete registry"
             sh script: "npm audit --json > npm-audit.json", returnStatus: true
+            try {
+                Map npmAuditResult = readJSON file: "npm-audit.json"
+                discoveredAdvisories = npmAuditResult.advisories
+            } catch (Exception e) {
+                error "Failed to parse the scan results of npm audit. " +
+                    "It might be that the npm registry did not respond as expected, or that it is not reachable. " +
+                    "Please check for additional log messages in the npm audit stage."
+            }
         }
 
-        def npmAuditResult = readJSON file: "npm-audit.json"
-
-        Map advisories = filterUserAuditedAdvisories(configuration, npmAuditResult.advisories)
+        Map advisories = filterUserAuditedAdvisories(configuration, discoveredAdvisories)
         Map criticalAdvisories = advisories.findAll { it.value.severity == 'critical' }
         Map highAdvisories = advisories.findAll { it.value.severity == 'high' }
         Map moderateAdvisories = advisories.findAll { it.value.severity == 'moderate' }
