@@ -14,6 +14,11 @@ def call(Map parameters = [:]) {
 
 private void executeNpmAudit(def script, Map configuration, String basePath) {
     dir(basePath) {
+
+        if (!(fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json'))) {
+            error 'Expected npm package lock file to exist. This is a requirement for npm audit. See https://docs.npmjs.com/files/package-locks for background.'
+        }
+
         executeNpm(script: script) {
             sh "echo 'Falling back to default public npm registry while executing npm audit check.' && npm config delete registry"
             sh script: "npm audit --json > npm-audit.json", returnStatus: true
