@@ -22,5 +22,5 @@ private void executeQualityChecks(def script, String basePath, Map configuration
 
     checkCodeCoverage script: script, jacocoExcludes: configuration.jacocoExcludes, basePath: basePath
     checkHystrix()
-    checkServices script: script, nonErpDestinations: configuration.nonErpDestinations
+    checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
 }

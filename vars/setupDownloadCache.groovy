@@ -10,7 +10,7 @@ def call(Map parameters) {
 
         writeFile file: s4SdkGlobals.mavenGlobalSettingsFile, text: libraryResource("mvn_download_cache_proxy_settings.xml")
 
-        // FIXME: Here we missuse the defaultConfiguration to control behavior in npm steps (will be merged with other values)
+        // FIXME: Here we misuse the defaultConfiguration to control behavior in npm steps (will be merged with other values)
         DefaultValueCache.getInstance().getDefaultValues().dockerNetwork = DownloadCacheUtils.networkName()
 
         // FIXME For maven we use the default settings (possible because mavenExecute never sets any own dockerOptions)

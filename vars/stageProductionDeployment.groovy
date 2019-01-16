@@ -11,8 +11,23 @@ def call(Map parameters = [:]) {
             //other milestones are defined in the pipeline
             milestone 80
             if (fileExists('package.json')) {
-                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
-                executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.SMOKE_TEST, stage: stageName
+                try {
+                    deployToCloudPlatform(
+                        script: script,
+                        cfTargets: stageConfiguration.cfTargets,
+                        neoTargets: stageConfiguration.neoTargets,
+                        isProduction: true,
+                        stage: stageName
+                    )
+                }
+                finally {
+                    executeEndToEndTest(
+                        script: script,
+                        appUrls: stageConfiguration.appUrls,
+                        endToEndTestType: EndToEndTestType.SMOKE_TEST,
+                        stage: stageName
+                    )
+                }
             } else {
                 deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
                 echo "Smoke tests skipped, because package.json does not exist!"

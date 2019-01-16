@@ -1,7 +1,6 @@
 ## Context
 
-Please provide a description of what your change does and why it is needed.
-Try [completing this sentence](https://chris.beams.io/posts/git-commit/#imperative): *If applied, this commit will ...*
+*If applied, this commit will ...*
 
 ## Definition of Done
 Please consider all items and remove only if not applicable.
@@ -9,6 +8,7 @@ Please consider all items and remove only if not applicable.
 - [ ] I carefully reviewed my own pull request before assinging someone.
 - [ ] Changes to the configuration are also documented in the [configuration.md](https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md)
 - [ ] Important design decisions are documented as an [ADR](https://github.com/SAP/cloud-s4-sdk-pipeline/tree/master/doc/architecture/decisions)
+- [ ] This change is operations-relevant and I have updated the operations guide correspondingly
 - [ ] There are tests covering this change
 
 ## Merging

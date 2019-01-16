@@ -1,17 +1,17 @@
-import com.sap.piper.ConfigurationMerger
 
 @Grab('com.xlson.groovycsv:groovycsv:1.1')
 import static com.xlson.groovycsv.CsvParser.parseCsv
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkServices', stepParameters: parameters) {
-        Set parameterKeys = ['nonErpDestinations']
 
+        Set<String> parameterKeys = ['nonErpDestinations', 'customODataServices']
         final Map configuration = parameters.subMap(parameterKeys)
 
         final Set<String> nonErpDestinations = configuration.nonErpDestinations
+        final Set<String> customODataServices = configuration.customODataServices
 
-        checkODataServices(nonErpDestinations)
+        checkODataServices(nonErpDestinations, customODataServices)
         checkBapiServices(nonErpDestinations)
     }
 }
@@ -88,13 +88,18 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
     }
 }
 
-private void checkODataServices(Set<String> nonErpDestinations) {
+private void checkODataServices(Set<String> nonErpDestinations, Set<String> customODataServices) {
     final Set<String> allowedServiceNames = []
     List services = downloadServicesList()
     for (int x = 0; x < services.size(); x++) {
         String serviceName = services[x].Name
         allowedServiceNames.add(serviceName)
     }
+
+    if (customODataServices) {
+        allowedServiceNames.addAll(customODataServices)
+    }
+
     //println "Allowed OData Services: " + allowedServiceNames
 
     String reportFileAsString = readFile("${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_odata_audit.log")

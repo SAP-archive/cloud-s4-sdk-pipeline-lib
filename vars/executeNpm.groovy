@@ -12,7 +12,8 @@ def call(Map parameters = [:], body) {
 
         Set parameterKeys = [
             'dockerImage',
-            'dockerOptions'
+            'dockerOptions',
+            'defaultNpmRegistry'
         ]
         Set stepConfigurationKeys = ['dockerImage', 'defaultNpmRegistry']
 

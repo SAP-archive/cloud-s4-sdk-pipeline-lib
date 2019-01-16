@@ -28,6 +28,8 @@ build:
     includes: "*.mtar, **/target/**, target/**"
   - name: "NODE_MODULES"
     includes: "**/node_modules/**, node_modules/**"
+  - name: "PACKAGE_LOCK"
+    includes: "**/package-lock.json, **/npm-shrinkwrap.json"
 
 unitTests:
   unstash: ['SOURCE', 'M2', 'TARGET']
@@ -70,8 +72,8 @@ fortifyScan:
   unstash: ['SOURCE', 'M2']
   stashes: []
 
-nodeSecurityPlatform:
-  unstash: ['SOURCE', 'REPORTS']
+npmAudit:
+  unstash: ['SOURCE', "PACKAGE_LOCK"]
   stashes: []
 
 frontendUnitTests:

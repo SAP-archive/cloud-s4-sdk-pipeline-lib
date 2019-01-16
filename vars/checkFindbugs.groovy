@@ -57,7 +57,7 @@ def executeMavenSpotBugs(script, filterOptions, Map configuration, String pomPat
         flags: '--batch-mode',
         pomPath: pomPath,
         m2Path: s4SdkGlobals.m2Directory,
-        goals: 'com.github.spotbugs:spotbugs-maven-plugin:3.1.3.1:spotbugs',
+        goals: 'com.github.spotbugs:spotbugs-maven-plugin:3.1.9:spotbugs',
         defines: filterOptions,
         dockerImage: configuration.dockerImage
     )
