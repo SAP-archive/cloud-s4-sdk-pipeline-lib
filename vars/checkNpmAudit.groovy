@@ -20,18 +20,42 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
         Map discoveredAdvisories
         executeNpm(script: script) {
             sh "echo 'Falling back to default public npm registry while executing npm audit check.' && npm config delete registry"
-            sh script: "npm audit --json > npm-audit.json", returnStatus: true
-            try {
+
+            // Retry npm audit in case it failed
+            final int MAX_RETRIES = 3
+            int retryCount = 1
+            boolean hasSucceeded = false
+            while (retryCount <= MAX_RETRIES && (!hasSucceeded)) {
+
+                sh script: "npm audit --json > npm-audit.json", returnStatus: true
                 Map npmAuditResult = readJSON file: "npm-audit.json"
-                discoveredAdvisories = npmAuditResult.advisories
-            } catch (Exception e) {
-                error "Failed to parse the scan results of npm audit. " +
-                    "It might be that the npm registry did not respond as expected, or that it is not reachable. " +
-                    "Please check for additional log messages in the npm audit stage."
+
+                if (npmAuditResult.containsKey("advisories")) {
+                    discoveredAdvisories = npmAuditResult.advisories
+                    hasSucceeded = true
+                } else {
+                    String npmAuditRegistryNotReachableErrorMessage = "Failed to parse the scan results of npm audit. " +
+                        "It might be that the npm registry did not respond as expected, or that it is not reachable. " +
+                        "Please check for additional log messages in the npm audit stage."
+
+                    if (retryCount == MAX_RETRIES) {
+                        error npmAuditRegistryNotReachableErrorMessage + " Won't retry audit anymore."
+                    } else {
+                        echo npmAuditRegistryNotReachableErrorMessage + " Will retry to run npm audit."
+                        sleep time: 5, unit: 'SECONDS'
+                    }
+                }
+                retryCount++
             }
         }
 
         Map advisories = filterUserAuditedAdvisories(configuration, discoveredAdvisories)
+
+        if (advisories == null) {
+            error("npm audit was not successful, expected 'advisories' not to be null, but it is null. " +
+                "This should not happen, if it does, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe in detail what happened.")
+        }
+
         Map criticalAdvisories = advisories.findAll { it.value.severity == 'critical' }
         Map highAdvisories = advisories.findAll { it.value.severity == 'high' }
         Map moderateAdvisories = advisories.findAll { it.value.severity == 'moderate' }
