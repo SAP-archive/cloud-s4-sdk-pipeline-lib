@@ -5,6 +5,8 @@ containerMaps:
     - executeNpm
   staticCodeChecks:
     - mavenExecute
+  lint:
+    - executeNpm
   unitTests:
     - mavenExecute
   integrationTests:

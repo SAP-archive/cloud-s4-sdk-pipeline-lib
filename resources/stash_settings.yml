@@ -52,6 +52,9 @@ staticCodeChecks:
     merge: true
     includes: "s4hana_pipeline/reports/**"
 
+lint:
+  unstash: ['SOURCE', 'NODE_MODULES', 'PACKAGE_LOCK']
+
 checkmarxScan:
   unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']
   stashes: []
