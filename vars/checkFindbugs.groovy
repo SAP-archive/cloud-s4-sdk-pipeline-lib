@@ -1,8 +1,11 @@
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
+import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkFindbugs', stepParameters: parameters) {
+        assertPluginIsActive('warnings-ng')
+
         def script = parameters.script
         String basePath = parameters.basePath
 
@@ -34,8 +37,19 @@ def call(Map parameters = [:]) {
 
         executeMavenSpotBugsForConfiguredModules(script, filterOptions, configuration, basePath)
 
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Findbugs', errorMessage: "Please examine the FindBugs/SpotBugs reports.") {
-            findbugs canComputeNew: false, excludePattern: excludeFilterFile, failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/spotbugsXml.xml'
+        executeWithLockedCurrentBuildResult(
+            script: script,
+            errorStatus: 'FAILURE',
+            errorHandler: script.buildFailureReason.setFailureReason,
+            errorHandlerParameter: 'Findbugs',
+            errorMessage: "Please examine the FindBugs/SpotBugs reports."
+        ) {
+                recordIssues failedTotalHigh: 1,
+                    failedTotalNormal: 10,
+                    blameDisabled: true,
+                    enabledForFailure: true,
+                    aggregatingResults: false,
+                    tool: spotBugs(pattern: '**/target/spotbugsXml.xml')
         }
     }
 }

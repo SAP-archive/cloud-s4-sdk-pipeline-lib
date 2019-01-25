@@ -1,8 +1,12 @@
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
+import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
+
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkPmd', stepParameters: parameters) {
+        assertPluginIsActive('warnings-ng')
+
         def script = parameters.script
         String basePath = parameters.basePath
 
@@ -37,8 +41,21 @@ def call(Map parameters = [:]) {
 
         executeMavenPMDForConfiguredModules(script, options, configuration, basePath)
 
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'PMD', errorMessage: "Please examine the PMD reports.") {
-            pmd(failedTotalHigh: '0', failedTotalNormal: '10', pattern: '**/target/pmd.xml')
+        executeWithLockedCurrentBuildResult(
+            script: script,
+            errorStatus: 'FAILURE',
+            errorHandler: script.buildFailureReason.setFailureReason,
+            errorHandlerParameter: 'PMD',
+            errorMessage: "Please examine the PMD reports."
+        )
+            {
+            recordIssues failedTotalHigh: 1,
+                    failedTotalNormal: 10,
+                    blameDisabled: true,
+                    enabledForFailure: true,
+                    aggregatingResults: false,
+                    tool: pmdParser(pattern: '**/target/pmd.xml')
+
         }
     }
 }

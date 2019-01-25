@@ -5,12 +5,12 @@ import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assert
 def call(Map parameters = [:]) {
 
     handleStepErrors(stepName: 'checkUi5BestPractices', stepParameters: parameters) {
+        assertPluginIsActive('warnings-ng')
+        assertPluginIsActive('badge')
+
         final script = parameters.script
         final Map configuration = parameters.configuration
         final String basePath = parameters.basePath
-
-        assertPluginIsActive('warnings-ng')
-        assertPluginIsActive('badge')
 
         dir(basePath) {
             // In case a Gruntfile already exists, replace it with a well-known Gruntfile just for this step
@@ -73,7 +73,7 @@ private void recordDiscoveredIssues(String gruntBestPracticesScanResultsFile, Ma
         failedTotalLow: failedLow,
         blameDisabled: true,
         enabledForFailure: true,
-        aggregatingResults: true,
+        aggregatingResults: false,
         tool: checkStyle(pattern: 'ui5-best-practices-scan-results.xml')
 
     sh 'rm -f ui5-best-practices-scan-results.xml'
