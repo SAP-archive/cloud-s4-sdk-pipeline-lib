@@ -73,7 +73,7 @@ stages:
 
   checkmarxScan:
     filterPattern: '!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, **/*.js, **/*.java, **/*.ts'
-    fullScansScheduled: false
+    fullScansScheduled: true
     generatePdfReport: true
     incremental: true
     preset: '36'
