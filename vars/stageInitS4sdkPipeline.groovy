@@ -20,9 +20,9 @@ def call(Map parameters) {
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
 
-        Analytics.instance.initAnalytics(isProductiveBranch(script: script), script.commonPipelineEnvironment.configuration.general.idsite)
+        Analytics.instance.initAnalytics(script)
 
-        String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionRepository
+        String extensionRepository = script.loadEffectiveGeneralConfiguration(script: script).extensionRepository
         if (extensionRepository != null) {
             try {
                 sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
@@ -46,7 +46,6 @@ def call(Map parameters) {
         }
 
         Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
-
         if (!generalConfiguration) {
             generalConfiguration = [:]
             script.commonPipelineEnvironment.configuration.general = generalConfiguration

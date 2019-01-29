@@ -8,7 +8,6 @@ class MavenUtils implements Serializable {
             pomPath: pomFile,
             m2Path: script.s4SdkGlobals.m2Directory,
             goals: 'help:effective-pom',
-            dockerImage: script.commonPipelineEnvironment.configuration.steps.mavenExecute.dockerImage,
             defines: "-Doutput=${effectivePomFile}")
     }
 }

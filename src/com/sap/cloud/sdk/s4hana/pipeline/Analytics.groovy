@@ -10,10 +10,11 @@ class Analytics implements Serializable {
     Map jobConfiguration = [:]
     String salt = null
 
-    void initAnalytics(boolean isProductive, String idSite) {
-        initTelemetryData(idSite)
+    void initAnalytics(Script script) {
+        Map generalConfig = script.loadEffectiveGeneralConfiguration script: script
+        initTelemetryData(generalConfig.idSite)
         initSystemInfo()
-        initJobConfiguration(isProductive)
+        initJobConfiguration(script.isProductiveBranch(script: script))
     }
 
     void initTelemetryData(String idSite) {
@@ -36,9 +37,9 @@ class Analytics implements Serializable {
         systemInfo.e_7 = System.getenv('JENKINS_VERSION')
     }
 
-    void initJobConfiguration(boolean isProductive) {
+    void initJobConfiguration(boolean isProductiveBranch) {
         jobConfiguration.custom9 = 'is_productive'
-        jobConfiguration.e_9 = isProductive
+        jobConfiguration.e_9 = isProductiveBranch
     }
 
     Map getTelemetryData() {
