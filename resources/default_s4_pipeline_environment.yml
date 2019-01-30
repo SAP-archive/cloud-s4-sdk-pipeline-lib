@@ -58,6 +58,10 @@ steps:
     stashContent: []
     mtaDeployParameters: '-f --no-confirm --version-rule ALL'
 
+  neoDeploy:
+    deployMode: 'warParams'
+    neoHome: '/sdk'
+
   mtaBuild:
     buildTarget: 'CF'
 

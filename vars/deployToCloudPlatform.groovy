@@ -18,7 +18,7 @@ def call(Map parameters = [:]) {
 
                     String deploymentType
                     if(enableZeroDowntimeDeployment) {
-                        deploymentType = DeploymentType.BLUE_GREEN.toString()
+                        deploymentType = DeploymentType.CF_BLUE_GREEN.toString()
                     }
                     else {
                         deploymentType = DeploymentType.selectFor(
@@ -66,18 +66,19 @@ def call(Map parameters = [:]) {
 
                     DeploymentType deploymentType
                     if(enableZeroDowntimeDeployment) {
-                        deploymentType = DeploymentType.ROLLING_UPDATE
+                        deploymentType = DeploymentType.NEO_ROLLING_UPDATE
                     }
                     else {
                         deploymentType = DeploymentType.selectFor(CloudPlatform.NEO, parameters.isProduction.asBoolean())
                     }
 
-                    deployToNeoWithCli(
+                    neoDeploy (
                         script: parameters.script,
-                        target: target,
-                        deploymentType: deploymentType,
-                        source: source
+                        warAction: deploymentType.toString(),
+                        source: source,
+                        neo: target
                     )
+
                     stashFiles script: script, stage: stageName
                 }
                 deployments["Deployment ${index > 1 ? index : ''}"] = {

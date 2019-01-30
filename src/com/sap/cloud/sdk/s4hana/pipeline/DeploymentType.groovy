@@ -1,7 +1,7 @@
 package com.sap.cloud.sdk.s4hana.pipeline
 
 enum DeploymentType {
-    ROLLING_UPDATE('rolling-update'), BLUE_GREEN('blue-green'), STANDARD('standard')
+    NEO_ROLLING_UPDATE('rolling-update'), CF_BLUE_GREEN('blue-green'), CF_STANDARD('standard'), NEO_DEPLOY('deploy')
 
     private String value
 
@@ -15,17 +15,19 @@ enum DeploymentType {
     }
 
     static DeploymentType selectFor(CloudPlatform cloudPlatform, boolean isProduction) {
-        if (!isProduction) {
-            return STANDARD
-        } else {
-            switch (cloudPlatform) {
-                case CloudPlatform.NEO:
-                    return ROLLING_UPDATE
-                case CloudPlatform.CLOUD_FOUNDRY:
-                    return BLUE_GREEN
-                default:
-                    throw new RuntimeException("Unknown cloud platform: ${cloudPlatform}")
-            }
+        switch (cloudPlatform) {
+            case CloudPlatform.NEO:
+                if (!isProduction) {
+                    return NEO_DEPLOY
+                }
+                return NEO_ROLLING_UPDATE
+            case CloudPlatform.CLOUD_FOUNDRY:
+                if (!isProduction) {
+                    return CF_STANDARD
+                }
+                return CF_BLUE_GREEN
+            default:
+                throw new RuntimeException("Unknown cloud platform: ${cloudPlatform}")
         }
     }
 }
