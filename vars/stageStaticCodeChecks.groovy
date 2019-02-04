@@ -1,3 +1,5 @@
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
@@ -8,7 +10,10 @@ def call(Map parameters = [:]) {
 
         runOverModules(script: script, moduleType: "java") { basePath ->
             checkPmd script: script, excludes: configuration.pmdExcludes, basePath: basePath
+            ReportAggregator.instance.reportStaticCodeExecution(QualityCheck.PmdCheck)
+
             checkFindbugs script: script, excludeFilterFile: configuration.findbugsExcludesFile, basePath: basePath
+            ReportAggregator.instance.reportStaticCodeExecution(QualityCheck.FindbugsCheck)
         }
     }
 }

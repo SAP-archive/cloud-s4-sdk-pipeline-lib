@@ -1,4 +1,6 @@
 import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
@@ -52,6 +54,7 @@ private void executeIntegrationTest(def script, String basePath, String stageNam
                 dockerImage: configuration.dockerImage,
                 defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
             )
+            ReportAggregator.instance.reportTestExecution(QualityCheck.IntegrationTests)
 
         } catch (Exception e) {
             executeWithLockedCurrentBuildResult(

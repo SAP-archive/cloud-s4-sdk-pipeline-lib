@@ -1,4 +1,6 @@
 import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
@@ -30,6 +32,7 @@ private void executeUnitTest(def script, String basePath, Map configuration){
             dockerImage: image,
             defines: '-Dsurefire.forkCount=1C'
         )
+        ReportAggregator.instance.reportTestExecution(QualityCheck.UnitTests)
 
     } catch (Exception e) {
         echo e.getLocalizedMessage()
