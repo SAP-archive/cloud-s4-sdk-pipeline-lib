@@ -18,6 +18,8 @@ dependencies {
     compile group: 'org.jenkins-ci.plugins', name: 'jacoco', version: '3.0.4', ext: 'jar'
     compile group: 'org.jenkins-ci.plugins', name: 'junit', version: '1.26'
     compile group: 'org.jenkins-ci.plugins', name: 'junit', version: '1.26', ext: 'jar'
+    compile group: 'org.jenkins-ci.plugins.workflow', name: 'workflow-cps-global-lib', version: '2.12'
+    compile group: 'org.jenkins-ci.plugins.workflow', name: 'workflow-cps-global-lib', version: '2.12', ext: 'jar'
     compile files('libs/jenkins-library-def66f4ffa9e614eeb3747599a0be7ea9a108453.jar') //FIXME Only for running the tests, find better option to do this
     ivy group:'org.apache.ivy', name:'ivy', version:'2.4.0'
     compile group:'org.apache.ivy', name:'ivy', version:'2.4.0'
