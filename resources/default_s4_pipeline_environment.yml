@@ -58,6 +58,10 @@ steps:
     stashContent: []
     mtaDeployParameters: '-f --no-confirm --version-rule ALL'
 
+  neoDeploy:
+    deployMode: 'warParams'
+    neoHome: '/sdk'
+
   mtaBuild:
     buildTarget: 'CF'
 
@@ -73,7 +77,7 @@ stages:
 
   checkmarxScan:
     filterPattern: '!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, **/*.js, **/*.java, **/*.ts'
-    fullScansScheduled: false
+    fullScansScheduled: true
     generatePdfReport: true
     incremental: true
     preset: '36'

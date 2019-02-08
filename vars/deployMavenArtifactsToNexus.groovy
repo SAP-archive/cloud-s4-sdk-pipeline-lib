@@ -73,7 +73,6 @@ def generateEffectivePom(script, pomFile, configuration) {
         pomPath: "$pomFile",
         m2Path: s4SdkGlobals.m2Directory,
         goals: 'help:effective-pom',
-        dockerImage: configuration.dockerImage,
         defines: "-Doutput=effectivePom.xml"
     )
 

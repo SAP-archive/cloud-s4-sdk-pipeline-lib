@@ -1,6 +1,7 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 
 def call(Map parameters) {
     def stageName = 'initS4sdkPipeline'
@@ -15,14 +16,18 @@ def call(Map parameters) {
     code changes to the git server.
     */
     runAsStage(stageName: stageName, script: script, node: 'master') {
-        checkout scm
+        Map scmCheckoutResult = checkout scm
+
+        if(scmCheckoutResult.GIT_COMMIT){
+            ReportAggregator.instance.reportVersionControlUsed('Git')
+        }
 
         initS4SdkPipelineLibrary script: script
         initStashConfiguration script: script
 
-        Analytics.instance.initAnalytics(isProductiveBranch(script: script), script.commonPipelineEnvironment.configuration.general.idsite)
+        Analytics.instance.initAnalytics(script)
 
-        String extensionRepository = script.commonPipelineEnvironment.configuration.general.extensionRepository
+        String extensionRepository = script.loadEffectiveGeneralConfiguration(script: script).extensionRepository
         if (extensionRepository != null) {
             try {
                 sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
@@ -46,7 +51,6 @@ def call(Map parameters) {
         }
 
         Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
-
         if (!generalConfiguration) {
             generalConfiguration = [:]
             script.commonPipelineEnvironment.configuration.general = generalConfiguration
@@ -61,11 +65,17 @@ def call(Map parameters) {
             readAndUpdateProjectSalt(script, pomFile)
             Analytics.instance.hashProject(pom.groupId + pom.artifactId)
             if (!generalConfiguration.projectName?.trim()) {
-                generalConfiguration.projectName = pom.artifactId
+                generalConfiguration.projectName = "${pom.groupId}-${pom.artifactId}"
             }
         } else {
             throw new Exception("No pom.xml or mta.yaml has been found in the root of the project. Currently the pipeline only supports Maven and Mta projects.")
         }
+
+        if(!generalConfiguration.projectName){
+            error "This should not happen: Project name was not specified in the configuration and could not be derived from the project."
+        }
+
+        ReportAggregator.instance.reportProjectIdentifier(generalConfiguration.projectName)
 
         if (env.JOB_URL) {
             Analytics.instance.hashBuildUrl(env.JOB_URL)
@@ -78,6 +88,7 @@ def call(Map parameters) {
 
         if (isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
             artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
+            ReportAggregator.instance.reportAutomaticVersioning()
         }
         generalConfiguration.gitCommitId = getGitCommitId()
 

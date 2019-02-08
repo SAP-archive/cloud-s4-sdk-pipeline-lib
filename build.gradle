@@ -5,20 +5,25 @@ apply plugin: 'groovy'
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.jenkins-ci.org/releases/" }
+    maven { url "https://repo.jenkins-ci.org/public/"}
 }
 
 configurations { ivy }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.eclipse.hudson/hudson-core
-    compile group: 'org.eclipse.hudson', name: 'hudson-core', version: '3.2.0'
-    compile 'org.codehaus.groovy:groovy-all:2.4.10'
-    compile 'org.jenkins-ci.plugins.workflow:workflow-cps:2.38'
-    compile files('libs/jenkins-library-32e20a72936616b4aebeb5aed5513fbe6102e99d.jar') //FIXME Only for running the tests, find better option to do this
-    ivy 'org.apache.ivy:ivy:2.4.0'
-    compile 'org.apache.ivy:ivy:2.4.0'
-    testCompile 'junit:junit:4.12'
+    compile group: 'org.jenkins-ci.main', name: 'jenkins-core', version: '2.150.2'
+    compile group: 'javax.servlet', name: 'servlet-api', version: '2.5'
+    compile group: 'org.jenkins-ci.plugins.workflow', name: 'workflow-cps', version: '2.38'
+    compile group: 'org.jenkins-ci.plugins', name: 'jacoco', version: '3.0.4'
+    compile group: 'org.jenkins-ci.plugins', name: 'jacoco', version: '3.0.4', ext: 'jar'
+    compile group: 'org.jenkins-ci.plugins', name: 'junit', version: '1.26'
+    compile group: 'org.jenkins-ci.plugins', name: 'junit', version: '1.26', ext: 'jar'
+    compile group: 'org.jenkins-ci.plugins.workflow', name: 'workflow-cps-global-lib', version: '2.12'
+    compile group: 'org.jenkins-ci.plugins.workflow', name: 'workflow-cps-global-lib', version: '2.12', ext: 'jar'
+    compile files('libs/jenkins-library-def66f4ffa9e614eeb3747599a0be7ea9a108453.jar') //FIXME Only for running the tests, find better option to do this
+    ivy group:'org.apache.ivy', name:'ivy', version:'2.4.0'
+    compile group:'org.apache.ivy', name:'ivy', version:'2.4.0'
+    testCompile group:'junit', name:'junit', version:'4.12'
 }
 
 sourceSets {

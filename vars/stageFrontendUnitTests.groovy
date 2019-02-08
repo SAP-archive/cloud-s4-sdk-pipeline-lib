@@ -1,4 +1,6 @@
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
@@ -25,7 +27,6 @@ private void executeFrontendUnitTest(def script, String basePath, Map stageConfi
     dir(basePath) {
         if (fileExists(packageJsonPath)) {
             try {
-
                 executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: dockerOptions) {
                     sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
                     withEnv(['DISPLAY=:99']) {
@@ -49,6 +50,7 @@ private void executeFrontendUnitTest(def script, String basePath, Map stageConfi
                     reportName           : "Frontend Unit Test Coverage"
                 ])
             }
+            ReportAggregator.instance.reportTestExecution(QualityCheck.FrontendUnitTests)
         } else {
             echo "Frontend unit tests skipped, because package.json does not exist!"
         }

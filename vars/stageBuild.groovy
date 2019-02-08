@@ -46,6 +46,6 @@ private void warnAboutMissingPackageLock() {
     addBadge(icon: "warning.gif", text: noPackageLockWarningText)
     createSummary(icon: "warning.gif", text: "<h2>No npm package lock file found</h2>\n" +
         "Found a <code>package.json</code> file, but no package lock file in your project.\n" +
-        "It is recommended to create a <code>package-lock.json</code> file by running <code>npm install</code> locally and to add this file to your version control." +
+        "It is recommended to create a <code>package-lock.json</code> file by running <code>npm install</code> locally and to add this file to your version control. " +
         "By doing so, the builds of your application are more reliable.")
 }

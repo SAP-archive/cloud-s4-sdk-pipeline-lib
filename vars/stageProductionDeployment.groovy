@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 
@@ -10,7 +11,7 @@ def call(Map parameters = [:]) {
         lock(script.commonPipelineEnvironment.configuration.productionDeploymentLock) {
             //other milestones are defined in the pipeline
             milestone 80
-            if (fileExists('package.json')) {
+            if (fileExists('package.json') && stageConfiguration.appUrls) {
                 try {
                     deployToCloudPlatform(
                         script: script,
@@ -30,7 +31,10 @@ def call(Map parameters = [:]) {
                 }
             } else {
                 deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
-                echo "Smoke tests skipped, because package.json does not exist!"
+                echo "Smoke tests skipped, because package.json does not exist or stage configuration option appUrls is not defined."
+            }
+            if(stageConfiguration.cfTargets || stageConfiguration.neoTargets) {
+                ReportAggregator.instance.reportDeployment()
             }
         }
     }

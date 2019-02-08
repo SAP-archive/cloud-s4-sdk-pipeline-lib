@@ -1,3 +1,5 @@
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
@@ -32,9 +34,10 @@ private void executeCheckmarxScan( def script, String stageName, String basePath
     if (stageConfiguration) {
         String directory = basePath != null && !basePath.isEmpty() ? basePath : 'application'
         configuration.script = script
-            dir(directory) {
-                executeCheckmarxScan configuration
-            }
+        dir(directory) {
+            executeCheckmarxScan configuration
+        }
 
+        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
     }
 }

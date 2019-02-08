@@ -1,3 +1,5 @@
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
@@ -12,6 +14,7 @@ def call(Map parameters = [:]) {
             projectVersionId: stageConfiguration.projectVersionId,
             sscUrl: stageConfiguration.sscUrl
         )
+        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.FortifyScan)
     }
 }
 

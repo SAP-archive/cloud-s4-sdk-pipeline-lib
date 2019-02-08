@@ -9,6 +9,10 @@ class DownloadCacheUtils implements Serializable {
         return System.getenv('DL_CACHE_NETWORK')
     }
 
+    static String hostname() {
+        return System.getenv('DL_CACHE_HOSTNAME') ?: 's4sdk-nexus'
+    }
+
     static boolean isCacheActive() {
         return networkName() != null
     }

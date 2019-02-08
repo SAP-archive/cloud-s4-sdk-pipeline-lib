@@ -10,6 +10,7 @@ def call(Map parameters) {
     configurationConverted = renameMavenStep(script) || configurationConverted
     configurationConverted = removeMavenGlobalSettings(script) || configurationConverted
     configurationConverted = convertCloudfoundryDeployment(script) || configurationConverted
+    configurationConverted = convertNeoDeployment(script) || configurationConverted
 
     if(configurationConverted) {
         offerMigratedConfigurationAsArtifact(script)
@@ -108,6 +109,16 @@ def convertCloudfoundryDeployment(script){
         ]
 
         stepsConfiguration.remove('deployToCfWithCli')
+        return true
+    }
+    return false
+}
+
+def convertNeoDeployment(script) {
+    Map stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
+    if(stepsConfiguration?.deployToNeoWithCli) {
+        stepsConfiguration.neoDeploy = stepsConfiguration.deployToNeoWithCli
+        stepsConfiguration.remove('deployToNeoWithCli')
         return true
     }
     return false

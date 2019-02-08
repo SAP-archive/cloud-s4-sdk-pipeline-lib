@@ -8,7 +8,10 @@ def call(Map parameters) {
     if (DownloadCacheUtils.isCacheActive()) {
         echo "Download cache for maven and npm activated"
 
-        writeFile file: s4SdkGlobals.mavenGlobalSettingsFile, text: libraryResource("mvn_download_cache_proxy_settings.xml")
+        String mavenSettingsTemplate = libraryResource("mvn_download_cache_proxy_settings.xml")
+        String hostname = DownloadCacheUtils.hostname()
+        String mavenSettings = mavenSettingsTemplate.replace('__HOSTNAME__', hostname)
+        writeFile file: s4SdkGlobals.mavenGlobalSettingsFile, text: mavenSettings
 
         // FIXME: Here we misuse the defaultConfiguration to control behavior in npm steps (will be merged with other values)
         DefaultValueCache.getInstance().getDefaultValues().dockerNetwork = DownloadCacheUtils.networkName()
@@ -20,7 +23,7 @@ def call(Map parameters) {
         defaultMavenConfiguration.globalSettingsFile = s4SdkGlobals.mavenGlobalSettingsFile
 
         Map npmDefaultConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'executeNpm')
-        npmDefaultConfiguration.defaultNpmRegistry = "http://s4sdk-nexus:8081/repository/npm-proxy"
+        npmDefaultConfiguration.defaultNpmRegistry = "http://${hostname}:8081/repository/npm-proxy"
 
         if (ConfigurationLoader.stepConfiguration(script, 'executeNpm').defaultNpmRegistry) {
             println("[WARNING]: Pipeline configuration contains custom value for 'executeNpm.defaultNpmRegistry'. " +

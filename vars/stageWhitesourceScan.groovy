@@ -1,3 +1,5 @@
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
@@ -38,6 +40,7 @@ private void executeWhitesourceScan(def script, String stageName, String basePat
 
         println("Executing Maven WhiteSource scan for module " + basePath)
         executeWhitesourceScanMaven whiteSourceArguments
+        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
     } else {
         println("Skip WhiteSource Maven scan because the stage 'whitesourceScan' is not configured.")
     }
@@ -56,6 +59,7 @@ private void executeWhitesourceScan(def script, String stageName, String basePat
         println("Executing npm WhiteSource scan for module " + basePath)
 
         executeWhitesourceScanNpm whiteSourceArguments
+        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
     } else {
         println("Skipping WhiteSource npm plugin because no 'package.json' file was found in project or the stage 'whitesourceScan' is not configured")
     }

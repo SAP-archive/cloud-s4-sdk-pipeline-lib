@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
@@ -92,6 +93,7 @@ def call(Map parameters = [:]) {
                     additionalClassifiers: nexusConfiguration.additionalClassifiers
                 )
             }
+            ReportAggregator.instance.reportDeploymentToNexus()
         } else {
             error("Can't deploy to nexus because the configuration is missing. " +
                 "Please ensure the `artifactDeployment` section has a `nexus` sub-section.")
