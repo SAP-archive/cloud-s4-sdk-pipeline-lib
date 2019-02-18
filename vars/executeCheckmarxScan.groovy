@@ -28,6 +28,7 @@ def call(Map parameters = [:]) {
 
         Map checkMarxOptions = [
             $class                       : 'CxScanBuilder',
+            jobStatusOnError             : 'FAILURE',
             // if this is set to true, the scan is not repeated for the same input even if the scan settings (e.g. thresholds) change
             avoidDuplicateProjectScans   : false,
             filterPattern                : filterPattern,
@@ -87,7 +88,7 @@ def call(Map parameters = [:]) {
         if (currentBuild.resultIsWorseOrEqualTo('UNSTABLE')) {
             // Execute on master - only here the log is accessible
             node('master') {
-                String successString = "---Checkmarx Scan Results(CxSAST)---"
+                String successString = "-Checkmarx Scan Results(CxSAST):-"
                 String logFilePath = currentBuild.rawBuild.logFile.absolutePath
                 boolean checkmarxExecuted =
                     (0 == sh(script: "grep --max-count 1 --fixed-strings -- '${successString}' ${logFilePath}", returnStatus: true))
@@ -130,8 +131,8 @@ private String getBearerToken(String serverUrl, String username, String password
     if (jsonResponse.access_token) {
         return jsonResponse.access_token
     } else {
-        throw new RuntimeException("""The answer from ${serverUrl} did not contain an access token. 
-                                       |Please verify that your Checkmarx server fulfills all prerequisites listed at 
+        throw new RuntimeException("""The answer from ${serverUrl} did not contain an access token.
+                                       |Please verify that your Checkmarx server fulfills all prerequisites listed at
                                        |https://checkmarx.atlassian.net/wiki/spaces/KC/pages/202506366/Token-based+Authentication+v8.6.0+and+up""".stripMargin().stripIndent())
     }
 }
