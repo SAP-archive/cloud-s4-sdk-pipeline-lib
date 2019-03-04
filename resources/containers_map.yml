@@ -21,12 +21,12 @@ containerMaps:
     - mavenExecute
     - executeNpm
     - cloudFoundryDeploy
-    - deployToNeoWithCli
+    - neoDeploy
   performanceTests:
     - mavenExecute
     - checkJMeter
     - cloudFoundryDeploy
-    - deployToNeoWithCli
+    - neoDeploy
   s4SdkQualityChecks:
     - mavenExecute
   artifactDeployment:
@@ -40,4 +40,4 @@ containerMaps:
     - mavenExecute
     - executeNpm
     - cloudFoundryDeploy
-    - deployToNeoWithCli
+    - neoDeploy
