@@ -3,6 +3,7 @@ containerMaps:
   build:
     - mavenExecute
     - executeNpm
+    - mtaBuild
   staticCodeChecks:
     - mavenExecute
   lint:
