@@ -22,8 +22,8 @@ def call(Map parameters = [:]) {
             errorMessage: "Please examine Code Coverage results."
         ) {
 
-            String unstableCodeCoverage = '65'
-            String successCodeCoverage = '70'
+            String unstableCodeCoverage = '20'
+            String successCodeCoverage = '30'
 
             //when coverage >= max., SUCCESSFUL
             //when max. > coverage >= min. UNSTABLE
