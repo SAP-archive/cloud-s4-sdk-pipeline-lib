@@ -18,7 +18,7 @@ def call(Map parameters) {
     code changes to the git server.
     */
     runAsStage(stageName: stageName, script: script, node: 'master') {
-        Map scmCheckoutResult = checkout scm
+        Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
 
         if(scmCheckoutResult.GIT_COMMIT){
             ReportAggregator.instance.reportVersionControlUsed('Git')
