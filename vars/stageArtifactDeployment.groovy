@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
@@ -33,7 +34,7 @@ def call(Map parameters = [:]) {
             String artifactId = nexusConfiguration.artifactId
             String groupId = nexusConfiguration.groupId
 
-            if (script.commonPipelineEnvironment.configuration.isMta) {
+            if (BuildToolEnvironment.instance.isMta()) {
                 def mta = readYaml file: 'mta.yaml'
                 String artifactVersion = mta.version
 

@@ -1,7 +1,16 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+
 def call(Map parameters) {
     def script = parameters.script
+    String stashSettingsFileName
 
-    Map s4SdkStashConfiguration = readYaml(text: libraryResource('stash_settings.yml'))
+    if (BuildToolEnvironment.instance.isNpm()) {
+        stashSettingsFileName = 'javascript_stash_settings.yml'
+    } else {
+        stashSettingsFileName = 'java_stash_settings.yml'
+    }
+
+    Map s4SdkStashConfiguration = readYaml(text: libraryResource(stashSettingsFileName))
     echo "Stash config: ${s4SdkStashConfiguration}"
     script.commonPipelineEnvironment.configuration.s4SdkStashConfiguration = s4SdkStashConfiguration
 }

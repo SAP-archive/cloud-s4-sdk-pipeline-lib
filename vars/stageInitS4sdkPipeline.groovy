@@ -1,5 +1,7 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
+import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 
@@ -23,7 +25,6 @@ def call(Map parameters) {
         }
 
         initS4SdkPipelineLibrary script: script
-        initStashConfiguration script: script
 
         Analytics.instance.initAnalytics(script)
 
@@ -58,22 +59,34 @@ def call(Map parameters) {
 
         def isMtaProject = fileExists('mta.yaml')
         def pomFile = 'pom.xml'
+
         if (isMtaProject) {
             setupMtaProject(script: script, generalConfiguration: generalConfiguration)
         } else if (fileExists(pomFile)) {
+
+            BuildToolEnvironment.instance.setBuildTool(BuildTool.MAVEN)
+
             pom = readMavenPom file: pomFile
             readAndUpdateProjectSalt(script, pomFile)
             Analytics.instance.hashProject(pom.groupId + pom.artifactId)
             if (!generalConfiguration.projectName?.trim()) {
                 generalConfiguration.projectName = "${pom.groupId}-${pom.artifactId}"
             }
-        } else {
-            throw new Exception("No pom.xml or mta.yaml has been found in the root of the project. Currently the pipeline only supports Maven and Mta projects.")
+
+        } else if(fileExists('package.json')){
+            BuildToolEnvironment.instance.setBuildTool(BuildTool.NPM)
+            Map packageJson = readJSON file: 'package.json'
+            def projectName = packageJson.name
+            generalConfiguration.projectName = projectName ?: ''
+        }else {
+            throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
         }
 
         if(!generalConfiguration.projectName){
             error "This should not happen: Project name was not specified in the configuration and could not be derived from the project."
         }
+
+        initStashConfiguration script: script
 
         ReportAggregator.instance.reportProjectIdentifier(generalConfiguration.projectName)
 
@@ -85,8 +98,8 @@ def call(Map parameters) {
         Analytics.instance.buildNumber(env.BUILD_NUMBER)
 
         Map configWithDefault = loadEffectiveGeneralConfiguration script: script
-
-        if (isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
+        // ToDo activate automatic versioning for JS
+        if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
             artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
             ReportAggregator.instance.reportAutomaticVersioning()
         }

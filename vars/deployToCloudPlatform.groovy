@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.CloudPlatform
 import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
 import com.sap.piper.k8s.ContainerMap
@@ -27,8 +28,7 @@ def call(Map parameters = [:]) {
                         ).toString()
                     }
 
-                    def deployTool =
-                        (script.commonPipelineEnvironment.configuration.isMta) ? 'mtaDeployPlugin' : 'cf_native'
+                    def deployTool = BuildToolEnvironment.instance.isMta() ? 'mtaDeployPlugin' : 'cf_native'
 
                     cloudFoundryDeploy(
                         script: parameters.script,

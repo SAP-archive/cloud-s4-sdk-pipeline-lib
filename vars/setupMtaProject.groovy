@@ -1,34 +1,39 @@
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
-def call(Map parameters = [:]) {
-    def script = parameters.script
-    def generalConfiguration = parameters.generalConfiguration
-    def mta = readYaml file: 'mta.yaml'
+import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 
-    HashMap<String, ArrayList<String>> modules = getMtaModules(mta.modules)
+def call(Map parameters = [:]) {
+    Script script = parameters.script
+    Map generalConfiguration = parameters.generalConfiguration
+    Map mta = readYaml file: 'mta.yaml'
+
+    Map<String, List<String>> modules = getMtaModules(mta.modules)
 
     modules.entrySet().stream().forEach { Map.Entry<String, ArrayList<String>> entry ->
         echo entry.getKey() + " has modules:  " + entry.getValue().join(" - ")
     }
 
     generalConfiguration.projectName = mta.ID
-    script.commonPipelineEnvironment.configuration.isMta = true
-    script.commonPipelineEnvironment.configuration.mta = modules
+
+    BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
+    BuildToolEnvironment.instance.setModules(modules)
+
     script.commonPipelineEnvironment.configuration.artifactId = mta.ID
     // TODO Need salt
     Analytics.instance.hashProject(mta.ID)
 }
 
-private HashMap<String, ArrayList<String>> getMtaModules(ArrayList mta) {
+private Map<String, List<String>> getMtaModules(List mta) {
 
     if (mta == null || mta.isEmpty()) {
         throw new Exception("No modules found in mta.yaml")
     }
 
-    HashMap<String, ArrayList<String>> modules = new HashMap<>();
+    Map<String, List<String>> modules = new HashMap<>();
 
     mta.each { module ->
         if (modules.containsKey(module.type)) {
-            ArrayList<String> list = modules.get(module.type)
+            List<String> list = modules.get(module.type)
             list.add(module.path)
             modules.put(module.type, list)
         } else {

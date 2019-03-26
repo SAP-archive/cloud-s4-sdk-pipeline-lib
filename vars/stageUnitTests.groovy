@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
@@ -10,19 +11,42 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
         Map configuration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        runOverModules(script: script, moduleType: 'java') { basePath ->
-            executeUnitTest(script, basePath, configuration)
+        if (BuildToolEnvironment.instance.isNpm()) {
+            executeJsUnitTest(script)
+        } else {
+            runOverModules(script: script, moduleType: 'java') { basePath ->
+                executeJavaUnitTest(script, basePath, configuration)
+            }
         }
-
     }
 }
 
-private void executeUnitTest(def script, String basePath, Map configuration){
-    try {
-        String image = configuration.dockerImage
-        //Remove ./ in path as it does not work with surefire 3.0.0-M1
-        String pomPath = PathUtils.normalize(basePath, "unit-tests/pom.xml")
+private void executeJsUnitTest(def script) {
 
+    String name = 'Backend Unit Tests'
+    String pattern = 's4hana_pipeline/reports/backend-unit/**'
+    collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
+        executeNpm(script: script, dockerOptions: []) {
+            sh "npm run ci-backend-unit-test"
+        }
+    }
+}
+
+private void executeJavaUnitTest(def script, String basePath, Map configuration) {
+
+    String image = configuration.dockerImage
+    //Remove ./ in path as it does not work with surefire 3.0.0-M1
+    String pomPath = PathUtils.normalize(basePath, "unit-tests/pom.xml")
+
+    String name = 'Backend Unit Tests'
+
+    String pattern = "${basePath}/unit-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
+
+    if(pattern.startsWith("./")){
+        pattern = pattern.substring(2)
+    }
+
+    collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
         mavenExecute(
             script: script,
             flags: "--batch-mode",
@@ -32,24 +56,9 @@ private void executeUnitTest(def script, String basePath, Map configuration){
             dockerImage: image,
             defines: '-Dsurefire.forkCount=1C'
         )
-        ReportAggregator.instance.reportTestExecution(QualityCheck.UnitTests)
-
-    } catch (Exception e) {
-        echo e.getLocalizedMessage()
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Backend Unit Tests', errorMessage: "Please examine Backend Unit Tests report.") {
-            script.currentBuild.result = 'FAILURE'
-        }
-        throw e
     }
-    finally {
-        String testResultPattern = "${basePath}/unit-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
 
-        if(testResultPattern.startsWith("./")){
-            testResultPattern = testResultPattern.substring(2)
-        }
-
-        junit allowEmptyResults: true, testResults: testResultPattern
-    }
+    ReportAggregator.instance.reportTestExecution(QualityCheck.UnitTests)
 
     copyExecFile execFiles: [
         "${basePath}/unit-tests/target/jacoco.exec",
@@ -57,7 +66,7 @@ private void executeUnitTest(def script, String basePath, Map configuration){
         "${basePath}/unit-tests/target/coverage-reports/jacoco-ut.exec"
     ], targetFolder:basePath, targetFile: 'unit-tests.exec'
 
-    if (script.commonPipelineEnvironment.configuration.isMta) {
+    if (BuildToolEnvironment.instance.isMta()) {
         sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp $basePath/s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")
     }
 }

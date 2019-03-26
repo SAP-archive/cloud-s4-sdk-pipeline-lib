@@ -1,51 +1,37 @@
-import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
-
-import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 
 def call(Map parameters = [:]) {
-    def stageName = 'build'
-    def script = parameters.script
+    Script script = parameters.script
+    build(script)
 
+    if(BuildToolEnvironment.instance.isNpm()){
+        packageJsApp(script)
+    }
+}
+
+private build(Script script){
+    def stageName = 'build'
     runAsStage(stageName: stageName, script: script) {
-        if (script.commonPipelineEnvironment.configuration.isMta) {
+        if (BuildToolEnvironment.instance.isMta()) {
             withEnv(['MAVEN_OPTS=-Dmaven.repo.local=../s4hana_pipeline/maven_local_repo -Dmaven.test.skip=true']) {
                 mtaBuild(script: script)
             }
+        } else if (BuildToolEnvironment.instance.isNpm()) {
+            installAndBuildNpm script: script, customScripts:['ci-build']
         } else {
-            mavenExecute(
-                script: script,
-                flags: '--update-snapshots --batch-mode',
-                m2Path: s4SdkGlobals.m2Directory,
-                goals: 'clean install',
-                defines: '-Dmaven.test.skip=true',
-            )
+            mavenCleanInstall script: script
             if (fileExists('package.json')) {
-                def dockerOptions = ['--cap-add=SYS_ADMIN']
-                DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
-                if (fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json')) {
-                    executeNpm(script: script, dockerOptions: dockerOptions) {
-                        sh "npm ci"
-                    }
-                } else {
-                    executeNpm(script: script, dockerOptions: dockerOptions) {
-                        warnAboutMissingPackageLock()
-                        sh "npm install"
-                    }
-                }
+                installAndBuildNpm script:script
             }
         }
     }
 }
 
-private void warnAboutMissingPackageLock() {
-    String noPackageLockWarningText = "Found a package.json file, but no package lock file in your project. " +
-        "It is recommended to create a `package-lock.json` file by running `npm install` locally and to add this file to your version control. " +
-        "By doing so, the builds of your application are more reliable."
-    echo noPackageLockWarningText
-    assertPluginIsActive('badge')
-    addBadge(icon: "warning.gif", text: noPackageLockWarningText)
-    createSummary(icon: "warning.gif", text: "<h2>No npm package lock file found</h2>\n" +
-        "Found a <code>package.json</code> file, but no package lock file in your project.\n" +
-        "It is recommended to create a <code>package-lock.json</code> file by running <code>npm install</code> locally and to add this file to your version control. " +
-        "By doing so, the builds of your application are more reliable.")
+private packageJsApp(script){
+    String stageName = 'package'
+    runAsStage(stageName: stageName, script: script) {
+        executeNpm(script: script, dockerOptions: []) {
+            sh "npm run ci-package"
+        }
+    }
 }

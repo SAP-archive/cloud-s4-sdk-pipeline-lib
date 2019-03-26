@@ -4,18 +4,22 @@ containerMaps:
     - mavenExecute
     - executeNpm
     - mtaBuild
+  package:
+    - executeNpm
   staticCodeChecks:
     - mavenExecute
   lint:
     - executeNpm
   unitTests:
     - mavenExecute
+    - executeNpm
   integrationTests:
     - mavenExecute
+    - executeNpm
   frontendUnitTests:
     - executeNpm
   fortifyScan:
-    - executeFortifyScan  
+    - executeFortifyScan
   npmAudit:
     - executeNpm
   endToEndTests:

@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
@@ -15,7 +16,7 @@ def call(Map parameters = [:]) {
         Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
         checkNpmAudit(script: script, configuration: configuration, basePath: "./")
-        if (script.commonPipelineEnvironment.configuration.isMta) {
+        if (BuildToolEnvironment.instance.isMta()) {
             runOverModules(script: script, moduleType: "html5") { basePath ->
                 checkNpmAudit(script: script, configuration: configuration, basePath: basePath)
             }

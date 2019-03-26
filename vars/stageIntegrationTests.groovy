@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
@@ -21,11 +22,55 @@ private void executeIntegrationTest(def script, String basePath, String stageNam
     Set stageConfigurationKeys = [
         'retry',
         'credentials',
-        'forkCount'
+        'forkCount',
+        'sidecarImage'
     ]
     Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
-    try {
+    Closure integrationTests
+    if (BuildToolEnvironment.instance.isNpm()) {
+        integrationTests = jsIntegrationTests(script, configuration)
+    } else {
+        integrationTests = javaIntegrationTests(script, configuration, basePath)
+    }
+
+    if (configuration.sidecarImage) {
+        // Pass the env variable STAGE_NAME to dockerExecute to use the configuration of the stage
+        withEnv(["STAGE_NAME=$stageName"]) {
+            integrationTests()
+        }
+    } else {
+        integrationTests()
+    }
+}
+
+private Closure jsIntegrationTests(def script, Map configuration) {
+    return {
+        Map executeNpmParameters = [script: script]
+
+        // Disable the DL-cache in the integration-tests with sidecar with empty npm registry
+        // This is necessary because it is currently not possible to not connect a container to multiple networks.
+        //  FIXME: Remove when docker plugin supports multiple networks and jenkins-library implemented that feature
+        if (configuration.sidecarImage) {
+
+            Map executeNpmConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
+
+            if(!executeNpmConfiguration.defaultNpmRegistry) {
+                executeNpmParameters.defaultNpmRegistry = ''
+            }
+        }
+        String name = 'Backend Integration Tests'
+        String pattern = 's4hana_pipeline/reports/backend-integration/**'
+        collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern){
+            executeNpm(executeNpmParameters) {
+                sh "npm run ci-integration-test"
+            }
+        }
+    }
+}
+
+private Closure javaIntegrationTests(def script, Map configuration, String basePath) {
+    return {
         try {
             if (configuration.credentials != null) {
                 dir("$basePath/integration-tests/src/test/resources") {
@@ -45,7 +90,7 @@ private void executeIntegrationTest(def script, String basePath, String stageNam
             //Remove ./ in path as it does not work with surefire 3.0.0-M1
             String pomPath = PathUtils.normalize(basePath, "integration-tests/pom.xml")
 
-            mavenExecute(
+            Map mavenExecuteParameters = [
                 script: script,
                 flags: "--batch-mode",
                 pomPath: pomPath,
@@ -53,41 +98,43 @@ private void executeIntegrationTest(def script, String basePath, String stageNam
                 goals: "org.jacoco:jacoco-maven-plugin:prepare-agent test",
                 dockerImage: configuration.dockerImage,
                 defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
-            )
-            ReportAggregator.instance.reportTestExecution(QualityCheck.IntegrationTests)
+            ]
 
-        } catch (Exception e) {
-            executeWithLockedCurrentBuildResult(
-                script: script,
-                errorStatus: 'FAILURE',
-                errorHandler: script.buildFailureReason.setFailureReason,
-                errorHandlerParameter: 'Backend Integration Tests',
-                errorMessage: "Please examine Backend Integration Tests report."
-            ) {
-                script.currentBuild.result = 'FAILURE'
+            // Disable the DL-cache in the integration-tests with sidecar with empty docker options and no global settings file for maven
+            // This is necessary because it is currently not possible to not connect a container to multiple networks.
+            //  FIXME: Remove when docker plugin supports multiple networks and jenkins-library implemented that feature
+            if (configuration.sidecarImage) {
+                mavenExecuteParameters.dockerOptions = []
+                mavenExecuteParameters.globalSettingsFile = ''
             }
-            throw e
-        } finally {
+
+            String name = 'Backend Integration Tests'
             String testResultPattern = "${basePath}/integration-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
 
             if(testResultPattern.startsWith("./")){
                 testResultPattern = testResultPattern.substring(2)
             }
 
-            junit allowEmptyResults: true, testResults: testResultPattern
-        }
-    } finally {
-        dir("$basePath/integration-tests/src/test/resources") {
-            deleteCredentials()
-        }
-    }
-    copyExecFile execFiles: [
-        "$basePath/integration-tests/target/jacoco.exec",
-        "$basePath/integration-tests/target/coverage-reports/jacoco.exec",
-        "$basePath/integration-tests/target/coverage-reports/jacoco-ut.exec"
-    ], targetFolder:basePath, targetFile: 'integration-tests.exec'
+            String pattern = 's4hana_pipeline/reports/backend-integration/**'
+            collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: testResultPattern){
+                mavenExecute(mavenExecuteParameters)
+            }
 
-    if (script.commonPipelineEnvironment.configuration.isMta) {
-        sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp $basePath/s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")
+            ReportAggregator.instance.reportTestExecution(QualityCheck.IntegrationTests)
+
+        } finally {
+            dir("$basePath/integration-tests/src/test/resources") {
+                deleteCredentials()
+            }
+        }
+        copyExecFile execFiles: [
+            "$basePath/integration-tests/target/jacoco.exec",
+            "$basePath/integration-tests/target/coverage-reports/jacoco.exec",
+            "$basePath/integration-tests/target/coverage-reports/jacoco-ut.exec"
+        ], targetFolder:basePath, targetFile: 'integration-tests.exec'
+
+        if (BuildToolEnvironment.instance.isMta()) {
+            sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp $basePath/s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")
+        }
     }
 }

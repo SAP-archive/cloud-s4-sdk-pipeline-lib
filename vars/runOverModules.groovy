@@ -1,22 +1,12 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+
 def call(Map parameters = [:], body) {
-    def script = parameters.script
-    def moduleType = parameters.moduleType
+    Script script = parameters.script
+    String moduleType = parameters.moduleType
 
-    List<String> modules = []
+    List pathOfModules = BuildToolEnvironment.instance.getModulesPathOfType(moduleType)
 
-    if (script.commonPipelineEnvironment.configuration.isMta) {
-        Map<String, List<String>> mta = script.commonPipelineEnvironment.configuration.mta
-
-        modules = mta.get(moduleType)
-
-        if (modules == null || modules.isEmpty()) {
-            return
-        }
-    } else {
-        modules.add("./")
-    }
-
-    modules.each { basePath ->
+    pathOfModules.each{ basePath ->
         body(basePath)
     }
 

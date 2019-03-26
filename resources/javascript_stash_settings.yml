@@ -1,0 +1,67 @@
+# This stage names are used for stashing and un-stashing of files
+
+
+initS4sdkPipeline:
+  unstash: []
+  stashes:
+  - name: "SOURCE"
+    includes: "**/*.*"
+    excludes: "'pipelines/**, **/.git/**"
+  - name: "PIPELINE"
+    includes: "'pipelines/**"
+    excludes: "'pipelines/.git/**"
+  - name: "REPORTS"
+    includes: "s4hana_pipeline/reports/**"
+
+build:
+  unstash: ['SOURCE']
+  stashes:
+  - name: "DIST"
+    includes: "**/dist/**, dist/**"
+  - name: "NODE_MODULES"
+    includes: "**/node_modules/**, node_modules/**"
+  - name: "PACKAGE_LOCK"
+    includes: "**/package-lock.json, **/npm-shrinkwrap.json"
+
+unitTests:
+  unstash: ['SOURCE', 'DIST', 'NODE_MODULES']
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
+
+frontendUnitTests:
+  unstash: ['SOURCE', 'DIST', 'NODE_MODULES']
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
+
+integrationTests:
+  unstash: ['SOURCE', 'DIST', 'NODE_MODULES']
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
+
+package:
+  unstash: ['SOURCE', 'DIST', 'NODE_MODULES']
+  stashes:
+  - name: "DEPLOYMENTARTIFACT"
+    includes: "deployment/**"
+
+npmAudit:
+  unstash: ['SOURCE', "PACKAGE_LOCK"]
+  stashes: []
+
+endToEndTests:
+  unstash: ['DEPLOYMENTARTIFACT', 'SOURCE', 'NODE_MODULES']
+  stashes: []
+
+artifactDeployment:
+  unstash: ['DEPLOYMENTARTIFACT']
+  stashes: []
+
+productionDeployment:
+  unstash: ['DEPLOYMENTARTIFACT', 'SOURCE', 'NODE_MODULES']
+  stashes: []
