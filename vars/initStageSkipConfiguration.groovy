@@ -40,7 +40,7 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
 
         if (fileExists('package.json')) {
-            script.commonPipelineEnvironment.configuration.runStage.FRONT_END_TESTS = true
+            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
         }
 
         if (fileExists('package.json') && hasComponentJsFile()) {
