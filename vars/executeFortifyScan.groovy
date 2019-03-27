@@ -1,5 +1,6 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
@@ -8,7 +9,7 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeFortifyScan') {
         final script = parameters.script
 
-        if (script.commonPipelineEnvironment.configuration.isMta) {
+        if (BuildToolEnvironment.instance.isMta()) {
             error('Fortify is currently not supported for MTA projects. If you need this, please open a new issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues')
         }
 

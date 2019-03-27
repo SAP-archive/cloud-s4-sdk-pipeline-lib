@@ -3,30 +3,35 @@ containerMaps:
   build:
     - mavenExecute
     - executeNpm
+    - mtaBuild
+  package:
+    - executeNpm
   staticCodeChecks:
     - mavenExecute
   lint:
     - executeNpm
   unitTests:
     - mavenExecute
+    - executeNpm
   integrationTests:
     - mavenExecute
+    - executeNpm
   frontendUnitTests:
     - executeNpm
   fortifyScan:
-    - executeFortifyScan  
+    - executeFortifyScan
   npmAudit:
     - executeNpm
   endToEndTests:
     - mavenExecute
     - executeNpm
     - cloudFoundryDeploy
-    - deployToNeoWithCli
+    - neoDeploy
   performanceTests:
     - mavenExecute
     - checkJMeter
     - cloudFoundryDeploy
-    - deployToNeoWithCli
+    - neoDeploy
   s4SdkQualityChecks:
     - mavenExecute
   artifactDeployment:
@@ -40,4 +45,4 @@ containerMaps:
     - mavenExecute
     - executeNpm
     - cloudFoundryDeploy
-    - deployToNeoWithCli
+    - neoDeploy

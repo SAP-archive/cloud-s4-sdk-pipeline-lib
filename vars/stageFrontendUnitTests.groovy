@@ -17,7 +17,7 @@ def call(Map parameters = [:]) {
     }
 }
 
-private void executeFrontendUnitTest(def script, String basePath, Map stageConfiguration){
+private void executeFrontendUnitTest(def script, String basePath, Map stageConfiguration) {
 
     def dockerOptions = ['--cap-add=SYS_ADMIN']
     DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
@@ -26,11 +26,12 @@ private void executeFrontendUnitTest(def script, String basePath, Map stageConfi
 
     dir(basePath) {
         if (fileExists(packageJsonPath)) {
+            transformCiUnitTestScript(packageJsonPath)
             try {
                 executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: dockerOptions) {
                     sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
                     withEnv(['DISPLAY=:99']) {
-                        sh "npm run ci-test"
+                        sh "npm run ci-frontend-unit-test"
                     }
                 }
             } catch (Exception e) {
@@ -54,5 +55,17 @@ private void executeFrontendUnitTest(def script, String basePath, Map stageConfi
         } else {
             echo "Frontend unit tests skipped, because package.json does not exist!"
         }
+    }
+}
+
+private void transformCiUnitTestScript(String packageJsonPath) {
+    Map packageJson = readJSON file: packageJsonPath
+    if (packageJson.scripts['ci-test']) {
+        packageJson.scripts['ci-frontend-unit-test'] = packageJson.scripts['ci-test']
+        packageJson.scripts.remove("ci-test")
+        writeJSON json: packageJson, file: 'package.json'
+        archiveArtifacts artifacts: 'package.json'
+        echo "[WARNING]: You are using a legacy configuration parameter which might not be supported in the future in `package.json`. "
+        "The npm-command `ci-test` is deprecated. Please rename it to `ci-frontend-unit-test` as shown in the `package.json` file in the build artifacts."
     }
 }

@@ -1,4 +1,5 @@
 import com.cloudbees.groovy.cps.NonCPS
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
@@ -22,7 +23,7 @@ def call(Map parameters = [:]) {
 
         if (isProductiveBranch(script: script)) {
 
-            if (script.commonPipelineEnvironment.configuration.isMta) {
+            if (BuildToolEnvironment.instance.isMta()) {
                 def mta = readYaml file: 'mta.yaml'
                 usedForbiddenEnvironmentVariables.addAll(extractForbiddenEnvironmentVariablesMta(mta))
             }

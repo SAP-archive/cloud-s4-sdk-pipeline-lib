@@ -56,7 +56,6 @@ steps:
     dockerImage: s4sdk/docker-cf-cli
     keepOldInstance: true
     stashContent: []
-    mtaDeployParameters: '-f --no-confirm --version-rule ALL'
 
   neoDeploy:
     deployMode: 'warParams'

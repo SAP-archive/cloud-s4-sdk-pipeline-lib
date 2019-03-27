@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters) {
@@ -5,12 +6,50 @@ def call(Map parameters) {
 
     script.commonPipelineEnvironment.configuration.runStage = [:]
 
-    if (fileExists('package.json')) {
-        script.commonPipelineEnvironment.configuration.runStage.FRONT_END_TESTS = true
-    }
+    if (BuildToolEnvironment.instance.isNpm()) {
 
-    if (fileExists('package.json') && hasComponentJsFile()) {
-        script.commonPipelineEnvironment.configuration.runStage.LINT = true
+        Map packageJson = readJSON file: 'package.json'
+        Map npmScripts = packageJson.scripts
+
+        if (npmScripts['ci-build']) {
+            script.commonPipelineEnvironment.configuration.runStage.BUILD = true
+        }
+
+        if (npmScripts['ci-backend-unit-test']) {
+            script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
+        }
+
+        if (npmScripts['ci-frontend-unit-test']) {
+            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
+        }
+
+        if (npmScripts['ci-integration-test']) {
+            script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+        }
+
+        script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
+        // Activate ARCHIVE_REPORT when reporting is available for JS-Pipeline
+        script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = false
+
+    } else {
+        script.commonPipelineEnvironment.configuration.runStage.BUILD = true
+        script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
+        script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+        script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
+        script.commonPipelineEnvironment.configuration.runStage.QUALITY_CHECKS = true
+        script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
+
+        if (fileExists('package.json')) {
+            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
+        }
+
+        if (fileExists('package.json') && hasComponentJsFile()) {
+            script.commonPipelineEnvironment.configuration.runStage.LINT = true
+        }
+
+        if (fileExists('package.json')) {
+            script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
+        }
     }
 
     script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS = endToEndTestsShouldRun(script)
@@ -40,10 +79,6 @@ def call(Map parameters) {
 
     if (isProductiveBranch(script: script) && isWhitesourceConfigured) {
         script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN = true
-    }
-
-    if (fileExists('package.json')) {
-        script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
     }
 
     if (ConfigurationLoader.stageConfiguration(script, 'sourceClearScan').credentialsId) {
