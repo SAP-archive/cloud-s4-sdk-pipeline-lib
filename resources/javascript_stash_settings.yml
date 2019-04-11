@@ -54,6 +54,9 @@ npmAudit:
   unstash: ['SOURCE', "PACKAGE_LOCK"]
   stashes: []
 
+s4SdkQualityChecks:
+  unstash: ['SOURCE', 'DIST', 'REPORTS']
+
 endToEndTests:
   unstash: ['DEPLOYMENTARTIFACT', 'SOURCE', 'NODE_MODULES']
   stashes: []
