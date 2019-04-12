@@ -52,9 +52,11 @@ def call(Map parameters = [:]) {
             assertPluginIsActive("cobertura")
             String coberturaReportFilename = "${s4SdkGlobals.coverageReports}/cobertura-coverage.xml"
             if (fileExists(coberturaReportFilename)) {
-                String successBoundary = '70'
-                String failureBoundary = '65'
-                String unstableBoundary = '70'
+                //FIXME: because coverage reports are overwritten and therefore no real code coverage can be measured. 
+                // Increase again as soon as the cobertura reports are handled in a correct manner.
+                String successBoundary = '5'
+                String failureBoundary = '1'
+                String unstableBoundary = '5'
 
                 executeWithLockedCurrentBuildResult(
                     script: script,
