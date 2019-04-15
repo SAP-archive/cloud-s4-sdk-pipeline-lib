@@ -5,6 +5,11 @@ def call(Map parameters = [:]) {
         def script = parameters.script
 
         String result = ReportAggregator.instance.generateReport(script)
+
+        if (parameters.printToConsole) {
+            echo result 
+        }
+
         script.writeFile file: ReportAggregator.instance.fileName, text: result
         script.archiveArtifacts artifacts: ReportAggregator.instance.fileName
     }
