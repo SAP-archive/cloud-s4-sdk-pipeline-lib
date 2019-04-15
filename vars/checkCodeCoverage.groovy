@@ -50,13 +50,17 @@ def call(Map parameters = [:]) {
             }
         } else if (BuildToolEnvironment.instance.isNpm()) {
             assertPluginIsActive("cobertura")
-            String coberturaReportFilename = "${s4SdkGlobals.coverageReports}/cobertura-coverage.xml"
-            if (fileExists(coberturaReportFilename)) {
-                //FIXME: because coverage reports are overwritten and therefore no real code coverage can be measured. 
-                // Increase again as soon as the cobertura reports are handled in a correct manner.
-                String successBoundary = '5'
-                String failureBoundary = '1'
-                String unstableBoundary = '5'
+            String backendUnitTestCoberturaReport = "${s4SdkGlobals.coverageReports}/backend-unit/cobertura-coverage.xml"
+            String backendIntegrationTestCoberturaReport = "${s4SdkGlobals.coverageReports}/backend-integration/cobertura-coverage.xml"
+
+            if (fileExists(backendUnitTestCoberturaReport) && fileExists(backendIntegrationTestCoberturaReport)) {
+                // The cobertura plugin can only handle multiple files if they are in a common directory. Therefore the reports are copied to a single directory
+                sh "cp $backendUnitTestCoberturaReport ${s4SdkGlobals.coverageReports}/backend-unit-coverage.xml"
+                sh "cp $backendIntegrationTestCoberturaReport ${s4SdkGlobals.coverageReports}/backend-integration-coverage.xml"
+
+                String successBoundary = '70'
+                String failureBoundary = '65'
+                String unstableBoundary = '70'
 
                 executeWithLockedCurrentBuildResult(
                     script: script,
@@ -67,14 +71,15 @@ def call(Map parameters = [:]) {
                 ) {
 
                     cobertura(autoUpdateHealth: false, autoUpdateStability: false,
-                        coberturaReportFile: coberturaReportFilename,
+                        coberturaReportFile: "${s4SdkGlobals.coverageReports}/*.xml",
                         failNoReports: false, failUnstable: false,
                         lineCoverageTargets: "$successBoundary, $failureBoundary, $unstableBoundary",
                         maxNumberOfBuilds: 0, onlyStable: false, zoomCoverageChart: false)
                 }
             } else {
                 error "Could not determine code coverage. " +
-                    "Please ensure the report is generated as in cobertura format in the file `${s4SdkGlobals.coverageReports}/cobertura-coverage.xml`. " +
+                    "Please ensure the reports are generated as in cobertura format in the files `${s4SdkGlobals.coverageReports}/backend-unit/cobertura-coverage.xml`" +
+                    "and `${s4SdkGlobals.coverageReports}/backend-integration/cobertura-coverage.xml`. " +
                     "If this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup."
             }
         }
