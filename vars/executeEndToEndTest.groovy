@@ -55,7 +55,18 @@ def call(Map parameters = [:]) {
                     throw e
                 } finally {
                     archiveArtifacts artifacts: "${s4SdkGlobals.endToEndReports}/**", allowEmptyArchive: true
-                    step($class: 'CucumberTestResultArchiver', testResults: "${s4SdkGlobals.endToEndReports}/*.json")
+
+                    List cucumberFiles = findFiles(glob: "${s4SdkGlobals.endToEndReports}/*.json")
+                    List junitFiles = findFiles(glob: "${s4SdkGlobals.endToEndReports}/*.xml")
+
+                    if(cucumberFiles.size()>0){
+                        step($class: 'CucumberTestResultArchiver', testResults: "${s4SdkGlobals.endToEndReports}/*.json")
+                    }
+                    else if(junitFiles.size()>0){
+                        junit allowEmptyResults: true, testResults: "${s4SdkGlobals.endToEndReports}/*.xml"
+                    } else {
+                        error("No JUnit or cucumber report files found in ${s4SdkGlobals.endToEndReports}")
+                    }
                     stashFiles script: script, stage: parameters.stage
                 }
             }
