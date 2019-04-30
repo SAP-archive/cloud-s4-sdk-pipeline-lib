@@ -7,38 +7,41 @@ def call(Map parameters = [:]) {
     Map generalConfiguration = parameters.generalConfiguration
     Map mta = readYaml file: 'mta.yaml'
 
-    Map<String, List<String>> modules = getMtaModules(mta.modules)
+    List listOfMtaModules = mta.modules
 
-    modules.entrySet().stream().forEach { Map.Entry<String, ArrayList<String>> entry ->
+    if (listOfMtaModules == null || listOfMtaModules.isEmpty()) {
+        error "No modules found in mta.yaml file, but at least one module is required."
+    }
+
+    // Example for the map structure: "java:[srv]"
+    Map moduleTypeToListOfModules = listOfMtaModules
+        .groupBy { module -> module.type }
+        .collectEntries { type, module -> [(type): module.path] }
+
+    moduleTypeToListOfModules['java']?.each { module ->
+        assertCorrectMtaProjectStructure(module)
+    }
+
+    moduleTypeToListOfModules.entrySet().stream().forEach { Map.Entry entry ->
         echo entry.getKey() + " has modules:  " + entry.getValue().join(" - ")
     }
 
     generalConfiguration.projectName = mta.ID
 
     BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
-    BuildToolEnvironment.instance.setModules(modules)
+    BuildToolEnvironment.instance.setModules(moduleTypeToListOfModules)
 
     script.commonPipelineEnvironment.configuration.artifactId = mta.ID
     // TODO Need salt
     Analytics.instance.hashProject(mta.ID)
 }
 
-private Map<String, List<String>> getMtaModules(List mta) {
-
-    if (mta == null || mta.isEmpty()) {
-        throw new Exception("No modules found in mta.yaml")
+def assertCorrectMtaProjectStructure(module) {
+    if (fileExists("${module}/unit-tests")) {
+        error "Outdated or unsupported project structure for SAP Cloud Application Programming Model detected.\n" +
+            "The module ${module} contains a 'unit-tests' module, which indicates that it uses an outdated and/or not supported project structure.\n" +
+            "Please adapt your project to the new structure as described in https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/build-tools.md#sap-cloud-application-programming-model--mta.\n" +
+            "In case you cannot adapt the project structure, please use a fixed version. The last version of the pipeline supporting this structure is v17." +
+            "The version can be configured as described here: https://github.com/SAP/cloud-s4-sdk-pipeline#versioning."
     }
-
-    Map<String, List<String>> modules = new HashMap<>();
-
-    mta.each { module ->
-        if (modules.containsKey(module.type)) {
-            List<String> list = modules.get(module.type)
-            list.add(module.path)
-            modules.put(module.type, list)
-        } else {
-            modules.put(module.type, new Collections.SingletonList<String>(module.path))
-        }
-    }
-    return modules
 }
