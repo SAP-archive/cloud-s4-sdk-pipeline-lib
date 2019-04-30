@@ -9,24 +9,28 @@ def call(Map parameters = [:]) {
     def stageName = 'integrationTests'
     def script = parameters.script
 
-    runAsStage(stageName: stageName, script: script) {
-        runOverModules(script: script, moduleType: "java") { String basePath ->
-            executeIntegrationTest(script, basePath, stageName)
-        }
-    }
-}
-
-private void executeIntegrationTest(def script, String basePath, String stageName) {
     final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
     final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
     Set stageConfigurationKeys = [
         'retry',
         'credentials',
         'forkCount',
-        'sidecarImage'
+        'sidecarImage',
+        'cloudFoundry',
+        'createHdiContainer'
     ]
     Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
+    runAsStage(stageName: stageName, script: script) {
+        createHdiContainer([script: script].plus(configuration)) {
+            runOverModules(script: script, moduleType: "java") { String basePath ->
+                executeIntegrationTest(script, basePath, stageName, configuration)
+            }
+        }
+    }
+}
+
+private void executeIntegrationTest(def script, String basePath, String stageName, Map configuration) {
     Closure integrationTests
     if (BuildToolEnvironment.instance.isNpm()) {
         integrationTests = jsIntegrationTests(script, configuration)
@@ -46,24 +50,28 @@ private void executeIntegrationTest(def script, String basePath, String stageNam
 
 private Closure jsIntegrationTests(def script, Map configuration) {
     return {
-        Map executeNpmParameters = [script: script]
+        String credentialsFilePath = "./"
 
-        // Disable the DL-cache in the integration-tests with sidecar with empty npm registry
-        // This is necessary because it is currently not possible to not connect a container to multiple networks.
-        //  FIXME: Remove when docker plugin supports multiple networks and jenkins-library implemented that feature
-        if (configuration.sidecarImage) {
+        writeTemporaryCredentials(configuration.credentials, credentialsFilePath) {
+            Map executeNpmParameters = [script: script]
 
-            Map executeNpmConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
+            // Disable the DL-cache in the integration-tests with sidecar with empty npm registry
+            // This is necessary because it is currently not possible to not connect a container to multiple networks.
+            //  FIXME: Remove when docker plugin supports multiple networks and jenkins-library implemented that feature
+            if (configuration.sidecarImage) {
 
-            if(!executeNpmConfiguration.defaultNpmRegistry) {
-                executeNpmParameters.defaultNpmRegistry = ''
+                Map executeNpmConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
+
+                if (!executeNpmConfiguration.defaultNpmRegistry) {
+                    executeNpmParameters.defaultNpmRegistry = ''
+                }
             }
-        }
-        String name = 'Backend Integration Tests'
-        String pattern = 's4hana_pipeline/reports/backend-integration/**'
-        collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern){
-            executeNpm(executeNpmParameters) {
-                sh "npm run ci-integration-test"
+            String name = 'Backend Integration Tests'
+            String pattern = 's4hana_pipeline/reports/backend-integration/**'
+            collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
+                executeNpm(executeNpmParameters) {
+                    sh "npm run ci-integration-test"
+                }
             }
         }
     }
@@ -71,13 +79,9 @@ private Closure jsIntegrationTests(def script, Map configuration) {
 
 private Closure javaIntegrationTests(def script, Map configuration, String basePath) {
     return {
-        try {
-            if (configuration.credentials != null) {
-                dir("$basePath/integration-tests/src/test/resources") {
-                    writeCredentials(configuration.credentials)
-                }
-            }
 
+        String credentialsFilePath = "$basePath/integration-tests/src/test/resources"
+        writeTemporaryCredentials(configuration.credentials, credentialsFilePath) {
             int count = 0
             try {
                 count = configuration.retry.toInteger()
@@ -91,13 +95,13 @@ private Closure javaIntegrationTests(def script, Map configuration, String baseP
             String pomPath = PathUtils.normalize(basePath, "integration-tests/pom.xml")
 
             Map mavenExecuteParameters = [
-                script: script,
-                flags: "--batch-mode",
-                pomPath: pomPath,
-                m2Path: s4SdkGlobals.m2Directory,
-                goals: "org.jacoco:jacoco-maven-plugin:prepare-agent test",
+                script     : script,
+                flags      : "--batch-mode",
+                pomPath    : pomPath,
+                m2Path     : s4SdkGlobals.m2Directory,
+                goals      : "org.jacoco:jacoco-maven-plugin:prepare-agent test",
                 dockerImage: configuration.dockerImage,
-                defines: "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
+                defines    : "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
             ]
 
             // Disable the DL-cache in the integration-tests with sidecar with empty docker options and no global settings file for maven
@@ -111,27 +115,23 @@ private Closure javaIntegrationTests(def script, Map configuration, String baseP
             String name = 'Backend Integration Tests'
             String testResultPattern = "${basePath}/integration-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
 
-            if(testResultPattern.startsWith("./")){
+            if (testResultPattern.startsWith("./")) {
                 testResultPattern = testResultPattern.substring(2)
             }
 
             String pattern = 's4hana_pipeline/reports/backend-integration/**'
-            collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: testResultPattern){
+            collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: testResultPattern) {
                 mavenExecute(mavenExecuteParameters)
             }
 
             ReportAggregator.instance.reportTestExecution(QualityCheck.IntegrationTests)
-
-        } finally {
-            dir("$basePath/integration-tests/src/test/resources") {
-                deleteCredentials()
-            }
         }
+
         copyExecFile execFiles: [
             "$basePath/integration-tests/target/jacoco.exec",
             "$basePath/integration-tests/target/coverage-reports/jacoco.exec",
             "$basePath/integration-tests/target/coverage-reports/jacoco-ut.exec"
-        ], targetFolder:basePath, targetFile: 'integration-tests.exec'
+        ], targetFolder: basePath, targetFile: 'integration-tests.exec'
 
         if (BuildToolEnvironment.instance.isMta()) {
             sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp $basePath/s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")

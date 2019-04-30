@@ -6,6 +6,8 @@ def call(Map parameters) {
 
     if (BuildToolEnvironment.instance.isNpm()) {
         stashSettingsFileName = 'javascript_stash_settings.yml'
+    } else if (BuildToolEnvironment.instance.isMta()) {
+        stashSettingsFileName = 'cap_stash_settings.yml'
     } else {
         stashSettingsFileName = 'java_stash_settings.yml'
     }

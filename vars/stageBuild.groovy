@@ -13,7 +13,7 @@ private build(Script script){
     def stageName = 'build'
     runAsStage(stageName: stageName, script: script) {
         if (BuildToolEnvironment.instance.isMta()) {
-            withEnv(['MAVEN_OPTS=-Dmaven.repo.local=../s4hana_pipeline/maven_local_repo -Dmaven.test.skip=true']) {
+            withEnv(['MAVEN_OPTS=-Dmaven.repo.local=../s4hana_pipeline/maven_local_repo']) {
                 mtaBuild(script: script)
             }
         } else if (BuildToolEnvironment.instance.isNpm()) {

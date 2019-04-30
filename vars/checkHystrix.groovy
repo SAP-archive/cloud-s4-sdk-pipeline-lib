@@ -22,7 +22,11 @@ List<String> extractViolations(String reportFileAsString) {
     def reportAsCsv = parseCsv([readFirstLine: true, columnNames: columns, quoteChar: '"', separator: ','], reportFileAsString)
     final List<String> violations = []
     for (line in reportAsCsv) {
-        if (!(line.threadName =~ /^hystrix-.+-\d+$/)) {
+        // Fixme: When using the vdm without hystrix in test code, the pipeline fails as a non resilient call is identified.
+        // The thread in which the test code is executed is usually called main whereas threads inside a server started
+        // by arquillian are named differently.
+        // line.threadName == "main" is an indicator for the usage of the vdm in test code and thus should be allowed.
+        if (!((line.threadName =~ /^hystrix-.+-\d+$/) || line.threadName == "main")) {
             violations.add("   - HTTP access to '${line.uri}' outside of hystrix context (thread was '${line.threadName}')")
         }
     }

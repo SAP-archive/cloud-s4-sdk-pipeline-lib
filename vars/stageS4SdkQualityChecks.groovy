@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
@@ -15,16 +16,18 @@ def call(Map parameters = [:]) {
 
 private void executeQualityChecks(def script, String basePath, Map configuration) {
 
-    checkDeploymentDescriptors script: script
+    if (BuildToolEnvironment.instance.isMaven() || BuildToolEnvironment.instance.isMta()) {
+        checkDeploymentDescriptors script: script
 
-    checkDependencies script: script, basePath: basePath
+        checkDependencies script: script, basePath: basePath
 
-    aggregateListenerLogs()
+        aggregateListenerLogs()
 
+        checkHystrix()
+        ReportAggregator.instance.reportResilienceCheck()
+
+        checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
+        ReportAggregator.instance.reportServicesCheck(configuration.nonErpDestinations, configuration.customODataServices)
+    }
     checkCodeCoverage script: script, jacocoExcludes: configuration.jacocoExcludes, basePath: basePath
-    checkHystrix()
-    ReportAggregator.instance.reportResilienceCheck()
-
-    checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
-    ReportAggregator.instance.reportServicesCheck(configuration.nonErpDestinations, configuration.customODataServices)
 }

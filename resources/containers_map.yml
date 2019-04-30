@@ -16,6 +16,7 @@ containerMaps:
   integrationTests:
     - mavenExecute
     - executeNpm
+    - createHdiContainer
   frontendUnitTests:
     - executeNpm
   fortifyScan:
