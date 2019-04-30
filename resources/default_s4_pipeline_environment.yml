@@ -33,6 +33,9 @@ steps:
     scanModules:
       - 'application'
 
+  createHdiContainer:
+    dockerImage: 's4sdk/docker-cf-cli'
+
   executeFortifyScan:
     verbose: false
     sourceVersion: 1.8

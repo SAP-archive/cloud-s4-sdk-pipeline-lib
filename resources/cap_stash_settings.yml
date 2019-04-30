@@ -6,14 +6,13 @@ initS4sdkPipeline:
   - name: "SOURCE"
     includes: "**"
     excludes: "**/.git/**, s4hana_pipeline/**"
-  - name: "M2"
-    includes: "s4hana_pipeline/maven_local_repo/**"
 #    Following stash will contain only empty directory.
 #    This is required to support the concurrency in the stashing mechanism where
 #    we merge the stashes from multiple stages into one.
   - name: "REPORTS"
     includes: "s4hana_pipeline/reports/**"
-
+  - name: "M2"
+    includes: "s4hana_pipeline/maven_local_repo/**"
 
 build:
   unstash: ['SOURCE','M2']
@@ -21,11 +20,13 @@ build:
   - name: "M2"
     includes: "s4hana_pipeline/maven_local_repo/**"
   - name: "TARGET"
-    includes: "**/target/**"
+    includes: "*.mtar, **/target/**"
   - name: "NODE_MODULES"
     includes: "**/node_modules/**"
   - name: "PACKAGE_LOCK"
     includes: "**/package-lock.json, **/npm-shrinkwrap.json"
+  - name: "GENERATED_CAP_FILES"
+    includes: "srv/application/src/main/resources/edmx/**, db/src/gen/**"
 
 unitTests:
   unstash: ['SOURCE', 'M2', 'TARGET']
@@ -35,7 +36,7 @@ unitTests:
     includes: "s4hana_pipeline/reports/**"
 
 integrationTests:
-  unstash: ['SOURCE', 'M2', 'TARGET']
+  unstash: ['SOURCE', 'M2', 'TARGET', 'NODE_MODULES', 'GENERATED_CAP_FILES']
   stashes:
   - name: "REPORTS"
     merge: true

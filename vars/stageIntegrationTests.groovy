@@ -9,24 +9,28 @@ def call(Map parameters = [:]) {
     def stageName = 'integrationTests'
     def script = parameters.script
 
-    runAsStage(stageName: stageName, script: script) {
-        runOverModules(script: script, moduleType: "java") { String basePath ->
-            executeIntegrationTest(script, basePath, stageName)
-        }
-    }
-}
-
-private void executeIntegrationTest(def script, String basePath, String stageName) {
     final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
     final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
     Set stageConfigurationKeys = [
         'retry',
         'credentials',
         'forkCount',
-        'sidecarImage'
+        'sidecarImage',
+        'cloudFoundry',
+        'createHdiContainer'
     ]
     Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
+    runAsStage(stageName: stageName, script: script) {
+        createHdiContainer([script: script].plus(configuration)) {
+            runOverModules(script: script, moduleType: "java") { String basePath ->
+                executeIntegrationTest(script, basePath, stageName, configuration)
+            }
+        }
+    }
+}
+
+private void executeIntegrationTest(def script, String basePath, String stageName, Map configuration) {
     Closure integrationTests
     if (BuildToolEnvironment.instance.isNpm()) {
         integrationTests = jsIntegrationTests(script, configuration)

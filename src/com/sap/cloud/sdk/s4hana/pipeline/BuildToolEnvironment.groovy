@@ -25,4 +25,12 @@ class BuildToolEnvironment implements Serializable{
             return ["./"]
         }
     }
+
+    String getUnitTestPath() {
+        if (isMta()) {
+            return "/srv/application"
+        } else {
+            return "/unit-tests"
+        }
+    }
 }

@@ -1,15 +1,14 @@
 # This stage names are used for stashing and un-stashing of files
 
-
 initS4sdkPipeline:
   unstash: []
   stashes:
   - name: "SOURCE"
-    includes: "**/*.*"
-    excludes: "'pipelines/**, **/.git/**"
-  - name: "PIPELINE"
-    includes: "'pipelines/**"
-    excludes: "'pipelines/.git/**"
+    includes: "**"
+    excludes: "**/.git/**, s4hana_pipeline/**"
+#    Following stash will contain only empty directory.
+#    This is required to support the concurrency in the stashing mechanism where
+#    we merge the stashes from multiple stages into one.
   - name: "REPORTS"
     includes: "s4hana_pipeline/reports/**"
 
@@ -17,9 +16,9 @@ build:
   unstash: ['SOURCE']
   stashes:
   - name: "DIST"
-    includes: "**/dist/**, dist/**"
+    includes: "**/dist/**"
   - name: "NODE_MODULES"
-    includes: "**/node_modules/**, node_modules/**"
+    includes: "**/node_modules/**"
   - name: "PACKAGE_LOCK"
     includes: "**/package-lock.json, **/npm-shrinkwrap.json"
 

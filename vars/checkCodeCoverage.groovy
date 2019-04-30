@@ -23,7 +23,7 @@ def call(Map parameters = [:]) {
 
         def script = parameters.script
 
-        if (BuildToolEnvironment.instance.isMaven()) {
+        if (BuildToolEnvironment.instance.isMaven() || BuildToolEnvironment.instance.isMta()) {
             assertPluginIsActive("jacoco")
             def jacocoExclusionPattern
             List jacocoExcludes = parameters.jacocoExcludes
