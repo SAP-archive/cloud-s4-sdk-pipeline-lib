@@ -1,27 +1,27 @@
-# Pipeline Library for the SAP S/4HANA Cloud SDK
+# Pipeline Library for the SAP Cloud SDK
  
  
 ## Description
 
- This pipeline library is used by [SAP S/4HANA Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline).
+ This pipeline library is used by [SAP Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline).
  It defines the common steps (functions) in a Jenkins pipeline to build, test and deploy applications to the SAP Cloud Platform.
   
  ## Requirements
  
- To use the pipeline library you must have a git project which uses a pipeline, such as the [SAP S/4HANA Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline).
+ To use the pipeline library you must have a git project which uses a pipeline, such as the [SAP Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline).
  
  ## Download and Installation
  
  To use the library in a pipeline you have to configure this library as a [globally shared library](https://jenkins.io/doc/book/pipeline/shared-libraries/).
  
- To avoid the manual steps described in that documentation you can use the SAP S/4HANA Cloud SDK Cx Server.
+ To avoid the manual steps described in that documentation you can use the SAP Cloud SDK Cx Server.
  
- For instantiating the SAP S/4HANA Cloud SDK Cx Server, you need to provide a suitable host with a Linux operating system and Docker installed. Please also ensure that the user with whom you start the Cx Server belongs to the [docker group](https://docs.docker.com/engine/installation/linux/linux-postinstall/).
+ For instantiating the SAP Cloud SDK Cx Server, you need to provide a suitable host with a Linux operating system and Docker installed. Please also ensure that the user with whom you start the Cx Server belongs to the [docker group](https://docs.docker.com/engine/installation/linux/linux-postinstall/).
  
  Your project source files need to be available on a git or GitHub server, which is accessible from the Cx Server host.
  
  The lifecycle of the Cx Server is maintained by a script called `cx-server`.
- It can be found in the same named folder on the root of each SAP S/4HANA Cloud SDK project archetype. Together with the `server.cfg` file, this is all you need for starting your instance of the SAP S/4HANA Cloud SDK Cx Server.
+ It can be found in the same named folder on the root of each SAP Cloud SDK project archetype. Together with the `server.cfg` file, this is all you need for starting your instance of the SAP Cloud SDK Cx Server.
  
  To create a new project using the SDK execute the following command:
  
@@ -45,7 +45,7 @@
  @Library(['s4sdk-pipeline-library']) _
   ```
   
- If you decide for [SAP S/4HANA Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline), this is already done for you. 
+ If you decide for [SAP Cloud SDK Pipeline](https://github.com/SAP/cloud-s4-sdk-pipeline), this is already done for you. 
  
 ## Known Issues
 Currently, there are no known issues.

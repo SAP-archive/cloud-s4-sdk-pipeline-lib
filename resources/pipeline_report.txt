@@ -1,7 +1,7 @@
-SAP S/4HANA Cloud SDK Continuous Delivery Report
+SAP Cloud SDK Continuous Delivery Report
 
 SAP offers special programs for partners to get their products certified or apply for vendor branded and SAP branded reselling. These programs require that the partner fulfills certain quality criteria.
-The SAP S/4HANA Cloud SDK helps partners to fulfill many of these qualities. Furthermore, the SAP S/4HANA Cloud SDK Continuous Delivery toolkit helps to ensure these qualities as listed below.
+The SAP Cloud SDK helps partners to fulfill many of these qualities. Furthermore, the SAP Cloud SDK Continuous Delivery toolkit helps to ensure these qualities as listed below.
 This report lists which qualities were assessed during the pipeline run. For each quality, it references the relevant requirements in the partner certification or qualification program.
 
 This report was generated at: $utcTimestamp UTC
