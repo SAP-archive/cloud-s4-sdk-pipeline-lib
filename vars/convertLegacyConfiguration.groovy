@@ -56,7 +56,7 @@ def removeMavenGlobalSettings(script) {
         String projectSettingsFile = mavenConfiguration.projectSettingsFile
         if (!projectSettingsFile) {
             println("[WARNING]: Your pipeline configuration contains the obsolete configuration parameter " +
-                "'executeMaven.globalSettingsFile=${mavenConfiguration.globalSettingsFile}'. The S/4HANA Cloud " +
+                "'executeMaven.globalSettingsFile=${mavenConfiguration.globalSettingsFile}'. The Cloud " +
                 "SDK Pipeline uses an own global settings file to inject its download proxy as maven repository mirror. " +
                 "Since you did not specify a project settings file, your settings file will be used as " +
                 "'executeMaven.projectSettingsFile'.")
@@ -68,7 +68,7 @@ def removeMavenGlobalSettings(script) {
             error("Your pipeline configuration contains the obsolete configuration parameter " +
                 "'executeMaven.globalSettingsFile=${mavenConfiguration.globalSettingsFile}' together with " +
                 "'executeMaven.projectSettingsFile=${mavenConfiguration.projectSettingsFile}'. " +
-                "The S/4HANA Cloud SDK Pipeline uses an own global settings file to inject its download proxy " +
+                "The Cloud SDK Pipeline uses an own global settings file to inject its download proxy " +
                 "as maven repository mirror. Please reduce your settings to one file and specify " +
                 "it under 'executeMaven.globalSettingsFile'.")
         }

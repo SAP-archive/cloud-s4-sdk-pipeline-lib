@@ -22,6 +22,12 @@ def call(Map parameters) {
         defaultMavenConfiguration.dockerOptions = DownloadCacheUtils.downloadCacheNetworkParam()
         defaultMavenConfiguration.globalSettingsFile = s4SdkGlobals.mavenGlobalSettingsFile
 
+        Map defaultMtaBuildConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'mtaBuild')
+
+        defaultMtaBuildConfiguration.dockerOptions = DownloadCacheUtils.downloadCacheNetworkParam()
+        defaultMtaBuildConfiguration.globalSettingsFile = s4SdkGlobals.mavenGlobalSettingsFile
+        defaultMtaBuildConfiguration.defaultNpmRegistry = "http://${hostname}:8081/repository/npm-proxy"
+
         Map npmDefaultConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'executeNpm')
         npmDefaultConfiguration.defaultNpmRegistry = "http://${hostname}:8081/repository/npm-proxy"
 

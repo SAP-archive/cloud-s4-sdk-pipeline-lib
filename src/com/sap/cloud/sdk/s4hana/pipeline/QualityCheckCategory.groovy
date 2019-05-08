@@ -5,7 +5,7 @@ enum QualityCheckCategory {
     StaticCodeChecks("Static Code Checks"),
     SecurityScans("Security Scan"),
     PerformanceTests("Performance Tests"),
-    S4sdkQualityChecks("SAP S/4HANA Cloud SDK Quality Checks")
+    S4sdkQualityChecks("SAP Cloud SDK Quality Checks")
 
     private String label
 
