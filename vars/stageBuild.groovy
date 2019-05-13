@@ -13,8 +13,15 @@ private build(Script script){
     def stageName = 'build'
     runAsStage(stageName: stageName, script: script) {
         if (BuildToolEnvironment.instance.isMta()) {
+
             withEnv(['MAVEN_OPTS=-Dmaven.repo.local=../s4hana_pipeline/maven_local_repo']) {
                 mtaBuild(script: script)
+            }
+            // mta-builder executes 'npm install --production', therefore we need 'npm ci/install' to install the dev-dependencies
+            runOverModules(script: script, moduleType: 'html5') { basePath ->
+                dir(basePath){
+                    installAndBuildNpm(script: script)
+                }
             }
         } else if (BuildToolEnvironment.instance.isNpm()) {
             installAndBuildNpm script: script, customScripts:['ci-build']

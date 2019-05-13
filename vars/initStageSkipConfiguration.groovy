@@ -38,7 +38,7 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
 
-        if (fileExists('package.json')) {
+        if (fileExists('package.json') || BuildToolEnvironment.instance.isMta()) {
             script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
         }
 
