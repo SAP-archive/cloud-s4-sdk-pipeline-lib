@@ -4,6 +4,8 @@ import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
+import com.sap.piper.DefaultValueCache
+import com.sap.piper.MapUtils
 
 def call(Map parameters) {
     def script = parameters.script
@@ -18,15 +20,7 @@ def call(Map parameters) {
 
     Analytics.instance.initAnalytics(script)
 
-    String extensionRepository = script.loadEffectiveGeneralConfiguration(script: script).extensionRepository
-    if (extensionRepository != null) {
-        try {
-            sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
-        } catch (Exception e) {
-            error("Error while executing git clone when accessing repository ${extensionRepository}.")
-        }
-    }
-    loadAdditionalLibraries script: script
+    loadGlobalExtension script: script
 
     def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
     def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)
