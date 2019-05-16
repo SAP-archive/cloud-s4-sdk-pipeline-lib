@@ -1,3 +1,5 @@
+import com.cloudbees.groovy.cps.NonCPS
+
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
 def call(Map parameters = [:]) {
@@ -19,7 +21,7 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
         }
         Map discoveredAdvisories
         executeNpm(script: script) {
-            sh "echo 'Falling back to default public npm registry while executing npm audit check.'"
+            echo "Running npm audit check in '${basePath}'. Falling back to default public npm registry while executing npm audit check."
 
             // Retry npm audit in case it failed
             final int MAX_RETRIES = 3
@@ -68,14 +70,20 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
 
         if (vulnerabilitySummary.critical > 0 || vulnerabilitySummary.high > 0 || vulnerabilitySummary.moderate > 2) {
             script.currentBuild.setResult('FAILURE')
-            def npmAuditSummary = "npm dependency audit discovered ${vulnerabilitySummary.critical} crticial and ${vulnerabilitySummary.high} high vulnerabilities. " +
+
+            String summary = "npm dependency audit discovered ${vulnerabilitySummary.critical} crticial, ${vulnerabilitySummary.high} high, ${vulnerabilitySummary.moderate} moderate vulnerabilities in '${basePath}'"
+
+            String npmAuditSummary = "${summary}.\n" +
                 "Please execute 'npm audit' locally to identify and fix relevant findings.\n" +
                 "Summary of the findings:\n" +
                 "${formatRelevantAdvisoriesForLog(criticalAdvisories, highAdvisories, moderateAdvisories)}"
+
             addBadge(icon: "error.gif", text: npmAuditSummary)
+
             createSummary(icon: "error.gif", text: "<h2>npm dependency audit discovered ${vulnerabilitySummary.critical} crticial and ${vulnerabilitySummary.high} high vulnerabilities</h2>\n" +
                 "Please execute <code>npm audit</code> locally to identify and fix relevant findings.\n" +
                 "<h3>Summary of the findings</h3>\n" + formatRelevantAdvisoriesForBadge(criticalAdvisories, highAdvisories, moderateAdvisories))
+
             error npmAuditSummary
         }
     }
@@ -117,37 +125,41 @@ private Map filterUserAuditedAdvisories(Map configuration, Map advisories) {
     return advisories
 }
 
+@NonCPS
 private String htmlListOfUserAuditedAdvisories(List userAuditedAdvisories) {
     return "<ol>${userAuditedAdvisories.collect { "<li><a target=\"_blank\" href=\"https://npmjs.com/advisories/${it}\">${it}</a></li>" }.join("\n")}</ol>"
 }
 
+@NonCPS
 private String formatRelevantAdvisoriesForBadge(Map critical, Map high, Map moderate) {
-    def criticalList = critical.collect { advisoryId, advisoryBody -> formatHtml(advisoryBody) }
-    def highList = high.collect { advisoryId, advisoryBody -> formatHtml(advisoryBody) }
-    def moderateList = moderate.collect { advisoryId, advisoryBody -> formatHtml(advisoryBody) }
+    List criticalList = critical.collect { advisoryId, advisoryBody -> formatHtml(advisoryBody) }
+    List highList = high.collect { advisoryId, advisoryBody -> formatHtml(advisoryBody) }
+    List moderateList = moderate.collect { advisoryId, advisoryBody -> formatHtml(advisoryBody) }
 
-    return criticalList?.collect { "<li>${it}</li>" }?.join('\n') +
-        highList?.collect { "<li>${it}</li>" }?.join('\n') +
-        moderateList?.collect { "<li>${it}</li>" }?.join('\n')
+    return (criticalList + highList + moderateList).collect { "<li>${it}</li>" }?.join('\n')
 }
 
-private String formatHtml(advisoryBody) {
+@NonCPS
+private String formatHtml(def advisoryBody) {
     return "${severity(advisoryBody)} <em>${advisoryBody.title}</em> vulnerability found in dependency \"${advisoryBody.module_name}\", " +
         "see <a target=\"_blank\" href=\"${advisoryBody.url}\">${advisoryBody.url}</a> for details."
 }
 
+@NonCPS
 private String formatRelevantAdvisoriesForLog(Map critical, Map high, Map moderate) {
-    def criticalList = critical.collect { advisoryId, advisoryBody -> format(advisoryBody) }
-    def highList = high.collect { advisoryId, advisoryBody -> format(advisoryBody) }
-    def moderateList = moderate.collect { advisoryId, advisoryBody -> format(advisoryBody) }
+    List criticalList = critical.collect { advisoryId, advisoryBody -> format(advisoryBody) }
+    List highList = high.collect { advisoryId, advisoryBody -> format(advisoryBody) }
+    List moderateList = moderate.collect { advisoryId, advisoryBody -> format(advisoryBody) }
 
-    return criticalList?.join('\n') + highList?.join('\n') + moderateList?.join('\n')
+    return (criticalList + highList + moderateList).join('\n')
 }
 
-private String format(advisoryBody) {
+@NonCPS
+private String format(def advisoryBody) {
     return "${severity(advisoryBody)} \"${advisoryBody.title}\" vulnerability found in dependency \"${advisoryBody.module_name}\", see ${advisoryBody.url} for details."
 }
 
-private String severity(advisoryBody) {
-    return (advisoryBody.severity as String).capitalize()
+@NonCPS
+private String severity(def advisoryBody) {
+    return (advisoryBody.severity).capitalize()
 }
