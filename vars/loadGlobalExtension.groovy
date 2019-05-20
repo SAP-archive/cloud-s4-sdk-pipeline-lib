@@ -2,7 +2,7 @@ import com.sap.piper.MapUtils
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'loadGlobalExtension') {
-        def script = parameters.script;
+        def script = parameters.script
 
         String extensionRepository = loadEffectiveGeneralConfiguration(script: script).extensionRepository
         if (extensionRepository != null) {
@@ -13,9 +13,9 @@ def call(Map parameters = [:]) {
             }
 
             String extensionConfigurationFilePath = "${s4SdkGlobals.repositoryExtensionsDirectory}/extension_configuration.yml"
-            if(fileExists(extensionConfigurationFilePath)){
+            if (fileExists(extensionConfigurationFilePath)) {
                 Map currentConfiguration = script.commonPipelineEnvironment.configuration
-                Map extensionConfiguration = readYaml file:extensionConfigurationFilePath
+                Map extensionConfiguration = readYaml file: extensionConfigurationFilePath
                 Map mergedConfiguration = MapUtils.merge(extensionConfiguration, currentConfiguration)
                 script.commonPipelineEnvironment.configuration = mergedConfiguration
             }
