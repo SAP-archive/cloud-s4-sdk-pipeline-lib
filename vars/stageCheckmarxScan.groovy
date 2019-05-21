@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
@@ -7,7 +8,10 @@ def call(Map parameters = [:]) {
     def stageName = 'checkmarxScan'
     def script = parameters.script
     runAsStage(stageName: stageName, script: script) {
-        executeCheckmarxScan(script, stageName, "")
+        runOverModules(script: script, moduleType: "java") { basePath ->
+            executeCheckmarxScan(script, stageName, basePath)
+        }
+
     }
 }
 
@@ -32,7 +36,7 @@ private void executeCheckmarxScan( def script, String stageName, String basePath
 
     // only applicable if customized config exists
     if (stageConfiguration) {
-        String directory = basePath != null && !basePath.isEmpty() ? basePath : 'application'
+        String directory = PathUtils.normalize(basePath, 'application')
         configuration.script = script
         dir(directory) {
             executeCheckmarxScan configuration
