@@ -29,7 +29,6 @@ def call(Map parameters = [:]) {
             'skipNgComponents',
             'additionalScanOptions'
         ]
-        String pathToPom = PathUtils.normalize(basePath, 'pom.xml')
 
         final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeFortifyScan')
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeFortifyScan')
@@ -38,6 +37,9 @@ def call(Map parameters = [:]) {
         if (!configuration.dockerImage) {
             error("Error while executing fortifyScan. The value for dockerImage is empty, please provide an appropriate fortify client docker image name.")
         }
+
+        String pathToPom = PathUtils.normalize(basePath, 'pom.xml')
+
         if (!fileExists(pathToPom)) {
             error("Fortify stage expected a pom.xml file at \"${pathToPom}\", but no such file was found.")
         }
@@ -47,22 +49,22 @@ def call(Map parameters = [:]) {
         String effectivePomFile = PathUtils.normalize(effectivePomFileLocation, effectivePomFileName)
 
         MavenUtils.generateEffectivePom(script, pathToPom, effectivePomFileName)
+
         if (!fileExists(effectivePomFile)) {
             error("Fortify stage expected an effective pom file, but no such file was generated.")
         }
-        def pom = readMavenPom file: effectivePomFile
+        def effectivePom = readMavenPom file: effectivePomFile
 
-        // clean compile scan
         def fortifyMavenScanOptions = [:]
         fortifyMavenScanOptions.script = script
         fortifyMavenScanOptions.pomPath = pathToPom
         fortifyMavenScanOptions.dockerImage = configuration.dockerImage
         fortifyMavenScanOptions.goals = [
-            'com.hpe.security.fortify.maven.plugin:sca-maven-plugin:translate',
-            'com.hpe.security.fortify.maven.plugin:sca-maven-plugin:scan'
+            'fortify:translate',
+            'fortify:scan'
         ].join(' ')
 
-        String defaultBuildId = "${pom.artifactId}-${pom.version}"
+        String defaultBuildId = "${effectivePom.artifactId}-${effectivePom.version}"
 
         def fortifyDefines = [
             "-Dfortify.sca.verbose=${configuration.verbose}",
@@ -87,18 +89,15 @@ def call(Map parameters = [:]) {
         mavenExecute(fortifyMavenScanOptions)
 
         try {
-            updateFortifyProjectVersion(configuration, pom.version)
+            updateFortifyProjectVersion(configuration, effectivePom.version)
         } catch (Exception e) {
             error("Exception while updating project version in Fortify Software Security Center \n" + Arrays.toString(e.getStackTrace()))
         }
 
-        String fprFilePath = PathUtils.normalize(basePath, 'target/fortify/')
-        String fprFile = PathUtils.normalize(fprFilePath, "${pom.artifactId}-${pom.version}.fpr")
-
         try {
             dockerExecute(script: script, dockerImage: configuration.dockerImage) {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: configuration.fortifyCredentialId, passwordVariable: 'password', usernameVariable: 'username']]) {
-                    sh "fortifyclient uploadFPR -url ${configuration.sscUrl} -f ${fprFile} -application ${configuration.fortifyProjectName} -applicationVersion ${pom.version} -user ${username} -password ${BashUtils.escape(password)}"
+                    sh "fortifyclient uploadFPR -url ${configuration.sscUrl} -f ${PathUtils.normalize(basePath, 'target/result.fpr')} -application ${configuration.fortifyProjectName} -applicationVersion ${effectivePom.version} -user ${username} -password ${BashUtils.escape(password)}"
                 }
             }
         } catch (Exception e) {

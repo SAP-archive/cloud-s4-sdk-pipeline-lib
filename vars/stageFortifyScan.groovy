@@ -9,7 +9,8 @@ def call(Map parameters = [:]) {
     def stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
     runAsStage(stageName: stageName, script: script) {
         runOverModules(script: script, moduleType: 'java') { basePath ->
-            executeFortifyScan(script: script,
+            executeFortifyScan(
+                script: script,
                 fortifyCredentialId: stageConfiguration.fortifyCredentialId,
                 fortifyProjectName: stageConfiguration.fortifyProjectName,
                 projectVersionId: stageConfiguration.projectVersionId,
