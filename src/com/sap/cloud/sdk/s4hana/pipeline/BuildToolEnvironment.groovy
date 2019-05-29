@@ -3,7 +3,7 @@ package com.sap.cloud.sdk.s4hana.pipeline
 @Singleton
 class BuildToolEnvironment implements Serializable{
     BuildTool buildTool
-    Map modules
+    Map modulesMap
 
     boolean isMta(){
         buildTool == BuildTool.MTA
@@ -17,9 +17,15 @@ class BuildToolEnvironment implements Serializable{
         buildTool == BuildTool.MAVEN
     }
 
-    List getModulesPathOfType(String moduleType){
+    List getModulesPathOfType(List moduleTypes){
+        List modulesList = []
         if(isMta()){
-            return modules.get(moduleType)?:[]
+            for(int i=0; i<moduleTypes.size(); i++){
+                String moduleType = moduleTypes[i]
+                modulesList.addAll(modulesMap.get(moduleType)?:[])
+            }
+
+            return modulesList
         }
         else {
             return ["./"]

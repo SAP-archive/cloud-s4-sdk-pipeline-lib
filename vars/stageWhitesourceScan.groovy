@@ -23,7 +23,7 @@ def call(Map parameters = [:]) {
             runOverModules(script: script, moduleType: "java") { basePath ->
                 executeForMaven(script, basePath, whitesourceConfiguration)
             }
-            runOverModules(script: script, moduleType: "html5") { basePath ->
+            runOverModules(script: script, moduleType: ["html5", "nodejs"]) { basePath ->
                 executeForNpm(script, basePath, whitesourceConfiguration)
             }
         }
