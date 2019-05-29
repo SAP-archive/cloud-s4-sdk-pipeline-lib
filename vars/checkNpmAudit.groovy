@@ -71,7 +71,7 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
         if (vulnerabilitySummary.critical > 0 || vulnerabilitySummary.high > 0 || vulnerabilitySummary.moderate > 2) {
             script.currentBuild.setResult('FAILURE')
 
-            String summary = "npm dependency audit discovered ${vulnerabilitySummary.critical} crticial, ${vulnerabilitySummary.high} high, ${vulnerabilitySummary.moderate} moderate vulnerabilities in '${basePath}'"
+            String summary = "npm dependency audit discovered ${vulnerabilitySummary.critical} crticial, ${vulnerabilitySummary.high} high and ${vulnerabilitySummary.moderate} moderate vulnerabilities in '${basePath}'"
 
             String npmAuditSummary = "${summary}.\n" +
                 "Please execute 'npm audit' locally to identify and fix relevant findings.\n" +
@@ -80,7 +80,7 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
 
             addBadge(icon: "error.gif", text: npmAuditSummary)
 
-            createSummary(icon: "error.gif", text: "<h2>npm dependency audit discovered ${vulnerabilitySummary.critical} crticial and ${vulnerabilitySummary.high} high vulnerabilities</h2>\n" +
+            createSummary(icon: "error.gif", text: "<h2>npm dependency audit discovered ${vulnerabilitySummary.critical} crticial and ${vulnerabilitySummary.high} high and ${vulnerabilitySummary.moderate} moderate vulnerabilities</h2>\n" +
                 "Please execute <code>npm audit</code> locally to identify and fix relevant findings.\n" +
                 "<h3>Summary of the findings</h3>\n" + formatRelevantAdvisoriesForBadge(criticalAdvisories, highAdvisories, moderateAdvisories))
 
