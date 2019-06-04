@@ -95,9 +95,13 @@ def call(Map parameters = [:]) {
 
                 if (!checkmarxExecuted) {
                     currentBuild.result = 'FAILURE'
-                    error "Aborting the build because Checkmarx scan did not execute successfully. Please have a look at the log output of the Checkmarx plugin."
+                    error "Aborting the build because Checkmarx scan did not execute successfully. Please have a look at the log output of the Checkmarx scan above."
                 }
             }
+        }
+        // The checkmarx plugin does not abort the build when vulnerability thresholds are exceeded, therefore we actively fail the build
+        if (currentBuild.resultIsWorseOrEqualTo('FAILURE')) {
+            error "Aborting the build because the current build result is 'FAILURE'. Potentially the Checkmarx scan or a parallel stage did not execute successfully. Please have a look at the log output of the Checkmarx scan above."
         }
     }
 }
