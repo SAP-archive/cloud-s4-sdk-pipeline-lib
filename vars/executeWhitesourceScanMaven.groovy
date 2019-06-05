@@ -4,7 +4,8 @@ import java.nio.file.Paths
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeWhitesourceScanMaven', stepParameters: parameters) {
         final script = parameters.script
-
+        String pomPath = parameters.pomPath ?: 'pom.xml'
+        
         try {
             withCredentials([string(credentialsId: parameters.credentialsId, variable: 'orgToken')]) {
                 List defines = [
@@ -28,7 +29,7 @@ def call(Map parameters = [:]) {
                 mavenExecute(
                     script: script,
                     m2Path: s4SdkGlobals.m2Directory,
-                    pomPath: Paths.get(parameters.basePath, "application", "pom.xml").toString(),
+                    pomPath: pomPath,
                     goals: 'org.whitesource:whitesource-maven-plugin:update',
                     defines: defines.join(' ')
                 )

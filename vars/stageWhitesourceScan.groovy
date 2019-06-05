@@ -30,9 +30,13 @@ def call(Map parameters = [:]) {
     }
 }
 
+private String getPomXmlPath(String basePath) {
+    return Paths.get(basePath, "application", "pom.xml").toString()
+}
+
 private void executeForAllTools(def script, String basePath, Map whitesourceConfiguration) {
     String packageJsonPath = Paths.get(basePath, "package.json").toString()
-    String pomXmlPath = Paths.get(basePath, "application", "pom.xml").toString()
+    String pomXmlPath = getPomXmlPath(basePath)
 
     boolean hasPackageJson = fileExists(packageJsonPath)
     boolean hasPomXml = fileExists(pomXmlPath)
@@ -55,7 +59,10 @@ private void executeForNpm(def script, String basePath, Map whitesourceConfigura
     dir(basePath) {
         println("Executing WhiteSource scan for NPM module '${basePath}'")
 
-        executeWhitesourceScanNpm(getWhiteSourceArgumentMap(script, basePath, whitesourceConfiguration))
+        Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
+        argumentMap['basePath'] = basePath
+
+        executeWhitesourceScanNpm(argumentMap)
 
         ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
     }
@@ -64,17 +71,19 @@ private void executeForNpm(def script, String basePath, Map whitesourceConfigura
 private void executeForMaven(def script, String basePath, Map whitesourceConfiguration) {
     println("Executing WhiteSource scan for Maven module '${basePath}'")
 
-    executeWhitesourceScanMaven(getWhiteSourceArgumentMap(script, basePath, whitesourceConfiguration))
+    Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
+    argumentMap['pomPath'] = getPomXmlPath(basePath)
+
+    executeWhitesourceScanMaven(argumentMap)
 
     ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
 }
 
-private Map getWhiteSourceArgumentMap(script, String basePath, Map whitesourceConfiguration) {
+private Map getWhiteSourceArgumentMap(script, Map whitesourceConfiguration) {
     Map whiteSourceArguments = [:]
     whiteSourceArguments['script'] = script
     whiteSourceArguments['credentialsId'] = whitesourceConfiguration.credentialsId
     whiteSourceArguments['product'] = whitesourceConfiguration.product
-    whiteSourceArguments['basePath'] = basePath
 
     if(whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
         whiteSourceArguments['whitesourceUserTokenCredentialsId'] = whitesourceConfiguration.whitesourceUserTokenCredentialsId
