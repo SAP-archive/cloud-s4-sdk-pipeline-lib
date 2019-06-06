@@ -1,3 +1,4 @@
+import com.cloudbees.groovy.cps.NonCPS
 import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
@@ -8,50 +9,46 @@ import groovy.transform.Field
 
 @Field String STEP_NAME = 'runAsStage'
 
+@Field Set PARAMETER_KEYS = ['node']
+
+
 def call(Map parameters = [:], body) {
+
     Map configurationHelper = ConfigurationHelper.newInstance(this, parameters)
         .withMandatoryProperty('stageName')
         .withMandatoryProperty('script')
         .use()
-    def stageName = configurationHelper.stageName
-    def script = configurationHelper.script
-    Map defaultGeneralConfiguration = ConfigurationLoader.defaultGeneralConfiguration(script)
-    Map projectGeneralConfiguration = ConfigurationLoader.generalConfiguration(script)
 
-    Map generalConfiguration = ConfigurationMerger.merge(
-        projectGeneralConfiguration,
-        projectGeneralConfiguration.keySet(),
-        defaultGeneralConfiguration)
+    String stageName = configurationHelper.stageName
+    Script script = configurationHelper.script
 
-    Map stageDefaultConfiguration = ConfigurationLoader.defaultStageConfiguration(script, stageName)
-    Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+    Map configuration = ConfigurationHelper.newInstance(this)
+        .loadStepDefaults()
+        .mixin(ConfigurationLoader.defaultStageConfiguration(script, stageName))
+        .mixinGeneralConfig(script.commonPipelineEnvironment)
+        .mixinStageConfig(script.commonPipelineEnvironment, stageName)
+        .mixin(parameters, PARAMETER_KEYS)
+        .use()
 
-    Set parameterKeys = ['node']
-    Map mergedStageConfiguration = ConfigurationMerger.merge(
-        parameters,
-        parameterKeys,
-        stageConfiguration,
-        stageConfiguration.keySet(),
-        stageDefaultConfiguration)
-    mergedStageConfiguration.uniqueId = UUID.randomUUID().toString()
-    String nodeLabel = generalConfiguration.defaultNode
+    configuration.uniqueId = UUID.randomUUID().toString()
+    String nodeLabel = configuration.defaultNode
 
-    def containerMap = ContainerMap.instance.getMap().get(stageName) ?: [:]
-    if (mergedStageConfiguration.node) {
-        nodeLabel = mergedStageConfiguration.node
+    Map containerMap = ContainerMap.instance.getMap().get(stageName) ?: [:]
+    if (configuration.node) {
+        nodeLabel = configuration.node
     }
 
     handleStepErrors(stepName: stageName, stepParameters: [:]) {
         if (Boolean.valueOf(env.ON_K8S) && containerMap.size() > 0) {
             withEnv(["POD_NAME=${stageName}"]) {
                 dockerExecuteOnKubernetes(script: script, containerMap: containerMap) {
-                    executeStage(script, body, stageName, mergedStageConfiguration, generalConfiguration)
+                    executeStage(script, body, stageName, configuration)
                 }
             }
         } else {
             node(nodeLabel) {
                 try {
-                    executeStage(script, body, stageName, mergedStageConfiguration, generalConfiguration)
+                    executeStage(script, body, stageName, configuration)
                 } finally {
                     deleteDir()
                 }
@@ -60,11 +57,10 @@ def call(Map parameters = [:], body) {
     }
 }
 
-private executeStage(def script,
+private executeStage(Script script,
                      Closure originalStage,
                      String stageName,
-                     Map stageConfiguration,
-                     Map generalConfiguration) {
+                     Map configuration) {
     boolean projectExtensions
     boolean globalExtensions
     def startTime = System.currentTimeMillis()
@@ -83,20 +79,18 @@ private executeStage(def script,
 
         // First, check if a repository extension exists
         if (globalExtensions) {
-            Script repositoryInterceptorScript = load(repositoryInterceptorFile)
             echo "Found repository interceptor for ${stageName}."
             // If we call the repository interceptor, we will pass on originalStage as parameter
             body = {
-                repositoryInterceptorScript(originalStage, stageName, stageConfiguration, generalConfiguration)
+                callInterceptor(script, repositoryInterceptorFile, originalStage, stageName, configuration)
             }
         }
 
         // Second, check if a project extension exists
         if (projectExtensions) {
-            Script projectInterceptorScript = load(projectInterceptorFile)
             echo "Found project interceptor for ${stageName}."
             // If we call the project interceptor, we will pass on body as parameter which contains either originalStage or the repository interceptor
-            projectInterceptorScript(body, stageName, stageConfiguration, generalConfiguration)
+            callInterceptor(script, projectInterceptorFile, body, stageName, configuration)
         } else {
             // This calls either originalStage if no interceptors where found, or repository interceptor if no project interceptor was found
             body()
@@ -131,3 +125,46 @@ private prepareAndSendAnalytics(def script, String stageName, def startTime, boo
 
     sendAnalytics(script: script, telemetryData: stageInfo)
 }
+
+
+private callInterceptor(Script script, String extensionFileName, Closure originalStage, String stageName, Map configration){
+    Script interceptor = load(extensionFileName)
+    //TODO: Remove handling of legacy interface
+    if(isOldInterceptorInterfaceUsed(interceptor)){
+        echo("[Warning] The interface to implement extensions has changed. " +
+            "The extension $extensionFileName has to implement a method named 'call' with exactly one parameter of type Map. " +
+            "This map will have the properties script, originalStage, stageName, config. " +
+            "For example: def call(Map parameters) { ... }")
+        interceptor(originalStage, stageName, configration, configration)
+    }
+    else {
+        validateInterceptor(interceptor, extensionFileName)
+        interceptor([
+            script: script,
+            originalStage:originalStage,
+            stageName: stageName,
+            config: configration
+        ])
+    }
+}
+
+@NonCPS
+private boolean isInterceptorValid(Script interceptor){
+    MetaMethod method = interceptor.metaClass.pickMethod("call", [Map.class] as Class[])
+    return method != null
+}
+
+private validateInterceptor(Script interceptor, String extensionFileName){
+    if(!isInterceptorValid(interceptor)){
+        error("The extension $extensionFileName has to implement a method named 'call' with exactly one parameter of type Map. " +
+            "This map will have the properties script, originalStage, stageName, config. " +
+            "For example: def call(Map parameters) { ... }")
+    }
+}
+
+@NonCPS
+private boolean isOldInterceptorInterfaceUsed(Script interceptor){
+    MetaMethod method = interceptor.metaClass.pickMethod("call", [Closure.class, String.class, Map.class, Map.class] as Class[])
+    return method != null
+}
+

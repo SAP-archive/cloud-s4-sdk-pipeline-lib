@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
@@ -7,11 +8,11 @@ def call(Map parameters = [:]) {
     def stageName = 'checkmarxScan'
     def script = parameters.script
     runAsStage(stageName: stageName, script: script) {
-        executeCheckmarxScan(script, stageName, "")
+        executeCheckmarxScan(script, stageName)
     }
 }
 
-private void executeCheckmarxScan( def script, String stageName, String basePath) {
+private void executeCheckmarxScan( def script, String stageName) {
 
     final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
     final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
@@ -32,12 +33,8 @@ private void executeCheckmarxScan( def script, String stageName, String basePath
 
     // only applicable if customized config exists
     if (stageConfiguration) {
-        String directory = basePath != null && !basePath.isEmpty() ? basePath : 'application'
-        configuration.script = script
-        dir(directory) {
-            executeCheckmarxScan configuration
-        }
-
+        configuration.script = script	
+        executeCheckmarxScan configuration
         ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
     }
 }

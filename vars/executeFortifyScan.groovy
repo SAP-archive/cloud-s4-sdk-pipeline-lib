@@ -1,18 +1,14 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
-import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
+import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeFortifyScan') {
         final script = parameters.script
-
-        if (BuildToolEnvironment.instance.isMta()) {
-            error('Fortify is currently not supported for MTA projects. If you need this, please open a new issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues')
-        }
-
+        final String basePath = parameters.basePath
         final Set parameterKeys = [
             'fortifyCredentialId',
             'fortifyProjectName',
@@ -33,7 +29,6 @@ def call(Map parameters = [:]) {
             'skipNgComponents',
             'additionalScanOptions'
         ]
-        def pathToPom = "application/pom.xml"
 
         final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeFortifyScan')
         final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeFortifyScan')
@@ -42,31 +37,34 @@ def call(Map parameters = [:]) {
         if (!configuration.dockerImage) {
             error("Error while executing fortifyScan. The value for dockerImage is empty, please provide an appropriate fortify client docker image name.")
         }
+
+        String pathToPom = PathUtils.normalize(basePath, 'pom.xml')
+
         if (!fileExists(pathToPom)) {
             error("Fortify stage expected a pom.xml file at \"${pathToPom}\", but no such file was found.")
         }
 
-        def effectivePomFileLocation = './application/'
-        def effectivePomFileName = 'effectivePomFile.xml'
+        String effectivePomFileLocation = basePath
+        String effectivePomFileName = 'effectivePomFile.xml'
+        String effectivePomFile = PathUtils.normalize(effectivePomFileLocation, effectivePomFileName)
 
         MavenUtils.generateEffectivePom(script, pathToPom, effectivePomFileName)
-        if (!fileExists(effectivePomFileLocation+effectivePomFileName)) {
+
+        if (!fileExists(effectivePomFile)) {
             error("Fortify stage expected an effective pom file, but no such file was generated.")
         }
-        def pom = readMavenPom file: effectivePomFileLocation+effectivePomFileName
+        def effectivePom = readMavenPom file: effectivePomFile
 
-        // clean compile scan
         def fortifyMavenScanOptions = [:]
         fortifyMavenScanOptions.script = script
         fortifyMavenScanOptions.pomPath = pathToPom
         fortifyMavenScanOptions.dockerImage = configuration.dockerImage
         fortifyMavenScanOptions.goals = [
-            'clean com.hpe.security.fortify.maven.plugin:sca-maven-plugin:clean',
-            'compile com.hpe.security.fortify.maven.plugin:sca-maven-plugin:translate',
-            'com.hpe.security.fortify.maven.plugin:sca-maven-plugin:scan'
+            'fortify:translate',
+            'fortify:scan'
         ].join(' ')
 
-        def defaultBuildId = "${pom.artifactId}-${pom.version}"
+        String defaultBuildId = "${effectivePom.artifactId}-${effectivePom.version}"
 
         def fortifyDefines = [
             "-Dfortify.sca.verbose=${configuration.verbose}",
@@ -91,14 +89,15 @@ def call(Map parameters = [:]) {
         mavenExecute(fortifyMavenScanOptions)
 
         try {
-            updateFortifyProjectVersion(configuration, pom.version)
+            updateFortifyProjectVersion(configuration, effectivePom.version)
         } catch (Exception e) {
             error("Exception while updating project version in Fortify Software Security Center \n" + Arrays.toString(e.getStackTrace()))
         }
+
         try {
             dockerExecute(script: script, dockerImage: configuration.dockerImage) {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: configuration.fortifyCredentialId, passwordVariable: 'password', usernameVariable: 'username']]) {
-                    sh "fortifyclient uploadFPR -url ${configuration.sscUrl} -f application/target/fortify/${pom.artifactId}-${pom.version}.fpr -application ${configuration.fortifyProjectName} -applicationVersion ${pom.version} -user ${username} -password ${BashUtils.escape(password)}"
+                    sh "fortifyclient uploadFPR -url ${configuration.sscUrl} -f ${PathUtils.normalize(basePath, 'target/result.fpr')} -application ${configuration.fortifyProjectName} -applicationVersion ${effectivePom.version} -user ${username} -password ${BashUtils.escape(password)}"
                 }
             }
         } catch (Exception e) {

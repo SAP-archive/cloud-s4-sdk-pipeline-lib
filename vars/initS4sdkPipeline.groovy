@@ -7,10 +7,10 @@ import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 
 def call(Map parameters) {
     def script = parameters.script
-    
+
     Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
 
-    if(scmCheckoutResult.GIT_COMMIT){
+    if (scmCheckoutResult.GIT_COMMIT) {
         ReportAggregator.instance.reportVersionControlUsed('Git')
     }
 
@@ -18,15 +18,7 @@ def call(Map parameters) {
 
     Analytics.instance.initAnalytics(script)
 
-    String extensionRepository = script.loadEffectiveGeneralConfiguration(script: script).extensionRepository
-    if (extensionRepository != null) {
-        try {
-            sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
-        } catch (Exception e) {
-            error("Error while executing git clone when accessing repository ${extensionRepository}.")
-        }
-    }
-    loadAdditionalLibraries script: script
+    loadGlobalExtension script: script
 
     def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
     def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)
@@ -63,16 +55,16 @@ def call(Map parameters) {
             generalConfiguration.projectName = "${pom.groupId}-${pom.artifactId}"
         }
 
-    } else if(fileExists('package.json')){
+    } else if (fileExists('package.json')) {
         BuildToolEnvironment.instance.setBuildTool(BuildTool.NPM)
         Map packageJson = readJSON file: 'package.json'
         def projectName = packageJson.name
         generalConfiguration.projectName = projectName ?: ''
-    }else {
+    } else {
         throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
 
-    if(!generalConfiguration.projectName){
+    if (!generalConfiguration.projectName) {
         error "This should not happen: Project name was not specified in the configuration and could not be derived from the project."
     }
 
@@ -88,7 +80,7 @@ def call(Map parameters) {
     Analytics.instance.buildNumber(env.BUILD_NUMBER)
 
     Map configWithDefault = loadEffectiveGeneralConfiguration script: script
-    // ToDo activate automatic versioning for JS
+    //TODO activate automatic versioning for JS
     if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
         artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
         ReportAggregator.instance.reportAutomaticVersioning()

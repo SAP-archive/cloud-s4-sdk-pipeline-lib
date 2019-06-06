@@ -52,7 +52,7 @@ lint:
   unstash: ['SOURCE', 'NODE_MODULES', 'PACKAGE_LOCK']
 
 checkmarxScan:
-  unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']
+  unstash: ['SOURCE', 'TARGET']
   stashes: []
 
 whitesourceScan:
@@ -68,11 +68,11 @@ additionalTools:
   stashes: []
 
 fortifyScan:
-  unstash: ['SOURCE', 'M2']
+  unstash: ['SOURCE', 'M2', 'TARGET']
   stashes: []
 
 npmAudit:
-  unstash: ['SOURCE', "PACKAGE_LOCK"]
+  unstash: ['SOURCE', 'PACKAGE_LOCK']
   stashes: []
 
 frontendUnitTests:

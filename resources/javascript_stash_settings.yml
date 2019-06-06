@@ -50,7 +50,7 @@ package:
     includes: "deployment/**"
 
 npmAudit:
-  unstash: ['SOURCE', "PACKAGE_LOCK"]
+  unstash: ['SOURCE', 'PACKAGE_LOCK']
   stashes: []
 
 s4SdkQualityChecks:

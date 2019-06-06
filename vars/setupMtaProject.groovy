@@ -29,7 +29,7 @@ def call(Map parameters = [:]) {
     generalConfiguration.projectName = mta.ID
 
     BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
-    BuildToolEnvironment.instance.setModules(moduleTypeToListOfModules)
+    BuildToolEnvironment.instance.setModulesMap(moduleTypeToListOfModules)
 
     script.commonPipelineEnvironment.configuration.artifactId = mta.ID
     // TODO Need salt
