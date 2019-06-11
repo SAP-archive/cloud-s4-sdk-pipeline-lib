@@ -33,7 +33,7 @@ private void executeCheckmarxScan( def script, String stageName) {
 
     // only applicable if customized config exists
     if (stageConfiguration) {
-        configuration.script = script
+        configuration.script = script	
         executeCheckmarxScan configuration
         ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
     }

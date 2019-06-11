@@ -56,10 +56,6 @@ def call(Map parameters = [:]) {
             runClosures deployments, script
         } else if (parameters.neoTargets) {
 
-            if(BuildToolEnvironment.instance.isMta()){
-                error("MTA projects can be deployed only to the Cloud Foundry environment.")
-            }
-
             def pom = readMavenPom file: 'application/pom.xml'
             def source = "application/target/${pom.getArtifactId()}.${pom.getPackaging()}"
             for (int i = 0; i < parameters.neoTargets.size(); i++) {

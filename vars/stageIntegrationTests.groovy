@@ -22,19 +22,20 @@ def call(Map parameters = [:]) {
     Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
     runAsStage(stageName: stageName, script: script) {
-        // The HDI is container is cleaned up at the end of the execution
         createHdiContainer([script: script].plus(configuration)) {
-            executeIntegrationTest(script, stageName, configuration)
+            runOverModules(script: script, moduleType: "java") { String basePath ->
+                executeIntegrationTest(script, basePath, stageName, configuration)
+            }
         }
     }
 }
 
-private void executeIntegrationTest(def script, String stageName, Map configuration) {
+private void executeIntegrationTest(def script, String basePath, String stageName, Map configuration) {
     Closure integrationTests
     if (BuildToolEnvironment.instance.isNpm()) {
         integrationTests = jsIntegrationTests(script, configuration)
     } else {
-        integrationTests = javaIntegrationTests(script, configuration)
+        integrationTests = javaIntegrationTests(script, configuration, basePath)
     }
 
     if (configuration.sidecarImage) {
@@ -76,10 +77,10 @@ private Closure jsIntegrationTests(def script, Map configuration) {
     }
 }
 
-private Closure javaIntegrationTests(def script, Map configuration) {
+private Closure javaIntegrationTests(def script, Map configuration, String basePath) {
     return {
 
-        String credentialsFilePath = "integration-tests/src/test/resources"
+        String credentialsFilePath = "$basePath/integration-tests/src/test/resources"
         writeTemporaryCredentials(configuration.credentials, credentialsFilePath) {
             int count = 0
             try {
@@ -90,7 +91,8 @@ private Closure javaIntegrationTests(def script, Map configuration) {
             }
             def forkCount = configuration.forkCount
 
-            String pomPath = "integration-tests/pom.xml"
+            //Remove ./ in path as it does not work with surefire 3.0.0-M1
+            String pomPath = PathUtils.normalize(basePath, "integration-tests/pom.xml")
 
             Map mavenExecuteParameters = [
                 script     : script,
@@ -111,7 +113,7 @@ private Closure javaIntegrationTests(def script, Map configuration) {
             }
 
             String name = 'Backend Integration Tests'
-            String testResultPattern = "integration-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
+            String testResultPattern = "${basePath}/integration-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
 
             if (testResultPattern.startsWith("./")) {
                 testResultPattern = testResultPattern.substring(2)
@@ -126,13 +128,13 @@ private Closure javaIntegrationTests(def script, Map configuration) {
         }
 
         copyExecFile execFiles: [
-            "integration-tests/target/jacoco.exec",
-            "integration-tests/target/coverage-reports/jacoco.exec",
-            "integration-tests/target/coverage-reports/jacoco-ut.exec"
-        ], targetFile: 'integration-tests.exec'
+            "$basePath/integration-tests/target/jacoco.exec",
+            "$basePath/integration-tests/target/coverage-reports/jacoco.exec",
+            "$basePath/integration-tests/target/coverage-reports/jacoco-ut.exec"
+        ], targetFolder: basePath, targetFile: 'integration-tests.exec'
 
         if (BuildToolEnvironment.instance.isMta()) {
-            sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")
+            sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp $basePath/s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")
         }
     }
 }

@@ -33,7 +33,7 @@ private void executeJsUnitTest(def script) {
 }
 
 private void executeJavaUnitTest(def script, String basePath, Map configuration) {
-    String unitTestsPath = BuildToolEnvironment.instance.getUnitTestPath(basePath)
+    String unitTestsPath = PathUtils.normalize(basePath, BuildToolEnvironment.instance.getUnitTestPath())
     String image = configuration.dockerImage
     String name = 'Backend Unit Tests'
 
