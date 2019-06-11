@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
@@ -62,13 +63,13 @@ def call(Map parameters = [:]) {
 
 def executeMavenPMDForConfiguredModules(script, options, Map configuration, String basePath = './') {
     basePath = basePath ?: './'
-    if (configuration.scanModules) {
+    if (configuration.scanModules && !BuildToolEnvironment.instance.isMta()) {
         for (int i = 0; i < configuration.scanModules.size(); i++) {
             def scanModule = configuration.scanModules[i]
             executeMavenPMD(script, options, configuration, "$basePath/$scanModule/pom.xml")
         }
     } else {
-        executeMavenPMD(script, options, configuration, "$basePath/pom.xml")
+        executeMavenPMD(script, options, configuration, BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath))
     }
 }
 

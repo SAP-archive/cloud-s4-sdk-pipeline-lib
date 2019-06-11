@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
@@ -55,13 +56,13 @@ def call(Map parameters = [:]) {
 }
 
 def executeMavenSpotBugsForConfiguredModules(script, filterOptions, Map configuration, String basePath = './') {
-    if (configuration.scanModules) {
+    if (configuration.scanModules && !BuildToolEnvironment.instance.isMta()) {
         for (int i = 0; i < configuration.scanModules.size(); i++) {
             def scanModule = configuration.scanModules[i]
             executeMavenSpotBugs(script, filterOptions, configuration, "$basePath/$scanModule/pom.xml")
         }
     } else {
-        executeMavenSpotBugs(script, filterOptions, configuration, "$basePath/pom.xml")
+        executeMavenSpotBugs(script, filterOptions, configuration, BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath))
     }
 }
 
