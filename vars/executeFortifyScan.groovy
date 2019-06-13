@@ -47,14 +47,28 @@ def call(Map parameters = [:]) {
         String effectivePomFileLocation = basePath
         String effectivePomFileName = 'effectivePomFile.xml'
         String effectivePomFile = PathUtils.normalize(effectivePomFileLocation, effectivePomFileName)
+        String artifactVersion = ''
+        String artifactId = ''
 
-        MavenUtils.generateEffectivePom(script, pathToPom, effectivePomFileName)
+        if (BuildToolEnvironment.instance.isMta()) {
+            def mta = readYaml file: 'mta.yaml'
+            artifactVersion = mta.version
+            artifactId = script.commonPipelineEnvironment.configuration.artifactId
+        } else {
+            MavenUtils.generateEffectivePom(script, pathToPom, effectivePomFileName)
 
-        if (!fileExists(effectivePomFile)) {
-            error("Fortify stage expected an effective pom file, but no such file was generated.")
+            if (!fileExists(effectivePomFile)) {
+                error("Fortify stage expected an effective pom file, but no such file was generated.")
+            }
+            def effectivePom = readMavenPom file: effectivePomFile
+            artifactId = effectivePom.artifactId
+            artifactVersion = effectivePom.version
         }
-        def effectivePom = readMavenPom file: effectivePomFile
-
+        
+        if(artifactVersion.isEmpty() || artifactId.isEmpty()){
+            String errorMessage = "Invalid artifactId or artifactVersion value. Please ensure that" + (BuildToolEnvironment.instance.isMta() == true ) ? " the mta.yaml contains a valid artifactId and a version" : " the pom.xml contains a valid artifactId and a version"
+            error(errorMessage)
+        }
         def fortifyMavenScanOptions = [:]
         fortifyMavenScanOptions.script = script
         fortifyMavenScanOptions.pomPath = pathToPom
@@ -64,7 +78,7 @@ def call(Map parameters = [:]) {
             'fortify:scan'
         ].join(' ')
 
-        String defaultBuildId = "${effectivePom.artifactId}-${effectivePom.version}"
+        String defaultBuildId = "${artifactId}-${artifactVersion}"
 
         def fortifyDefines = [
             "-Dfortify.sca.verbose=${configuration.verbose}",
@@ -89,7 +103,7 @@ def call(Map parameters = [:]) {
         mavenExecute(fortifyMavenScanOptions)
 
         try {
-            updateFortifyProjectVersion(configuration, effectivePom.version)
+            updateFortifyProjectVersion(configuration, artifactVersion)
         } catch (Exception e) {
             error("Exception while updating project version in Fortify Software Security Center \n" + Arrays.toString(e.getStackTrace()))
         }
@@ -97,7 +111,7 @@ def call(Map parameters = [:]) {
         try {
             dockerExecute(script: script, dockerImage: configuration.dockerImage) {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: configuration.fortifyCredentialId, passwordVariable: 'password', usernameVariable: 'username']]) {
-                    sh "fortifyclient uploadFPR -url ${configuration.sscUrl} -f ${PathUtils.normalize(basePath, 'target/result.fpr')} -application ${configuration.fortifyProjectName} -applicationVersion ${effectivePom.version} -user ${username} -password ${BashUtils.escape(password)}"
+                    sh "fortifyclient uploadFPR -url ${configuration.sscUrl} -f ${PathUtils.normalize(basePath, 'target/result.fpr')} -application ${configuration.fortifyProjectName} -applicationVersion ${artifactVersion} -user ${username} -password ${BashUtils.escape(password)}"
                 }
             }
         } catch (Exception e) {
