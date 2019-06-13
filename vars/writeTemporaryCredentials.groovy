@@ -24,8 +24,8 @@ def call(List credentialItems, String credentialsDirectory, Closure body) {
 private assertSystemsFileExists(String credentialsDirectory){
     dir(credentialsDirectory) {
         if (!fileExists("systems.yml") && !fileExists("systems.yaml") && !fileExists("systems.json")) {
-            error("The directory ${credentialsDirectory} does not contain any of the files systems.yml, systems.yaml or systems.json." +
-                "However, this file is required in order to activate the integration test credentials configured in the pipeline." +
+            error("The directory ${credentialsDirectory} does not contain any of the files systems.yml, systems.yaml or systems.json. " +
+                "One of those files is required in order to activate the integration test credentials configured in the pipeline configuration file of this project. " +
                 "Please add the file as explained in the SAP Cloud SDK documentation.")
         }
     }
