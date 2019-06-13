@@ -72,7 +72,7 @@ def call(Map parameters = [:]) {
                 print("Creddentials ID " + credentialsId.toString())
 
                 nexusArtifactUploader(nexusArtifactUploaderParameters)
-            } else {
+            } else if(BuildToolEnvironment.instance.isMaven()) {
                 deployMavenArtifactsToNexus(
                     script: script,
                     url: url,
@@ -93,7 +93,10 @@ def call(Map parameters = [:]) {
                     targetFolder: 'application/target',
                     additionalClassifiers: nexusConfiguration.additionalClassifiers
                 )
+            } else {
+                error("Uploading to nexus is supported only for MTA and Maven projects.")
             }
+
             ReportAggregator.instance.reportDeploymentToNexus()
         } else {
             error("Can't deploy to nexus because the configuration is missing. " +

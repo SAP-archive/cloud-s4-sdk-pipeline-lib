@@ -1,4 +1,6 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+
 import java.nio.file.Paths
 
 def call(Map parameters = [:]) {
@@ -29,7 +31,7 @@ def call(Map parameters = [:]) {
                 mavenExecute(
                     script: script,
                     m2Path: s4SdkGlobals.m2Directory,
-                    pomPath: pomPath,
+                    pomPath: BuildToolEnvironment.instance.getApplicationPomXmlPath(parameters.basePath),
                     goals: 'org.whitesource:whitesource-maven-plugin:update',
                     defines: defines.join(' ')
                 )

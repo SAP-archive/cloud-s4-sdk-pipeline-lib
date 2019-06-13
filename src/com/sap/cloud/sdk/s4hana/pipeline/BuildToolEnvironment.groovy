@@ -32,11 +32,23 @@ class BuildToolEnvironment implements Serializable{
         }
     }
 
-    String getUnitTestPath() {
+    String getUnitTestPath(String basePath) {
         if (isMta()) {
-            return "/srv/application"
+            return basePath
         } else {
-            return "/unit-tests"
+            return PathUtils.normalize(basePath, "/unit-tests")
         }
+    }
+
+    String getApplicationPath(String basePath) {
+        if (isMta()) {
+            return basePath
+        } else {
+            return PathUtils.normalize(basePath, "/application")
+        }
+    }
+
+    String getApplicationPomXmlPath(String basePath) {
+        return PathUtils.normalize(getApplicationPath(basePath), "pom.xml")
     }
 }
