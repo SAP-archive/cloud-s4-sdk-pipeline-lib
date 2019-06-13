@@ -22,7 +22,7 @@ import net.sf.json.JSONObject
 
 @Field String DB_CONFIG_FILE = "db/src/.hdiconfig"
 
-@Field String CONNECTION_PROPERTY = "./srv/integration-tests/src/test/resources/connection.properties"
+@Field String CONNECTION_PROPERTY = "integration-tests/src/test/resources/connection.properties"
 
 def call(Map parameters = [:], Closure body) {
 

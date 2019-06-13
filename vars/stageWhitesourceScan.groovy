@@ -17,7 +17,7 @@ def call(Map parameters = [:]) {
 
     runAsStage(stageName: stageName, script: script) {
 
-        executeForAllTools(script, ".", whitesourceConfiguration)
+        executeInRoot(script, whitesourceConfiguration)
 
         if (BuildToolEnvironment.instance.isMta()) {
             runOverModules(script: script, moduleType: "java") { basePath ->
@@ -30,29 +30,22 @@ def call(Map parameters = [:]) {
     }
 }
 
-private String getPomXmlPath(String basePath) {
-    return Paths.get(basePath, "application", "pom.xml").toString()
-}
-
-private void executeForAllTools(def script, String basePath, Map whitesourceConfiguration) {
+private void executeInRoot(def script, Map whitesourceConfiguration) {
+    String basePath = "."
     String packageJsonPath = Paths.get(basePath, "package.json").toString()
-    String pomXmlPath = getPomXmlPath(basePath)
 
     boolean hasPackageJson = fileExists(packageJsonPath)
-    boolean hasPomXml = fileExists(pomXmlPath)
 
-    if(hasPomXml) {
+    if(BuildToolEnvironment.instance.isMaven()) {
         executeForMaven(script, basePath, whitesourceConfiguration)
     }
 
     if(hasPackageJson) {
         executeForNpm(script, basePath, whitesourceConfiguration)
     }
-
-    if(!hasPackageJson && !hasPomXml && !BuildToolEnvironment.instance.isMta()) {
-        println("Folder '${basePath}' neither contains a pom.xml nor a package.json file. No WhiteSource scan performed.")
+    else if(BuildToolEnvironment.instance.isNpm()){
+        error("Folder '${basePath}' does not contain a package.json file. WhiteSource scan could not be performed.")
     }
-
 }
 
 private void executeForNpm(def script, String basePath, Map whitesourceConfiguration) {
@@ -72,7 +65,7 @@ private void executeForMaven(def script, String basePath, Map whitesourceConfigu
     println("Executing WhiteSource scan for Maven module '${basePath}'")
 
     Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
-    argumentMap['pomPath'] = getPomXmlPath(basePath)
+    argumentMap['pomPath'] = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
 
     executeWhitesourceScanMaven(argumentMap)
 
