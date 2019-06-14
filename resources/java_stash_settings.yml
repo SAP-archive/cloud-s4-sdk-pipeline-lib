@@ -56,7 +56,7 @@ checkmarxScan:
   stashes: []
 
 whitesourceScan:
-  unstash: ['SOURCE', 'M2', 'NODE_MODULES']
+  unstash: ['SOURCE', 'M2', 'NODE_MODULES', 'PACKAGE_LOCK']
   stashes: []
 
 sourceClearScan:
