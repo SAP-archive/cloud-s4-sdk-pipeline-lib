@@ -4,6 +4,7 @@ import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeFortifyScan') {
@@ -64,7 +65,7 @@ def call(Map parameters = [:]) {
             artifactId = effectivePom.artifactId
             artifactVersion = effectivePom.version
         }
-        
+
         if(artifactVersion.isEmpty() || artifactId.isEmpty()){
             String errorMessage = "Invalid artifactId or artifactVersion value. Please ensure that" + (BuildToolEnvironment.instance.isMta() == true ) ? " the mta.yaml contains a valid artifactId and a version" : " the pom.xml contains a valid artifactId and a version"
             error(errorMessage)
