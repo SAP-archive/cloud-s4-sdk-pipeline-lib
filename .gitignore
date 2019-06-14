@@ -12,3 +12,4 @@
 /bin/
 build
 .gradle
+out/
