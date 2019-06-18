@@ -31,7 +31,7 @@ def call(Map parameters = [:]) {
                 mavenExecute(
                     script: script,
                     m2Path: s4SdkGlobals.m2Directory,
-                    pomPath: BuildToolEnvironment.instance.getApplicationPomXmlPath(parameters.basePath),
+                    pomPath: pomPath,
                     goals: 'org.whitesource:whitesource-maven-plugin:update',
                     defines: defines.join(' ')
                 )
