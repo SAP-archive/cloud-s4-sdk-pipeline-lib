@@ -34,7 +34,9 @@ def call(Map parameters) {
     } else {
         script.commonPipelineEnvironment.configuration.runStage.BUILD = true
         script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
-        script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+        if (BuildToolEnvironment.instance.isMtaWithIntegrationTests(script) || BuildToolEnvironment.instance.isMaven()) {
+            script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+        }
         script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
 

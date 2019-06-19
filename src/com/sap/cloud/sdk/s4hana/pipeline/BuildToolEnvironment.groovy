@@ -51,4 +51,9 @@ class BuildToolEnvironment implements Serializable{
     String getApplicationPomXmlPath(String basePath) {
         return PathUtils.normalize(getApplicationPath(basePath), "pom.xml")
     }
+
+
+    boolean isMtaWithIntegrationTests(Script script) {
+        return isMta() && script.fileExists("./integration-tests")
+    }
 }
