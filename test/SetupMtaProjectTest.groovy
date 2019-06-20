@@ -1,4 +1,5 @@
 import com.lesfurets.jenkins.unit.BasePipelineTest
+import com.sap.cloud.sdk.s4hana.pipeline.mock.NullScript
 import org.junit.Before
 import org.junit.Test
 
@@ -6,19 +7,13 @@ import static org.junit.Assert.*
 
 class SetupMtaProjectTest extends BasePipelineTest {
 
-    Script dummyScript = null
+    Script dummyScript
 
     @Before
     void prepareTests() throws Exception {
         setUp()
-        dummyScript = new Script() {
-            def commonPipelineEnvironment = ['configuration': ['artifactId': 'irrelevant']]
+        dummyScript = new NullScript(this)
 
-            @Override
-            Object run() {
-                return null
-            }
-        }
         helper.registerAllowedMethod("readYaml", [Map.class], {
             ['ID'     : 'someId',
              'modules':
@@ -32,11 +27,16 @@ class SetupMtaProjectTest extends BasePipelineTest {
     @Test
     void 'MTA structure without unit- and integration tests, should be accepted'() {
         helper.registerAllowedMethod('fileExists', [String.class], { String filename ->
-            if (filename.endsWith('/integration-tests')) {
+
+            if (filename.endsWith('srv/integration-tests')) {
                 return false
             }
 
-            if (filename.endsWith("/unit-tests")) {
+            if (filename == './integration-tests') {
+                return true
+            }
+
+            if (filename.endsWith("srv/unit-tests")) {
                 return false
             }
 
@@ -52,11 +52,15 @@ class SetupMtaProjectTest extends BasePipelineTest {
     @Test
     void 'MTA structure with unit- and integration tests, should fail'() {
         helper.registerAllowedMethod('fileExists', [String.class], { String filename ->
-            if (filename.endsWith('/integration-tests')) {
+            if (filename.endsWith('srv/integration-tests')) {
                 return true
             }
 
-            if (filename.endsWith("/unit-tests")) {
+            if (filename == './integration-tests') {
+                return true
+            }
+
+            if (filename.endsWith("srv/unit-tests")) {
                 return false
             }
 
@@ -72,11 +76,15 @@ class SetupMtaProjectTest extends BasePipelineTest {
     @Test
     void 'MTA structure with unit tests, should fail'() {
         helper.registerAllowedMethod('fileExists', [String.class], { String filename ->
-            if (filename.endsWith('/integration-tests')) {
+            if (filename.endsWith('srv/integration-tests')) {
                 return false
             }
 
-            if (filename.endsWith("/unit-tests")) {
+            if (filename == './integration-tests') {
+                return true
+            }
+
+            if (filename.endsWith("srv/unit-tests")) {
                 return true
             }
 
@@ -92,11 +100,15 @@ class SetupMtaProjectTest extends BasePipelineTest {
     @Test
     void 'MTA structure with integration tests, should fail'() {
         helper.registerAllowedMethod('fileExists', [String.class], { String filename ->
-            if (filename.endsWith('/integration-tests')) {
+            if (filename.endsWith('srv/integration-tests')) {
                 return true
             }
 
-            if (filename.endsWith("/unit-tests")) {
+            if (filename == './integration-tests') {
+                return true
+            }
+
+            if (filename.endsWith("srv/unit-tests")) {
                 return true
             }
 
