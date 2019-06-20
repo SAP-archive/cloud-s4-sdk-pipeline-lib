@@ -3,49 +3,37 @@ import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
-import java.nio.file.Paths
-
 def call(Map parameters = [:]) {
     def stageName = 'whitesourceScan'
     def script = parameters.script
 
     Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-    if(!whitesourceConfiguration) {
+    if (!whitesourceConfiguration) {
         error("Stage ${stageName} is not configured.")
     }
 
     runAsStage(stageName: stageName, script: script) {
 
-        executeInRoot(script, whitesourceConfiguration)
-
-        if (BuildToolEnvironment.instance.isMta()) {
-            runOverModules(script: script, moduleType: "java") { basePath ->
-                executeForMaven(script, basePath, whitesourceConfiguration)
+        if (BuildToolEnvironment.instance.isMta() || BuildToolEnvironment.instance.isMaven()) {
+            if (fileExists('pom.xml')) {
+                executeForMaven(script, whitesourceConfiguration)
             }
-            runOverModules(script: script, moduleType: ["html5", "nodejs"]) { basePath ->
-                executeForNpm(script, basePath, whitesourceConfiguration)
-            }
+        }
+        runOverNpmModules(script: script) { basePath ->
+            executeForNpm(script, basePath, whitesourceConfiguration)
         }
     }
 }
 
-private void executeInRoot(def script, Map whitesourceConfiguration) {
-    String basePath = "."
-    String packageJsonPath = Paths.get(basePath, "package.json").toString()
+private void executeForMaven(def script, Map whitesourceConfiguration) {
+    println("Executing WhiteSource scan for Maven root pom'")
 
-    boolean hasPackageJson = fileExists(packageJsonPath)
+    Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
 
-    if(BuildToolEnvironment.instance.isMaven()) {
-        executeForMaven(script, basePath, whitesourceConfiguration)
-    }
+    executeWhitesourceScanMaven(argumentMap)
 
-    if(hasPackageJson) {
-        executeForNpm(script, basePath, whitesourceConfiguration)
-    }
-    else if(BuildToolEnvironment.instance.isNpm()){
-        error("Folder '${basePath}' does not contain a package.json file. WhiteSource scan could not be performed.")
-    }
+    ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
 }
 
 private void executeForNpm(def script, String basePath, Map whitesourceConfiguration) {
@@ -53,23 +41,11 @@ private void executeForNpm(def script, String basePath, Map whitesourceConfigura
         println("Executing WhiteSource scan for NPM module '${basePath}'")
 
         Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
-        argumentMap['basePath'] = basePath
 
         executeWhitesourceScanNpm(argumentMap)
 
         ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
     }
-}
-
-private void executeForMaven(def script, String basePath, Map whitesourceConfiguration) {
-    println("Executing WhiteSource scan for Maven module '${basePath}'")
-
-    Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
-    argumentMap['pomPath'] = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
-
-    executeWhitesourceScanMaven(argumentMap)
-
-    ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
 }
 
 private Map getWhiteSourceArgumentMap(script, Map whitesourceConfiguration) {
@@ -78,7 +54,7 @@ private Map getWhiteSourceArgumentMap(script, Map whitesourceConfiguration) {
     whiteSourceArguments['credentialsId'] = whitesourceConfiguration.credentialsId
     whiteSourceArguments['product'] = whitesourceConfiguration.product
 
-    if(whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
+    if (whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
         whiteSourceArguments['whitesourceUserTokenCredentialsId'] = whitesourceConfiguration.whitesourceUserTokenCredentialsId
     }
 

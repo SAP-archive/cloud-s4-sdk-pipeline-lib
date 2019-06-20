@@ -22,7 +22,7 @@ def call(Map parameters = [:]) {
     Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
     runAsStage(stageName: stageName, script: script) {
-        // The HDI is container is cleaned up at the end of the execution
+        // The HDI container is cleaned up at the end of the execution
         createHdiContainer([script: script].plus(configuration)) {
             executeIntegrationTest(script, stageName, configuration)
         }

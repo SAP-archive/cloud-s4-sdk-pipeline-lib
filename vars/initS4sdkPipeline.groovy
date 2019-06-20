@@ -100,6 +100,8 @@ def call(Map parameters) {
     script.commonPipelineEnvironment.configuration.productionDeploymentLock = "${prefix}/productionDeployment"
     script.commonPipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles"
 
+    initNpmModules()
+
     initStageSkipConfiguration script: script
 }
 

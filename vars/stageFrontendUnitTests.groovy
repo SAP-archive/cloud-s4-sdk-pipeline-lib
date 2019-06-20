@@ -20,7 +20,7 @@ def call(Map parameters = [:]) {
 
 private void executeFrontendUnitTest(def script, String basePath, Map stageConfiguration) {
 
-    String packageJsonPath = PathUtils.normalize(basePath, '/package.json')
+    String packageJsonPath = PathUtils.normalize(basePath, 'package.json')
 
     if (fileExists(packageJsonPath)) {
         def dockerOptions = ['--cap-add=SYS_ADMIN']

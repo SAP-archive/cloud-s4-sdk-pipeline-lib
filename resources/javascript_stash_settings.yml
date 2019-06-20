@@ -57,7 +57,7 @@ s4SdkQualityChecks:
   unstash: ['SOURCE', 'DIST', 'REPORTS']
 
 whitesourceScan:
-  unstash: ['SOURCE', 'M2', 'NODE_MODULES', 'PACKAGE_LOCK']
+  unstash: ['SOURCE', 'NODE_MODULES', 'PACKAGE_LOCK']
   stashes: []
 
 endToEndTests:
