@@ -49,7 +49,7 @@ staticCodeChecks:
     includes: "s4hana_pipeline/reports/**"
 
 lint:
-  unstash: ['SOURCE', 'NODE_MODULES', 'PACKAGE_LOCK']
+  unstash: ['SOURCE']
 
 checkmarxScan:
   unstash: ['SOURCE', 'TARGET']

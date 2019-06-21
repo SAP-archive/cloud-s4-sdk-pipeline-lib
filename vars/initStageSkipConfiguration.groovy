@@ -34,14 +34,11 @@ def call(Map parameters) {
         }
         script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
-
-        if (fileExists('package.json') && hasComponentJsFile()) {
-            script.commonPipelineEnvironment.configuration.runStage.LINT = true
-        }
     }
 
     if (BuildToolEnvironment.instance.getNpmModules()) {
         script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
+
     }
     if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-test', 'ci-frontend-unit-test'])) {
         script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
@@ -108,19 +105,6 @@ def call(Map parameters) {
     if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.runStage.SEND_NOTIFICATION = true
     }
-}
-
-private boolean hasComponentJsFile() {
-    String[] files = findFiles(glob: '**/Component.js')
-
-    // Don't filter for node_modules or dist directory, as this does not exist at this stage in the pipeline.
-    // In case this method is moved into checkUi5BestPractices, this case must be handled.
-
-    if (files.size() > 1) {
-        echo "Found multiple Component.js files, which is not supported. Found: ${files.join(", ")}. Skipping lint."
-    }
-
-    return files.size() == 1
 }
 
 private static boolean endToEndTestsShouldRun(script) {
