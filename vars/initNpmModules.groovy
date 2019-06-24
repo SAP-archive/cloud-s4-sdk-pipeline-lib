@@ -17,7 +17,7 @@ def call (Map parameters = [:]) {
         basePath = getBasePath(packageJsonPath)
         Map packageJson = readJSON file: packageJsonPath
 
-        List npmScripts = packageJson.scripts.keySet() as List
+        List npmScripts = packageJson.scripts?.keySet() as List ?: []
         npmModules.add(new NpmModule(basePath: basePath, npmScripts: npmScripts))
     }
 
