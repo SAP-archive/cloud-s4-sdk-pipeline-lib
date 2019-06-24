@@ -57,6 +57,7 @@ def assertCorrectMtaProjectStructure(Map moduleTypeToListOfModules) {
 
 def assertCorrectIntegrationTestStructure(Script script) {
     if (BuildToolEnvironment.instance.getModulesPathOfType(["java"]).size() > 0 && !BuildToolEnvironment.instance.isMtaWithIntegrationTests(script)) {
-        error "The integration-tests module is missing. Please ensure that the project has an integration-tests module in the root directory."
+        error "The integration-tests module is missing. Please ensure that the project has an integration-tests module in the root directory. \n" +
+            "Please adapt your project to the structure as described in https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/build-tools.md#sap-cloud-application-programming-model--mta."
     }
 }
