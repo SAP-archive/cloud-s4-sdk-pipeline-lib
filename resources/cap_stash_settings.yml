@@ -78,7 +78,10 @@ npmAudit:
 
 frontendUnitTests:
   unstash: ['SOURCE', 'NODE_MODULES']
-  stashes: []
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
 
 endToEndTests:
   unstash: ['SOURCE', 'TARGET', 'NODE_MODULES']

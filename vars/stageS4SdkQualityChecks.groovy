@@ -29,5 +29,11 @@ private void executeQualityChecks(def script, String basePath, Map configuration
         checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
         ReportAggregator.instance.reportServicesCheck(configuration.nonErpDestinations, configuration.customODataServices)
     }
-    checkCodeCoverage script: script, jacocoExcludes: configuration.jacocoExcludes, basePath: basePath
+
+    checkCodeCoverage(
+        script: script,
+        jacocoExcludes: configuration.jacocoExcludes,
+        codeCoverageFrontend: configuration.codeCoverageFrontend,
+        basePath: basePath
+    )
 }

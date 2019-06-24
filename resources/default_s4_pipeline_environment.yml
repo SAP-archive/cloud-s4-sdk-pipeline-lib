@@ -67,6 +67,11 @@ steps:
   mtaBuild:
     buildTarget: 'CF'
 
+  checkCodeCoverage:
+    codeCoverageFrontend:
+      unstable: 0
+      failing: 0
+
 #Stage Specific Configurations
 stages:
   integrationTests:
