@@ -16,8 +16,9 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
 
         if (BuildToolEnvironment.instance.isMta() || BuildToolEnvironment.instance.isMaven()) {
-            if (fileExists('pom.xml')) {
-                executeForMaven(script, whitesourceConfiguration)
+
+            runOverModules(script: script, moduleType: "java") { basePath ->
+                executeForMaven(script, basePath, whitesourceConfiguration)
             }
         }
         runOverNpmModules(script: script) { basePath ->
@@ -26,10 +27,11 @@ def call(Map parameters = [:]) {
     }
 }
 
-private void executeForMaven(def script, Map whitesourceConfiguration) {
-    println("Executing WhiteSource scan for Maven root pom'")
+private void executeForMaven(def script, String basePath, Map whitesourceConfiguration) {
+    println("Executing WhiteSource scan for Maven module '${basePath}'")
 
     Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
+    argumentMap['pomPath'] = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
 
     executeWhitesourceScanMaven(argumentMap)
 
