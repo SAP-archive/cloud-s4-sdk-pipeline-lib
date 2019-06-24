@@ -1,13 +1,8 @@
-import com.cloudbees.groovy.cps.NonCPS
-
-@Grab('com.xlson.groovycsv:groovycsv:1.1')
-import static com.xlson.groovycsv.CsvParser.parseCsv
 
 def call() {
     handleStepErrors(stepName: 'checkHystrix') {
-        String reportFileAsString = readFile("${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_http_audit.log")
-
-        final List<String> violations = extractViolations(reportFileAsString)
+        String reportFile = "${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_http_audit.log"
+        final List<String> violations = extractViolations(reportFile)
 
         if (!violations.isEmpty()) {
             currentBuild.result = 'FAILURE'
@@ -16,18 +11,19 @@ def call() {
     }
 }
 
-@NonCPS
-List<String> extractViolations(String reportFileAsString) {
-    List<String> columns = ['uri', 'threadName']
-    def reportAsCsv = parseCsv([readFirstLine: true, columnNames: columns, quoteChar: '"', separator: ','], reportFileAsString)
+List<String> extractViolations(String reportFile) {
+    List reportAsCsvRecords = readCSV file: reportFile
     final List<String> violations = []
-    for (line in reportAsCsv) {
+    for (int i = 0; i < reportAsCsvRecords.size(); i++) {
         // Fixme: When using the vdm without hystrix in test code, the pipeline fails as a non resilient call is identified.
         // The thread in which the test code is executed is usually called main whereas threads inside a server started
         // by arquillian are named differently.
         // line.threadName == "main" is an indicator for the usage of the vdm in test code and thus should be allowed.
-        if (!((line.threadName =~ /^hystrix-.+-\d+$/) || line.threadName == "main")) {
-            violations.add("   - HTTP access to '${line.uri}' outside of hystrix context (thread was '${line.threadName}')")
+        // [][] = [line][column]; report format: uri, threadName
+        String threadName = reportAsCsvRecords[i][1].trim().replaceAll("\"", '')
+        String uri = reportAsCsvRecords[i][0].trim().replaceAll("\"", '')
+        if (!((threadName =~ /^hystrix-.+-\d+$/) || threadName == "main")) {
+            violations.add("   - HTTP access to '$uri' outside of hystrix context (thread was '$threadName')")
         }
     }
     return violations
