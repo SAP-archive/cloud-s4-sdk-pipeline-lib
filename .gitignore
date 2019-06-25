@@ -12,3 +12,8 @@
 /bin/
 build
 .gradle
+resources/check-ui5-best-practices/node_modules/
+resources/check-ui5-best-practices/package-lock.json
+*ui5lint.xml
+*ui5lint.json
+out/

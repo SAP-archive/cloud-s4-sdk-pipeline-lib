@@ -75,7 +75,7 @@ class Analytics implements Serializable {
     }
 
     private String hash(String input, String salt = null, String algorithm = 'SHA-1') {
-        if (input == null) {
+        if (!input) {
             return 'EMPTY'
         }
 

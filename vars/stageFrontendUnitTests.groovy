@@ -1,9 +1,7 @@
-import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
-import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
-import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
-import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
-import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
+import com.sap.cloud.sdk.s4hana.pipeline.*
 import com.sap.piper.ConfigurationLoader
+
+import java.nio.file.Paths
 
 def call(Map parameters = [:]) {
     def stageName = 'frontendUnitTests'
@@ -20,7 +18,7 @@ def call(Map parameters = [:]) {
 
 private void executeFrontendUnitTest(def script, String basePath, Map stageConfiguration) {
 
-    String packageJsonPath = PathUtils.normalize(basePath, '/package.json')
+    String packageJsonPath = PathUtils.normalize(basePath, 'package.json')
 
     if (fileExists(packageJsonPath)) {
         def dockerOptions = ['--cap-add=SYS_ADMIN']
@@ -66,11 +64,20 @@ private void transformCiUnitTestScript(String packageJsonPath) {
 }
 
 private void publishCodeCoverageHtmlResult(String basePath) {
+    String legacyReportPath = Paths.get('s4hana_pipeline/reports/frontend-unit/coverage', basePath).normalize()
+    String newCoverageReportPath = Paths.get(s4SdkGlobals.coverageReports, 'frontend-unit', basePath).normalize()
+    //Fixme: Compatibility Layer in case coverage reports are stored in the old location.
+    if(fileExists(legacyReportPath)){
+        echo "[WARNING] Code coverage reports for frontend unit tests should be stored in ${newCoverageReportPath}."
+        sh "mkdir -p ${newCoverageReportPath}"
+        sh "cp -r ${legacyReportPath}/* ${newCoverageReportPath}"
+    }
+
     publishHTML(target: [
         allowMissing         : true,
         alwaysLinkToLastBuild: false,
         keepAll              : true,
-        reportDir            : "s4hana_pipeline/reports/frontend-unit/coverage/$basePath/report-html/ut",
+        reportDir            : "${newCoverageReportPath}/report-html/ut",
         reportFiles          : 'index.html',
         reportName           : "Frontend Unit Test Coverage ${BuildToolEnvironment.instance.isMta() ? basePath : ''}"
     ])

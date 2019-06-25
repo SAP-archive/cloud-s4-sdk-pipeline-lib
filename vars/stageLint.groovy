@@ -6,8 +6,6 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        runOverModules(script: script, moduleType: "html5") { basePath ->
-            checkUi5BestPractices(script: script, configuration: stageConfiguration, basePath: basePath)
-        }
+        checkUi5BestPractices(script: script, configuration: stageConfiguration)
     }
 }

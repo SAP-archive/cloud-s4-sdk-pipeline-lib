@@ -23,7 +23,7 @@ steps:
     dockerImage: s4sdk/docker-node-browsers
 
   executeGradle:
-    dockerImage: gradle:5.0-jdk8
+    dockerImage: gradle:5.4.1-jdk8
 
   executeSourceClearScan:
     dockerImage: s4sdk/docker-maven-npm
@@ -66,6 +66,11 @@ steps:
 
   mtaBuild:
     buildTarget: 'CF'
+
+  checkCodeCoverage:
+    codeCoverageFrontend:
+      unstable: 0
+      failing: 0
 
 #Stage Specific Configurations
 stages:

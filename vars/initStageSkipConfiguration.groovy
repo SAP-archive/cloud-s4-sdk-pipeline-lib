@@ -19,37 +19,31 @@ def call(Map parameters) {
             script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
         }
 
-        if (npmScripts['ci-frontend-unit-test']) {
-            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
-        }
-
         if (npmScripts['ci-integration-test']) {
             script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
         }
 
-        script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
         // Activate ARCHIVE_REPORT when reporting is available for JS-Pipeline
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = false
 
     } else {
         script.commonPipelineEnvironment.configuration.runStage.BUILD = true
         script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
-        script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+        if (BuildToolEnvironment.instance.isMtaWithIntegrationTests(script) || BuildToolEnvironment.instance.isMaven()) {
+            script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+        }
         script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
-
-        if (fileExists('package.json') || BuildToolEnvironment.instance.isMta()) {
-            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
-        }
-
-        if (fileExists('package.json') && hasComponentJsFile()) {
-            script.commonPipelineEnvironment.configuration.runStage.LINT = true
-        }
-
-        if (fileExists('package.json')) {
-            script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
-        }
     }
+
+    if (BuildToolEnvironment.instance.getNpmModules()) {
+        script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
+
+    }
+    if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-test', 'ci-frontend-unit-test'])) {
+        script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
+    }
+
     script.commonPipelineEnvironment.configuration.runStage.QUALITY_CHECKS = true
 
     script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS = endToEndTestsShouldRun(script)
@@ -111,19 +105,6 @@ def call(Map parameters) {
     if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.runStage.SEND_NOTIFICATION = true
     }
-}
-
-private boolean hasComponentJsFile() {
-    String[] files = findFiles(glob: '**/Component.js')
-
-    // Don't filter for node_modules or dist directory, as this does not exist at this stage in the pipeline.
-    // In case this method is moved into checkUi5BestPractices, this case must be handled.
-
-    if (files.size() > 1) {
-        echo "Found multiple Component.js files, which is not supported. Found: ${files.join(", ")}. Skipping lint."
-    }
-
-    return files.size() == 1
 }
 
 private static boolean endToEndTestsShouldRun(script) {

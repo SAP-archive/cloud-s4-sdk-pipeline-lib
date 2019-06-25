@@ -3,68 +3,27 @@ import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 
-import java.nio.file.Paths
-
 def call(Map parameters = [:]) {
     def stageName = 'whitesourceScan'
     def script = parameters.script
 
     Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-    if(!whitesourceConfiguration) {
+    if (!whitesourceConfiguration) {
         error("Stage ${stageName} is not configured.")
     }
 
     runAsStage(stageName: stageName, script: script) {
 
-        executeForAllTools(script, ".", whitesourceConfiguration)
+        if (BuildToolEnvironment.instance.isMta() || BuildToolEnvironment.instance.isMaven()) {
 
-        if (BuildToolEnvironment.instance.isMta()) {
             runOverModules(script: script, moduleType: "java") { basePath ->
                 executeForMaven(script, basePath, whitesourceConfiguration)
             }
-            runOverModules(script: script, moduleType: ["html5", "nodejs"]) { basePath ->
-                executeForNpm(script, basePath, whitesourceConfiguration)
-            }
         }
-    }
-}
-
-private String getPomXmlPath(String basePath) {
-    return Paths.get(basePath, "application", "pom.xml").toString()
-}
-
-private void executeForAllTools(def script, String basePath, Map whitesourceConfiguration) {
-    String packageJsonPath = Paths.get(basePath, "package.json").toString()
-    String pomXmlPath = getPomXmlPath(basePath)
-
-    boolean hasPackageJson = fileExists(packageJsonPath)
-    boolean hasPomXml = fileExists(pomXmlPath)
-
-    if(hasPomXml) {
-        executeForMaven(script, basePath, whitesourceConfiguration)
-    }
-
-    if(hasPackageJson) {
-        executeForNpm(script, basePath, whitesourceConfiguration)
-    }
-
-    if(!hasPackageJson && !hasPomXml && !BuildToolEnvironment.instance.isMta()) {
-        println("Folder '${basePath}' neither contains a pom.xml nor a package.json file. No WhiteSource scan performed.")
-    }
-
-}
-
-private void executeForNpm(def script, String basePath, Map whitesourceConfiguration) {
-    dir(basePath) {
-        println("Executing WhiteSource scan for NPM module '${basePath}'")
-
-        Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
-        argumentMap['basePath'] = basePath
-
-        executeWhitesourceScanNpm(argumentMap)
-
-        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
+        runOverNpmModules(script: script) { basePath ->
+            executeForNpm(script, basePath, whitesourceConfiguration)
+        }
     }
 }
 
@@ -72,11 +31,23 @@ private void executeForMaven(def script, String basePath, Map whitesourceConfigu
     println("Executing WhiteSource scan for Maven module '${basePath}'")
 
     Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
-    argumentMap['pomPath'] = getPomXmlPath(basePath)
+    argumentMap['pomPath'] = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
 
     executeWhitesourceScanMaven(argumentMap)
 
     ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
+}
+
+private void executeForNpm(def script, String basePath, Map whitesourceConfiguration) {
+    dir(basePath) {
+        println("Executing WhiteSource scan for NPM module '${basePath}'")
+
+        Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
+
+        executeWhitesourceScanNpm(argumentMap)
+
+        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
+    }
 }
 
 private Map getWhiteSourceArgumentMap(script, Map whitesourceConfiguration) {
@@ -85,7 +56,7 @@ private Map getWhiteSourceArgumentMap(script, Map whitesourceConfiguration) {
     whiteSourceArguments['credentialsId'] = whitesourceConfiguration.credentialsId
     whiteSourceArguments['product'] = whitesourceConfiguration.product
 
-    if(whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
+    if (whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
         whiteSourceArguments['whitesourceUserTokenCredentialsId'] = whitesourceConfiguration.whitesourceUserTokenCredentialsId
     }
 

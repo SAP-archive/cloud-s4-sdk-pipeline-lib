@@ -49,14 +49,14 @@ staticCodeChecks:
     includes: "s4hana_pipeline/reports/**"
 
 lint:
-  unstash: ['SOURCE', 'NODE_MODULES', 'PACKAGE_LOCK']
+  unstash: ['SOURCE']
 
 checkmarxScan:
   unstash: ['SOURCE', 'TARGET']
   stashes: []
 
 whitesourceScan:
-  unstash: ['SOURCE', 'M2', 'NODE_MODULES']
+  unstash: ['SOURCE', 'M2', 'NODE_MODULES', 'PACKAGE_LOCK']
   stashes: []
 
 sourceClearScan:
@@ -77,7 +77,10 @@ npmAudit:
 
 frontendUnitTests:
   unstash: ['SOURCE', 'NODE_MODULES']
-  stashes: []
+  stashes:
+  - name: "REPORTS"
+    merge: true
+    includes: "s4hana_pipeline/reports/**"
 
 endToEndTests:
   unstash: ['SOURCE', 'TARGET', 'NODE_MODULES']

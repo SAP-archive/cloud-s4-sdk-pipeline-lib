@@ -60,6 +60,7 @@ def call(Map parameters) {
         Map packageJson = readJSON file: 'package.json'
         def projectName = packageJson.name
         generalConfiguration.projectName = projectName ?: ''
+        Analytics.instance.hashProject(generalConfiguration.projectName)
     } else {
         throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
@@ -98,6 +99,8 @@ def call(Map parameters) {
     script.commonPipelineEnvironment.configuration.endToEndTestLock = "${prefix}/endToEndTest"
     script.commonPipelineEnvironment.configuration.productionDeploymentLock = "${prefix}/productionDeployment"
     script.commonPipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles"
+
+    initNpmModules()
 
     initStageSkipConfiguration script: script
 }

@@ -1,11 +1,12 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+
 import java.nio.file.Paths
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeWhitesourceScanMaven', stepParameters: parameters) {
         final script = parameters.script
         String pomPath = parameters.pomPath ?: 'pom.xml'
-        
+
         try {
             withCredentials([string(credentialsId: parameters.credentialsId, variable: 'orgToken')]) {
                 List defines = [
