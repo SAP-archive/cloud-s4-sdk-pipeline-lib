@@ -1,4 +1,5 @@
 import com.cloudbees.groovy.cps.NonCPS
+import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
@@ -17,7 +18,14 @@ def call(Map parameters = [:]) {
 private void executeNpmAudit(def script, Map configuration, String basePath) {
     dir(basePath) {
         if (!(fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json'))) {
-            error "Expected npm package lock file to exist in '${basePath}'. This is a requirement for npm audit. See https://docs.npmjs.com/files/package-locks for background."
+            echo "Expected npm package lock file to exist. This is a requirement for npm audit. See https://docs.npmjs.com/files/package-locks for background. Executing `npm install` to create a package-lock.json at '$basePath'"
+
+            def dockerOptions = ['--cap-add=SYS_ADMIN']
+            DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+
+            executeNpm(script: script, dockerOptions: dockerOptions) {
+                sh 'npm install'
+            }
         }
         Map discoveredAdvisories
         executeNpm(script: script) {
