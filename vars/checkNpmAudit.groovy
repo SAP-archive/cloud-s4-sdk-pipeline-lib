@@ -17,7 +17,7 @@ def call(Map parameters = [:]) {
 private void executeNpmAudit(def script, Map configuration, String basePath) {
     dir(basePath) {
         if (!(fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json'))) {
-            error 'Expected npm package lock file to exist. This is a requirement for npm audit. See https://docs.npmjs.com/files/package-locks for background.'
+            error "Expected npm package lock file to exist in '${basePath}'. This is a requirement for npm audit. See https://docs.npmjs.com/files/package-locks for background."
         }
         Map discoveredAdvisories
         executeNpm(script: script) {
