@@ -23,6 +23,22 @@ private build(Script script){
                     installAndBuildNpm(script: script)
                 }
             }
+            // The MTA builder executes the maven command only inide the java module directories and not on the root directory.
+            // Hence we need install root pom to local repository after the project is built using the mta builder
+            def pomFile = "pom.xml"
+            if (fileExists(pomFile)) {
+              def pom = readMavenPom file: pomFile
+              mavenExecute(script: script,
+                    goals: 'install:install-file',
+                    m2Path: 's4hana_pipeline/maven_local_repo',
+                    defines: ["-Dfile=${pomFile}",
+                              "-DpomFile=${pomFile}",
+                              "-DgroupId=${pom.groupId}",
+                              "-DartifactId=${pom.artifactId}",
+                              "-Dversion=${pom.version}",
+                              "-Dpackaging=pom"].join(" "))
+            }
+
         } else if (BuildToolEnvironment.instance.isNpm()) {
             installAndBuildNpm script: script, customScripts:['ci-build']
         } else {
