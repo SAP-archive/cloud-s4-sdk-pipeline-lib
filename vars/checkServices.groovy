@@ -1,6 +1,8 @@
+import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkServices', stepParameters: parameters) {
+        assertPluginIsActive('pipeline-utility-steps')
 
         Set<String> parameterKeys = ['nonErpDestinations', 'customODataServices']
         final Map configuration = parameters.subMap(parameterKeys)
