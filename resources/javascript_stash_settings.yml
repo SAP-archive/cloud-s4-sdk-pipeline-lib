@@ -63,6 +63,10 @@ whitesourceScan:
   unstash: ['SOURCE', 'NODE_MODULES', 'PACKAGE_LOCK']
   stashes: []
 
+checkmarxScan:
+  unstash: ['SOURCE']
+  stashes: []
+
 endToEndTests:
   unstash: ['DEPLOYMENTARTIFACT', 'SOURCE', 'NODE_MODULES']
   stashes: []
