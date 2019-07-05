@@ -43,7 +43,7 @@ def call(Map parameters = [:]) {
             errorStatus: 'FAILURE',
             errorHandler: script.buildFailureReason.setFailureReason,
             errorHandlerParameter: 'Findbugs',
-            errorMessage: "Please examine the FindBugs/SpotBugs reports."
+            errorMessage: "Please examine the FindBugs/SpotBugs reports. For more information, please visit https://blogs.sap.com/2017/09/20/static-code-checks/"
         ) {
                 recordIssues failedTotalHigh: 1,
                     failedTotalNormal: 10,

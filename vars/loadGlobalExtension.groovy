@@ -9,7 +9,7 @@ def call(Map parameters = [:]) {
             try {
                 sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
             } catch (Exception e) {
-                error("Error while executing git clone when accessing repository ${extensionRepository}.")
+                error("Error while executing git clone for repository ${extensionRepository}.")
             }
 
             String extensionConfigurationFilePath = "${s4SdkGlobals.repositoryExtensionsDirectory}/extension_configuration.yml"

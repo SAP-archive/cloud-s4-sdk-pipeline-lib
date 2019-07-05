@@ -8,7 +8,7 @@ def call() {
 
         if (!violations.isEmpty()) {
             currentBuild.result = 'FAILURE'
-            error("Your project accesses downstream systems in a non-resilient manner:\n${violations.join("\n")}")
+            error("Your project accesses downstream systems in a non-resilient manner:\n${violations.join("\n")}\n For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/cloud-qualities.md#resilient-network-calls")
         }
     }
 }

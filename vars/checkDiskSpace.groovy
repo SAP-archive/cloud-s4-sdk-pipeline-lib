@@ -4,9 +4,7 @@ import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkDiskSpace', stepParameters: parameters) {
-
         try {
-
             if (lessThanOneGigabytePlusBufferAvailable()) {
                 String dockerInformation = getDockerInformation()
                 sendOutOfDiskSpaceMail(parameters)

@@ -101,7 +101,14 @@ def call(Map parameters = [:]) {
             runClosures deployments, script
         } else {
             currentBuild.result = 'FAILURE'
-            error("Test Deployment skipped because no targets defined!")
+            error("Deployment skipped because no targets defined!")
+            if (stageName == "productionDeployment") {
+                echo "For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment"
+            } else if (stageName == "performanceTests") {
+                echo "For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#performancetests"
+            } else {
+                echo "For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#endtoendtests"
+            }
         }
     }
 }

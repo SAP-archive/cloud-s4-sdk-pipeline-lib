@@ -47,7 +47,7 @@ def call(Map parameters = [:]) {
             errorStatus: 'FAILURE',
             errorHandler: script.buildFailureReason.setFailureReason,
             errorHandlerParameter: 'PMD',
-            errorMessage: "Please examine the PMD reports."
+            errorMessage: "Please examine the PMD reports. For more information, please visit https://blogs.sap.com/2017/09/20/static-code-checks/"
         )
             {
             recordIssues failedTotalHigh: 1,
