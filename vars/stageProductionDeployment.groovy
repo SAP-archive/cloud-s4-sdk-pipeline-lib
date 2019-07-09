@@ -30,7 +30,7 @@ def call(Map parameters = [:]) {
                     )
                 }
             } else {
-                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
+                deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, mtaExtensionDescriptor: stageConfiguration.mtaExtensionDescriptor, stage: stageName
                 echo "Smoke tests skipped, because package.json does not exist or stage configuration option appUrls is not defined."
             }
             if(stageConfiguration.cfTargets || stageConfiguration.neoTargets) {
