@@ -27,15 +27,18 @@ def call(Map parameters = [:]) {
                         ).toString()
                     }
 
-                    String deployTool = BuildToolEnvironment.instance.isMta() ? 'mtaDeployPlugin' : 'cf_native'
                     Map cloudFoundryDeploymentParameters = [script      : parameters.script,
                                                             deployType  : deploymentType,
                                                             cloudFoundry: target,
-                                                            mtaPath     : script.commonPipelineEnvironment.mtarFilePath,
-                                                            deployTool  : deployTool]
+                                                            mtaPath     : script.commonPipelineEnvironment.mtarFilePath]
 
-                    if (parameters.cfTargets.mtaExtensionDescriptor && deploymentType == 'mtaDeployPlugin') {
-                        cloudFoundryDeploymentParameters.mtaExtensionDescriptor = parameters.cfTargets.mtaExtensionDescriptor
+                    if (BuildToolEnvironment.instance.isMta()) {
+                        cloudFoundryDeploymentParameters.deployTool = 'mtaDeployPlugin'
+                        if (target.mtaExtensionDescriptor) {
+                            cloudFoundryDeploymentParameters.mtaExtensionDescriptor = target.mtaExtensionDescriptor
+                        }
+                    } else {
+                        cloudFoundryDeploymentParameters.deployTool = 'cf_native'
                     }
 
                     cloudFoundryDeploy(cloudFoundryDeploymentParameters)
