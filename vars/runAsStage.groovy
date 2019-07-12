@@ -102,7 +102,7 @@ private executeStage(Script script,
     }
 }
 
-private prepareAndSendAnalytics(def script, String stageName, def startTime, boolean projectExtensions, boolean globalExtensions) {
+private void prepareAndSendAnalytics(def script, String stageName, def startTime, boolean projectExtensions, boolean globalExtensions) {
     def stageInfo = [:]
     stageInfo.event_type = 'pipeline_stage'
     stageInfo.custom3 = 'stage_name'
@@ -124,38 +124,38 @@ private prepareAndSendAnalytics(def script, String stageName, def startTime, boo
     stageInfo.e_8 = globalExtensions
 
     sendAnalytics(script: script, telemetryData: stageInfo)
+    echo "Duration of stage ${stageName}: ${stageInfo.e_6 / 60000} minutes"
 }
 
 
-private callInterceptor(Script script, String extensionFileName, Closure originalStage, String stageName, Map configration){
+private void callInterceptor(Script script, String extensionFileName, Closure originalStage, String stageName, Map configration) {
     Script interceptor = load(extensionFileName)
     //TODO: Remove handling of legacy interface
-    if(isOldInterceptorInterfaceUsed(interceptor)){
+    if (isOldInterceptorInterfaceUsed(interceptor)) {
         echo("[Warning] The interface to implement extensions has changed. " +
             "The extension $extensionFileName has to implement a method named 'call' with exactly one parameter of type Map. " +
             "This map will have the properties script, originalStage, stageName, config. " +
             "For example: def call(Map parameters) { ... }")
         interceptor(originalStage, stageName, configration, configration)
-    }
-    else {
+    } else {
         validateInterceptor(interceptor, extensionFileName)
         interceptor([
-            script: script,
-            originalStage:originalStage,
-            stageName: stageName,
-            config: configration
+            script       : script,
+            originalStage: originalStage,
+            stageName    : stageName,
+            config       : configration
         ])
     }
 }
 
 @NonCPS
-private boolean isInterceptorValid(Script interceptor){
+private boolean isInterceptorValid(Script interceptor) {
     MetaMethod method = interceptor.metaClass.pickMethod("call", [Map.class] as Class[])
     return method != null
 }
 
-private validateInterceptor(Script interceptor, String extensionFileName){
-    if(!isInterceptorValid(interceptor)){
+private void validateInterceptor(Script interceptor, String extensionFileName) {
+    if (!isInterceptorValid(interceptor)) {
         error("The extension $extensionFileName has to implement a method named 'call' with exactly one parameter of type Map. " +
             "This map will have the properties script, originalStage, stageName, config. " +
             "For example: def call(Map parameters) { ... }")
@@ -163,8 +163,7 @@ private validateInterceptor(Script interceptor, String extensionFileName){
 }
 
 @NonCPS
-private boolean isOldInterceptorInterfaceUsed(Script interceptor){
+private boolean isOldInterceptorInterfaceUsed(Script interceptor) {
     MetaMethod method = interceptor.metaClass.pickMethod("call", [Closure.class, String.class, Map.class, Map.class] as Class[])
     return method != null
 }
-
