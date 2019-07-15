@@ -36,7 +36,7 @@ def call(Map parameters = [:]) {
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
         if (!configuration.dockerImage) {
-            error("Error while executing fortifyScan. The value for dockerImage is empty, please provide an appropriate fortify client docker image name.")
+            error("Error while executing fortifyScan. The value for dockerImage is empty, please provide an appropriate fortify client docker image name. For more information, please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#executefortifyscan")
         }
 
         String pathToPom = PathUtils.normalize(basePath, 'pom.xml')
@@ -106,7 +106,7 @@ def call(Map parameters = [:]) {
         try {
             updateFortifyProjectVersion(configuration, artifactVersion)
         } catch (Exception e) {
-            error("Exception while updating project version in Fortify Software Security Center \n" + Arrays.toString(e.getStackTrace()))
+            error("Exception while updating project version in Fortify Software Security Center. \n Please ensure that the fortifyProjectName in the pipeline_config.yml matches the project name in the fortify server. This value is case sensitive. \n The projectVersionId is an integer id of the project that can be obtained by navigating to https://your-fortify-server/ssc/api/v1/projectVersions/ under currentState -> id.  ${Arrays.toString(e.getStackTrace())}")
         }
 
         try {

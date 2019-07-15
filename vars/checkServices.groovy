@@ -1,9 +1,8 @@
-
-@Grab('com.xlson.groovycsv:groovycsv:1.1')
-import static com.xlson.groovycsv.CsvParser.parseCsv
+import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkServices', stepParameters: parameters) {
+        assertPluginIsActive('pipeline-utility-steps')
 
         Set<String> parameterKeys = ['nonErpDestinations', 'customODataServices']
         final Map configuration = parameters.subMap(parameterKeys)
@@ -59,21 +58,16 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
         'FC_GLOBAL_PARAMS_EXPORT_RFC'
     ]
 
-    //println "Allowed BAPI / RFC Services: " + allowedServiceNames
-
-    String reportFileAsString = readFile("${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_rfc_audit.log")
-    List<String> columns = [
-        'type',
-        'destination',
-        'serviceName',
-        'threadName'
-    ]
-    def reportAsCsv = parseCsv([readFirstLine: true, columnNames: columns], reportFileAsString)
+    List reportAsCsvRecords = readCSV file: "${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_rfc_audit.log"
 
     final Set<String> usedServiceNames = []
-    for (line in reportAsCsv) {
-        if (!nonErpDestinations?.contains(line.destination)) {
-            usedServiceNames.add(line.serviceName)
+    for (int i = 0; i < reportAsCsvRecords.size(); i++) {
+        // columns: [type, destination, serviceName, threadName]
+        String usedDestination = reportAsCsvRecords[i][1].replace('\"', '')
+        String usedService = reportAsCsvRecords[i][2].replace('\"', '')
+
+        if (!nonErpDestinations?.contains(usedDestination)) {
+            usedServiceNames.add(usedService)
         }
     }
 
@@ -100,21 +94,16 @@ private void checkODataServices(Set<String> nonErpDestinations, Set<String> cust
         allowedServiceNames.addAll(customODataServices)
     }
 
-    //println "Allowed OData Services: " + allowedServiceNames
-
-    String reportFileAsString = readFile("${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_odata_audit.log")
-    List<String> columns = [
-        'destination',
-        'serviceUrl',
-        'entityName',
-        'threadName'
-    ]
-    def reportAsCsv = parseCsv([readFirstLine: true, columnNames: columns], reportFileAsString)
+    List reportAsCsvRecords = readCSV file: "${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_odata_audit.log"
 
     final Set<String> usedServiceNames = []
-    for (line in reportAsCsv) {
-        if (!nonErpDestinations?.contains(line.destination)) {
-            usedServiceNames.add(line.serviceUrl.tokenize('/').last())
+    for (int i = 0; i < reportAsCsvRecords.size(); i++) {
+        // columns: [destination, serviceUrl, entityName, threadName]
+        String usedDestination = reportAsCsvRecords[i][0].replace('\"', '')
+        String usedService = reportAsCsvRecords[i][1].replace('\"', '')
+
+        if (!nonErpDestinations?.contains(usedDestination)) {
+            usedServiceNames.add(usedService.tokenize('/').last())
         }
     }
 

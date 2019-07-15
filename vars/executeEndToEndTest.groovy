@@ -16,7 +16,7 @@ def call(Map parameters = [:]) {
         DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
 
         if (!appUrls) {
-            error "End to end cannot be executed because no appUrls are defined."
+            error "End to end cannot be executed because no appUrls are defined. For more information, please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#endtoendtests"
         }
 
         for (def appUrl : appUrls) {
@@ -34,7 +34,7 @@ def call(Map parameters = [:]) {
                 String credentialId = appUrl.credentialId
                 credentials.add([$class: 'UsernamePasswordMultiBinding', credentialsId: credentialId, passwordVariable: 'e2e_password', usernameVariable: 'e2e_username'])
             } else {
-                error("Each appUrl in the configuration must be either a String or a Map containing a property url and a property credentialId.")
+                error("Each appUrl in the configuration must be either a String or a Map containing a property url and a property credentialId. For more information, please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#endtoendtests")
             }
             Closure e2eTest = {
                 unstashFiles script: script, stage: parameters.stage

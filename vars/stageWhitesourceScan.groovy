@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
@@ -40,7 +41,19 @@ private void executeForMaven(def script, String basePath, Map whitesourceConfigu
 
 private void executeForNpm(def script, String basePath, Map whitesourceConfiguration) {
     dir(basePath) {
+
         println("Executing WhiteSource scan for NPM module '${basePath}'")
+
+        if (!fileExists('package-lock.json')) {
+            echo "Expected npm package lock file to exist. This is a requirement for whitesource scans. Executing `npm install` to create a package-lock.json at '$basePath'."
+
+            def dockerOptions = ['--cap-add=SYS_ADMIN']
+            DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
+
+            executeNpm(script: script, dockerOptions: dockerOptions) {
+                sh 'npm install'
+            }
+        }
 
         Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
 

@@ -1,12 +1,14 @@
+import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
 def call() {
     handleStepErrors(stepName: 'checkHystrix') {
+        assertPluginIsActive('pipeline-utility-steps')
         String reportFile = "${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_http_audit.log"
         final List<String> violations = extractViolations(reportFile)
 
         if (!violations.isEmpty()) {
             currentBuild.result = 'FAILURE'
-            error("Your project accesses downstream systems in a non-resilient manner:\n${violations.join("\n")}")
+            error("Your project accesses downstream systems in a non-resilient manner:\n${violations.join("\n")}\n For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/cloud-qualities.md#resilient-network-calls")
         }
     }
 }
@@ -19,9 +21,9 @@ List<String> extractViolations(String reportFile) {
         // The thread in which the test code is executed is usually called main whereas threads inside a server started
         // by arquillian are named differently.
         // line.threadName == "main" is an indicator for the usage of the vdm in test code and thus should be allowed.
-        // [][] = [line][column]; report format: uri, threadName
-        String threadName = reportAsCsvRecords[i][1].trim().replaceAll("\"", '')
-        String uri = reportAsCsvRecords[i][0].trim().replaceAll("\"", '')
+        // [][] = [line][column]; report format: [uri, threadName]
+        String threadName = reportAsCsvRecords[i][1].trim().replace('\"', '')
+        String uri = reportAsCsvRecords[i][0].trim().replace('\"', '')
         if (!((threadName =~ /^hystrix-.+-\d+$/) || threadName == "main")) {
             violations.add("   - HTTP access to '$uri' outside of hystrix context (thread was '$threadName')")
         }

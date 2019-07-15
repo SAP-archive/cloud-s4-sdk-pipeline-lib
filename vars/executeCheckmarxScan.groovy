@@ -61,7 +61,8 @@ def call(Map parameters = [:]) {
         }
 
         if (preset == null) {
-            throw new RuntimeException("No preset configured. Checkmarx scan can only be executed with a given presetId or preset label.")
+            throw new RuntimeException("No preset configured. Checkmarx scan can only be executed with a given presetId or preset label.\n " +
+                "For more information on preset, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#checkmarxscan")
         }
 
         Integer presetId = null
@@ -72,7 +73,8 @@ def call(Map parameters = [:]) {
                     String token = getBearerToken(checkMarxOptions.serverUrl, checkMarxOptions.username, decryptPassword(checkMarxOptions.password))
                     presetId = getPresetIdFromCheckmarxserver(checkMarxOptions.serverUrl, token, preset)
             } else {
-                throw new RuntimeException("When configuring the Checkmarx preset with a name, the attributes checkmarxCredentialsId and checkmarxServerUrl are mandatory.")
+                throw new RuntimeException("When configuring the Checkmarx preset with a name, the attributes checkmarxCredentialsId and checkmarxServerUrl are mandatory."+
+                    "For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#checkmarxscan")
             }
         }
 

@@ -143,7 +143,9 @@ private assertJacocoCodeCoverage(Script script, List jacocoExcludes) {
         errorStatus: 'FAILURE',
         errorHandler: script.buildFailureReason.setFailureReason,
         errorHandlerParameter: 'Check Code Coverage',
-        errorMessage: "Please examine Code Coverage results."
+        errorMessage: "Please examine the Code Coverage results. " +
+            "There are either no tests or the test coverage is below the thresholds defined. " +
+            "For more information please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/cloud-qualities.md#code-coverage"
     ) {
 
         jacoco execPattern: "${s4SdkGlobals.coverageReports}/**/*.exec",

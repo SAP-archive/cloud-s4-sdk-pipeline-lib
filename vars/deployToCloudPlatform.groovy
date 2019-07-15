@@ -18,25 +18,30 @@ def call(Map parameters = [:]) {
                     unstashFiles script: script, stage: stageName
 
                     String deploymentType
-                    if(enableZeroDowntimeDeployment) {
+                    if (enableZeroDowntimeDeployment) {
                         deploymentType = DeploymentType.CF_BLUE_GREEN.toString()
-                    }
-                    else {
+                    } else {
                         deploymentType = DeploymentType.selectFor(
                             CloudPlatform.CLOUD_FOUNDRY,
                             parameters.isProduction.asBoolean()
                         ).toString()
                     }
 
-                    def deployTool = BuildToolEnvironment.instance.isMta() ? 'mtaDeployPlugin' : 'cf_native'
+                    Map cloudFoundryDeploymentParameters = [script      : parameters.script,
+                                                            deployType  : deploymentType,
+                                                            cloudFoundry: target,
+                                                            mtaPath     : script.commonPipelineEnvironment.mtarFilePath]
 
-                    cloudFoundryDeploy(
-                        script: parameters.script,
-                        deployType: deploymentType,
-                        cloudFoundry: target,
-                        mtaPath: script.commonPipelineEnvironment.mtarFilePath,
-                        deployTool: deployTool
-                    )
+                    if (BuildToolEnvironment.instance.isMta()) {
+                        cloudFoundryDeploymentParameters.deployTool = 'mtaDeployPlugin'
+                        if (target.mtaExtensionDescriptor) {
+                            cloudFoundryDeploymentParameters.mtaExtensionDescriptor = target.mtaExtensionDescriptor
+                        }
+                    } else {
+                        cloudFoundryDeploymentParameters.deployTool = 'cf_native'
+                    }
+
+                    cloudFoundryDeploy(cloudFoundryDeploymentParameters)
 
                     stashFiles script: script, stage: stageName
                 }
@@ -56,7 +61,7 @@ def call(Map parameters = [:]) {
             runClosures deployments, script
         } else if (parameters.neoTargets) {
 
-            if(BuildToolEnvironment.instance.isMta()){
+            if (BuildToolEnvironment.instance.isMta()) {
                 error("MTA projects can be deployed only to the Cloud Foundry environment.")
             }
 
@@ -69,14 +74,13 @@ def call(Map parameters = [:]) {
                     unstashFiles script: script, stage: stageName
 
                     DeploymentType deploymentType
-                    if(enableZeroDowntimeDeployment) {
+                    if (enableZeroDowntimeDeployment) {
                         deploymentType = DeploymentType.NEO_ROLLING_UPDATE
-                    }
-                    else {
+                    } else {
                         deploymentType = DeploymentType.selectFor(CloudPlatform.NEO, parameters.isProduction.asBoolean())
                     }
 
-                    neoDeploy (
+                    neoDeploy(
                         script: parameters.script,
                         warAction: deploymentType.toString(),
                         source: source,
@@ -101,7 +105,14 @@ def call(Map parameters = [:]) {
             runClosures deployments, script
         } else {
             currentBuild.result = 'FAILURE'
-            error("Test Deployment skipped because no targets defined!")
+            error("Deployment skipped because no targets defined!")
+            if (stageName == "productionDeployment") {
+                echo "For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment"
+            } else if (stageName == "performanceTests") {
+                echo "For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#performancetests"
+            } else {
+                echo "For more information, please refer to https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#endtoendtests"
+            }
         }
     }
 }
