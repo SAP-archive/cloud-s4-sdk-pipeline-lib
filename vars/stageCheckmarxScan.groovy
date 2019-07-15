@@ -7,7 +7,8 @@ import com.sap.piper.ConfigurationMerger
 def call(Map parameters = [:]) {
     def stageName = 'checkmarxScan'
     def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    def node = parameters.node
+    runAsStage(stageName: stageName, script: script, node: node) {
         executeCheckmarxScan(script, stageName)
     }
 }
