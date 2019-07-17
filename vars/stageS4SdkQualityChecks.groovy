@@ -23,7 +23,7 @@ private void executeQualityChecks(def script, String basePath, Map configuration
 
         aggregateListenerLogs()
 
-        checkHystrix()
+        checkResilience()
         ReportAggregator.instance.reportResilienceCheck()
 
         checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
