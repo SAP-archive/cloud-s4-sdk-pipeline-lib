@@ -35,17 +35,16 @@ class MavenUtils implements Serializable {
         }
 
         List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
-        if (packagingFiles.size() != 1) {
-            script.error "Expected exactly one ${pom.artifactId}*.${pom.packaging} file in $pathToTargetDirectory, but found ${packagingFiles?.join(', ')}"
+        packagingFiles.each { file ->
+            script.mavenExecute(
+                script: script,
+                goals: 'install:install-file',
+                m2Path: 's4hana_pipeline/maven_local_repo',
+                defines: [
+                    "-Dfile=${file}",
+                    "-DpomFile=$pathToPom"
+                ].join(" ")
+            )
         }
-        script.mavenExecute(
-            script: script,
-            goals: 'install:install-file',
-            m2Path: 's4hana_pipeline/maven_local_repo',
-            defines: [
-                "-Dfile=${packagingFiles[0]}",
-                "-DpomFile=$pathToPom"
-            ].join(" ")
-        )
     }
 }
