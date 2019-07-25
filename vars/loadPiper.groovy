@@ -1,4 +1,4 @@
-import hudson.model.Result
+import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import org.jenkinsci.plugins.workflow.libs.GlobalLibraries
 import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
 
@@ -21,7 +21,7 @@ def call(Map parameters = [:]) {
     }
 
     library "${piperIdentifier}@${piperOsVersion}"
-    trackPiperIdentifier(script, piperIdentifier)
+    Analytics.instance.setPiperIdentifier(piperIdentifier)
 }
 
 private boolean isLibraryConfigured(String libName){
@@ -35,14 +35,4 @@ private boolean isLibraryConfigured(String libName){
     }
 
     return false
-}
-
-private trackPiperIdentifier(Script script, String piperIdentifier){
-    def piperInfo = [:]
-    piperInfo.event_type = 'load_piper'
-
-    piperInfo.custom3 = 'piper_identifier'
-    piperInfo.e_3 = piperIdentifier
-
-    sendAnalytics(script: script, telemetryData: piperInfo)
 }
