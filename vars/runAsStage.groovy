@@ -128,7 +128,7 @@ private void prepareAndSendAnalytics(def script, String stageName, def startTime
 }
 
 
-private void callInterceptor(Script script, String extensionFileName, Closure originalStage, String stageName, Map configration) {
+private void callInterceptor(Script script, String extensionFileName, Closure originalStage, String stageName, Map configuration) {
     Script interceptor = load(extensionFileName)
     //TODO: Remove handling of legacy interface
     if (isOldInterceptorInterfaceUsed(interceptor)) {
@@ -136,14 +136,14 @@ private void callInterceptor(Script script, String extensionFileName, Closure or
             "The extension $extensionFileName has to implement a method named 'call' with exactly one parameter of type Map. " +
             "This map will have the properties script, originalStage, stageName, config. " +
             "For example: def call(Map parameters) { ... }")
-        interceptor(originalStage, stageName, configration, configration)
+        interceptor(originalStage, stageName, configuration, configuration)
     } else {
         validateInterceptor(interceptor, extensionFileName)
         interceptor([
             script       : script,
             originalStage: originalStage,
             stageName    : stageName,
-            config       : configration
+            config       : configuration
         ])
     }
 }
