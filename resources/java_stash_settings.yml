@@ -5,7 +5,7 @@ initS4sdkPipeline:
   stashes:
   - name: "SOURCE"
     includes: "**"
-    excludes: "**/.git/**, s4hana_pipeline/**"
+    excludes: "**/.git/**, s4hana_pipeline/reports/**, s4hana_pipeline/maven_local_repo/**"
   - name: "M2"
     includes: "s4hana_pipeline/maven_local_repo/**"
 #    Following stash will contain only empty directory.
