@@ -48,11 +48,11 @@ def call(Map parameters = [:]) {
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
                     if (env.POD_NAME) {
                         dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(stageName) ?: [:]) {
-                            deployment.run()
+                            deployment.call()
                         }
                     } else {
                         node(env.NODE_NAME) {
-                            deployment.run()
+                            deployment.call()
                         }
                     }
                 }
@@ -92,11 +92,11 @@ def call(Map parameters = [:]) {
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
                     if (env.POD_NAME) {
                         dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(stageName) ?: [:]) {
-                            deployment.run()
+                            deployment.call()
                         }
                     } else {
                         node(env.NODE_NAME) {
-                            deployment.run()
+                            deployment.call()
                         }
                     }
                 }
