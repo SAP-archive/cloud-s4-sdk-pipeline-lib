@@ -93,7 +93,7 @@ private executeStage(Script script,
             callInterceptor(script, projectInterceptorFile, body, stageName, configuration)
         } else {
             // This calls either originalStage if no interceptors where found, or repository interceptor if no project interceptor was found
-            body()
+            body.call()
         }
         stashFiles script: script, stage: stageName
         echo "Current build result in stage $stageName is ${Result.fromString(currentBuild.currentResult)}."
@@ -136,10 +136,10 @@ private void callInterceptor(Script script, String extensionFileName, Closure or
             "The extension $extensionFileName has to implement a method named 'call' with exactly one parameter of type Map. " +
             "This map will have the properties script, originalStage, stageName, config. " +
             "For example: def call(Map parameters) { ... }")
-        interceptor(originalStage, stageName, configuration, configuration)
+        interceptor.call(originalStage, stageName, configuration, configuration)
     } else {
         validateInterceptor(interceptor, extensionFileName)
-        interceptor([
+        interceptor.call([
             script       : script,
             originalStage: originalStage,
             stageName    : stageName,
