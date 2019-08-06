@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 import static com.sap.cloud.sdk.s4hana.pipeline.MavenUtils.installMavenArtifacts
 
