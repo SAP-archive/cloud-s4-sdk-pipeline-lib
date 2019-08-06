@@ -68,9 +68,12 @@ private build(Script script) {
 
 private packageJsApp(script) {
     String stageName = 'package'
+    def dockerOptions = []
+    DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
     runAsStage(stageName: stageName, script: script) {
-        executeNpm(script: script, dockerOptions: []) {
+        executeNpm(script: script, dockerOptions: dockerOptions) {
             sh "npm run ci-package"
         }
     }
 }
+
