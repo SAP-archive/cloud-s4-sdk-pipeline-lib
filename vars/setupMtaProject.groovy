@@ -20,7 +20,7 @@ def call(Map parameters = [:]) {
 
     assertCorrectMtaProjectStructure(moduleTypeToListOfModules)
 
-    moduleTypeToListOfModules.entrySet().stream().forEach { Map.Entry entry ->
+    for(entry in moduleTypeToListOfModules.entrySet()) {
         echo entry.getKey() + " has modules:  " + entry.getValue().join(" - ")
     }
 
