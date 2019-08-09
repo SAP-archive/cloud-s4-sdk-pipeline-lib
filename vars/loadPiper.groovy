@@ -5,8 +5,8 @@ import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
 def call(Map parameters = [:]) {
     Script script = parameters.script
 
-    // If you change the version please also update build.gradle and the corresponding jar file
-    String piperOsVersion = '3d94ce4770747a75c40c6e176ec79bcc23ad5d95'
+    // If you change the version please also the corresponding jar file. They must always be at the same commit/tag/version.
+    String piperOsVersion = '77a8c54084538e9b6137691998f21c78464ca993'
 
     String piperIdentifier = 'None'
 
