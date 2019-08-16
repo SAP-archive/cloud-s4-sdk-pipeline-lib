@@ -19,6 +19,7 @@ def call(Map parameters) {
     Analytics.instance.initAnalytics(script)
 
     loadGlobalExtension script: script
+    convertLegacyExtensions(script: script)
 
     def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
     def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)

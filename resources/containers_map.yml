@@ -13,10 +13,12 @@ containerMaps:
   unitTests:
     - mavenExecute
     - executeNpm
-  integrationTests:
+  backendIntegrationTests:
     - mavenExecute
     - executeNpm
     - createHdiContainer
+  frontendIntegrationTests:
+    - executeNpm
   frontendUnitTests:
     - executeNpm
   fortifyScan:

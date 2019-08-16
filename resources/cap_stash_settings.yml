@@ -35,12 +35,19 @@ unitTests:
     merge: true
     includes: "s4hana_pipeline/reports/**"
 
-integrationTests:
+backendIntegrationTests:
   unstash: ['SOURCE', 'M2', 'TARGET', 'NODE_MODULES', 'GENERATED_CAP_FILES']
   stashes:
   - name: "REPORTS"
     merge: true
     includes: "s4hana_pipeline/reports/**"
+
+frontendIntegrationTests:
+  unstash: ['SOURCE', 'NODE_MODULES', 'GENERATED_CAP_FILES']
+  stashes:
+    - name: 'REPORTS'
+      merge: true
+      includes: 's4hana_pipeline/reports/**'
 
 staticCodeChecks:
   unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']

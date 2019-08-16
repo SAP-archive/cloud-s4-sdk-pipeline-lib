@@ -1,12 +1,12 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
-import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
+import com.sap.cloud.sdk.s4hana.pipeline.NpmUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
-    def stageName = 'integrationTests'
+    def stageName = 'backendIntegrationTests'
     def script = parameters.script
 
     final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
@@ -47,7 +47,7 @@ private void executeIntegrationTest(def script, String stageName, Map configurat
     }
 }
 
-private Closure jsIntegrationTests(def script, Map configuration) {
+private Closure jsIntegrationTests(Script script, Map configuration) {
     return {
         String credentialsFilePath = "./"
 
@@ -67,11 +67,14 @@ private Closure jsIntegrationTests(def script, Map configuration) {
             }
             String name = 'Backend Integration Tests'
             String pattern = 's4hana_pipeline/reports/backend-integration/**'
+            NpmUtils.renameNpmScript(script, 'package.json', 'ci-integration-test', 'ci-it-backend')
             collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
                 executeNpm(executeNpmParameters) {
-                    sh "npm run ci-integration-test"
+                    sh "npm run ci-it-backend"
                 }
             }
+
+            archiveArtifacts artifacts: 's4hana_pipeline/reports/backend-integration/**'
         }
     }
 }
@@ -122,7 +125,7 @@ private Closure javaIntegrationTests(def script, Map configuration) {
                 mavenExecute(mavenExecuteParameters)
             }
 
-            ReportAggregator.instance.reportTestExecution(QualityCheck.IntegrationTests)
+            ReportAggregator.instance.reportTestExecution(QualityCheck.BackendIntegrationTests)
         }
 
         copyExecFile execFiles: [

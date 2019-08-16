@@ -11,6 +11,7 @@ def call(Map parameters) {
     configurationConverted = removeMavenGlobalSettings(script) || configurationConverted
     configurationConverted = convertCloudfoundryDeployment(script) || configurationConverted
     configurationConverted = convertNeoDeployment(script) || configurationConverted
+    configurationConverted = renameBackendIntegrationTests(script) || configurationConverted
 
     if(configurationConverted) {
         offerMigratedConfigurationAsArtifact(script)
@@ -24,6 +25,27 @@ def offerMigratedConfigurationAsArtifact(script){
     echo "[WARNING]: You are using a legacy configuration parameter which might not be supported in the future. "
         "Please change the configuration in your pipeline_config.yml using the content of the file pipeline_config_new.yml " +
         "in the artifacts of this build as inspiration."
+}
+
+boolean renameBackendIntegrationTests(script) {
+    Map stageConfiguration = script.commonPipelineEnvironment.configuration.stages
+
+    if (stageConfiguration?.integrationTests) {
+
+        if (stageConfiguration.backendIntegrationTests) {
+            error("You are using two different configuration keys for the backend integration tests stage. " +
+                "Please use the key backendIntegrationTests and remove the key integrationTests from the configuration file. For more information on how to configure the backendIntegrationTests please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#backendintegrationtests")
+        }
+
+        stageConfiguration.backendIntegrationTests = stageConfiguration.integrationTests
+
+        echo "[WARNING]: The configuration key integrationTests in the stages configuration should not be used anymore. " +
+            "Please use backendIntegrationTests instead. For more information on how to configure the backendIntegrationTests please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#backendintegrationtests"
+
+        stageConfiguration.remove('integrationTests')
+        return true
+    }
+    return false
 }
 
 def renameMavenStep(script) {

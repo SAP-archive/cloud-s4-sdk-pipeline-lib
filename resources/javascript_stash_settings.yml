@@ -36,12 +36,19 @@ frontendUnitTests:
     merge: true
     includes: "s4hana_pipeline/reports/**"
 
-integrationTests:
+backendIntegrationTests:
   unstash: ['SOURCE', 'DIST', 'NODE_MODULES']
   stashes:
   - name: "REPORTS"
     merge: true
     includes: "s4hana_pipeline/reports/**"
+
+frontendIntegrationTests:
+  unstash: ['SOURCE', 'DIST', 'NODE_MODULES']
+  stashes:
+    - name: 'REPORTS'
+      merge: true
+      includes: 's4hana_pipeline/reports/**'
 
 package:
   unstash: ['SOURCE', 'DIST', 'NODE_MODULES']
