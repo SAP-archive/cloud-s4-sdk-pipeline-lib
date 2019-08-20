@@ -1,3 +1,4 @@
+import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.CloudPlatform
 import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
@@ -35,13 +36,48 @@ def call(Map parameters = [:]) {
                     if (BuildToolEnvironment.instance.isMta()) {
                         cloudFoundryDeploymentParameters.deployTool = 'mtaDeployPlugin'
                         if (target.mtaExtensionDescriptor) {
+                            if (!fileExists(target.mtaExtensionDescriptor)) {
+                                error "The mta descriptor has defined an extension file ${target.mtaExtensionDescriptor}. But the file is not available."
+                            }
                             cloudFoundryDeploymentParameters.mtaExtensionDescriptor = target.mtaExtensionDescriptor
+                            if (target.mtaExtensionCredentials) {
+                                echo "Modifying ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor}. Adding credential values from Jenkins."
+                                sh "cp ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor} ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor}.original"
+
+                                Map mtaExtensionCredentilas = target.mtaExtensionCredentials
+
+                                String fileContent = ''
+                                Map binding = [:]
+
+                                try {
+                                    fileContent = readFile target.mtaExtensionDescriptor
+                                } catch (Exception e) {
+                                    error("Unable to read mta extension file ${target.mtaExtensionDescriptor}. If this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup.")
+                                }
+
+                                mtaExtensionCredentilas.each { key, credentialsId ->
+                                    withCredentials([string(credentialsId: credentialsId, variable: 'mtaExtensionCredential')]) {
+                                        binding["${key}"] = "${mtaExtensionCredential}"
+                                    }
+                                }
+
+                                try {
+                                    writeFile file: target.mtaExtensionDescriptor, text: fillTemplate(fileContent, binding)
+                                } catch (Exception e) {
+                                    error("Unable to write credentials values to the mta extension file ${target.mtaExtensionDescriptor}\n. \n Kindly refer to the manual at https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment. \nIf this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup.")
+                                }
+                            }
                         }
                     } else {
                         cloudFoundryDeploymentParameters.deployTool = 'cf_native'
                     }
-
-                    cloudFoundryDeploy(cloudFoundryDeploymentParameters)
+                    try {
+                        cloudFoundryDeploy(cloudFoundryDeploymentParameters)
+                    } finally {
+                        if (target.mtaExtensionCredentials && cloudFoundryDeploymentParameters.mtaExtensionDescriptor && fileExists(cloudFoundryDeploymentParameters.mtaExtensionDescriptor)) {
+                            sh "mv --force ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor}.original ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor} || echo 'The file ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor}.original couldnot be renamed. \n" + " Kindly refer to the manual at https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment. \nIf this should not happen, please create an issue at https://github.com/SAP/cloud-s4-sdk-pipeline/issues'"
+                        }
+                    }
 
                     stashFiles script: script, stage: stageName
                 }
@@ -115,4 +151,17 @@ def call(Map parameters = [:]) {
             }
         }
     }
+}
+
+@NonCPS
+String fillTemplate(String input, Map binding) {
+    try {
+        return new groovy.text.GStringTemplateEngine()
+            .createTemplate(input)
+            .make(binding)
+            .toString()
+    } catch (Exception e) {
+        error("Error replacing the password placeholder with a password from Jenkins." + e.getMessage() + "\nKindly refer to the manual at https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment")
+    }
+    return ''
 }
