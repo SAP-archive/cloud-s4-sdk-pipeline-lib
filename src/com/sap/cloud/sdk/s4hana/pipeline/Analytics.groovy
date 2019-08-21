@@ -26,17 +26,21 @@ class Analytics implements Serializable {
     }
 
     void initSystemInfo() {
+        systemInfo.locale = System.getenv('LANG')
+        systemInfo.custom7 = 'jenkins_version'
+        systemInfo.e_7 = System.getenv('JENKINS_VERSION')
         systemInfo.custom11 = 'os_name'
         systemInfo.e_11 = System.getProperty('os.name')
         systemInfo.custom12 = 'os_version'
         systemInfo.e_12 = System.getProperty('os.version')
         systemInfo.custom13 = 'swa_schema_version'
         systemInfo.e_13 = '1'
-        systemInfo.locale = System.getenv('LANG')
-        systemInfo.custom7 = 'jenkins_version'
-        systemInfo.e_7 = System.getenv('JENKINS_VERSION')
     }
 
+    void setPiperIdentifier(String piperIdentifier) {
+        systemInfo.custom14 = 'piper_identifier'
+        systemInfo.e_14 = piperIdentifier
+    }
     void initJobConfiguration(boolean isProductiveBranch) {
         jobConfiguration.custom9 = 'is_productive'
         jobConfiguration.e_9 = isProductiveBranch

@@ -5,7 +5,7 @@ initS4sdkPipeline:
   stashes:
   - name: "SOURCE"
     includes: "**"
-    excludes: "**/.git/**, s4hana_pipeline/**"
+    excludes: "**/.git/**, s4hana_pipeline/reports/**, s4hana_pipeline/maven_local_repo/**"
 #    Following stash will contain only empty directory.
 #    This is required to support the concurrency in the stashing mechanism where
 #    we merge the stashes from multiple stages into one.
@@ -35,12 +35,19 @@ unitTests:
     merge: true
     includes: "s4hana_pipeline/reports/**"
 
-integrationTests:
+backendIntegrationTests:
   unstash: ['SOURCE', 'M2', 'TARGET', 'NODE_MODULES', 'GENERATED_CAP_FILES']
   stashes:
   - name: "REPORTS"
     merge: true
     includes: "s4hana_pipeline/reports/**"
+
+frontendIntegrationTests:
+  unstash: ['SOURCE', 'NODE_MODULES', 'GENERATED_CAP_FILES']
+  stashes:
+    - name: 'REPORTS'
+      merge: true
+      includes: 's4hana_pipeline/reports/**'
 
 staticCodeChecks:
   unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']

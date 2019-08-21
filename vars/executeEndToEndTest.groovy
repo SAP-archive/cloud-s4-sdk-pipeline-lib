@@ -73,11 +73,11 @@ def call(Map parameters = [:]) {
             parallelE2ETests["E2E Tests ${index > 1 ? index : ''}"] = {
                 if (env.POD_NAME) {
                     dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(parameters.stage) ?: [:]) {
-                        e2eTest.run()
+                        e2eTest.call()
                     }
                 } else {
                     node(env.NODE_NAME) {
-                        e2eTest.run()
+                        e2eTest.call()
                     }
                 }
             }

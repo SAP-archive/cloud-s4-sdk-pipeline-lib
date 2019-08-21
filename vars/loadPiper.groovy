@@ -1,12 +1,12 @@
-import hudson.model.Result
+import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import org.jenkinsci.plugins.workflow.libs.GlobalLibraries
 import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
 
 def call(Map parameters = [:]) {
     Script script = parameters.script
 
-    // If you change the version please also update build.gradle and the corresponding jar file
-    String piperOsVersion = '9d955f61c06e5668004942f2cd324d8f2877f47b'
+    // If you change the version please also the corresponding jar file. They must always be at the same commit/tag/version.
+    String piperOsVersion = 'f69eac6f5f45d6405b636cfd0669bb510e7d0f0e'
 
     String piperIdentifier = 'None'
 
@@ -21,7 +21,7 @@ def call(Map parameters = [:]) {
     }
 
     library "${piperIdentifier}@${piperOsVersion}"
-    trackPiperIdentifier(script, piperIdentifier)
+    Analytics.instance.setPiperIdentifier(piperIdentifier)
 }
 
 private boolean isLibraryConfigured(String libName){
@@ -35,14 +35,4 @@ private boolean isLibraryConfigured(String libName){
     }
 
     return false
-}
-
-private trackPiperIdentifier(Script script, String piperIdentifier){
-    def piperInfo = [:]
-    piperInfo.event_type = 'load_piper'
-
-    piperInfo.custom3 = 'piper_identifier'
-    piperInfo.e_3 = piperIdentifier
-
-    sendAnalytics(script: script, telemetryData: piperInfo)
 }

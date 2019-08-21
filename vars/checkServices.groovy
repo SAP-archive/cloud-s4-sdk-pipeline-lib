@@ -85,6 +85,11 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
 private void checkODataServices(Set<String> nonErpDestinations, Set<String> customODataServices) {
     final Set<String> allowedServiceNames = []
     List services = downloadServicesList()
+    if (services.empty) {
+        echo "List of services is empty, skipping check."
+        return
+    }
+
     for (int x = 0; x < services.size(); x++) {
         String serviceName = services[x].Name
         allowedServiceNames.add(serviceName)
@@ -126,13 +131,29 @@ private List downloadServicesList() {
     try {
         serviceJson = readJSON(text: fetchUrl(serviceCatalogUrl))
     } catch (Exception e) {
-        error("Failed to download the list of available services from API Business Hub (https://api.sap.com/). " +
-            "Please check if your Jenkins can reach this web resource.\nException: $e")
+        def message = "Failed to download the list of available services from API Business Hub (https://api.sap.com/). " +
+            "If you encounter this, please open an issue at https://github.com/SAP/cloud-s4-sdk-pipeline/issues/new/choose.\nException: $e"
+        def html = 'Failed to download the list of available services from API Business Hub (<a href="https://api.sap.com/">api.sap.com</a>).<br/>' +
+            'If you encounter this, please open an issue <a href="https://github.com/SAP/cloud-s4-sdk-pipeline/issues/new/choose">here</a>.<br/>Exception: ' + e
+        markBuildAsUnstable(message: message, htmlFormattedMessage: html)
+        return []
     }
 
     if (!serviceJson?.d?.results) {
-        error("Response from API Business Hub (https://api.sap.com/) did not fit the expected format.")
+        markBuildAsUnstable(message: "Response from API Business Hub (https://api.sap.com/) did not fit the expected format.")
+        return []
     }
 
     return serviceJson.d.results
+}
+
+private void markUnstable(String message) {
+    try {
+        unstable(message)
+    } catch (NoSuchMethodError nsme) {
+        echo message
+        currentBuild.result = "UNSTABLE"
+    }
+    addBadge(icon: 'error.gif', text: message)
+    createSummary(icon: 'error.gif', text: message)
 }

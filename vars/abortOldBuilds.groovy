@@ -19,7 +19,7 @@ def abortOlderBuilds(String jobName, int currentBuildNumber) {
     def builds = Jenkins.instance.getItemByFullName(jobName).builds
 
     for (def build : builds) {
-        if (build.number.toInteger() < currentBuildNumber) {
+        if (build.isBuilding() && build.number.toInteger() < currentBuildNumber) {
             echo "The pipeline build ${build.number.toInteger()} is still executing. Aborting the build ${build.number.toInteger()}"
             build.doStop()
         }

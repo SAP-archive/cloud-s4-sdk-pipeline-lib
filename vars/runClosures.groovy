@@ -6,7 +6,7 @@ def call(Map closures, script) {
             def closuresToRun = closures.values().asList()
             Collections.shuffle(closuresToRun) // Shuffle the list so no one tries to rely on the order of execution
             for (int i = 0; i < closuresToRun.size(); i++) {
-                (closuresToRun[i] as Closure).run()
+                (closuresToRun[i] as Closure).call()
             }
         }
     }

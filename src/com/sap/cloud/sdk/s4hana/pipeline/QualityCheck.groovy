@@ -3,7 +3,8 @@ package com.sap.cloud.sdk.s4hana.pipeline
 enum QualityCheck {
 
     UnitTests("Unit Tests for the Backend", QualityCheckCategory.TestAutomation),
-    IntegrationTests("Integration Tests", QualityCheckCategory.TestAutomation),
+    BackendIntegrationTests("Backend Integration Tests", QualityCheckCategory.TestAutomation),
+    FrontendIntegrationTests("Frontend Integration Tests", QualityCheckCategory.TestAutomation),
     EndToEndTests("End-To-End Tests", QualityCheckCategory.TestAutomation),
     FrontendUnitTests("Unit Tests for the Frontend", QualityCheckCategory.TestAutomation),
     GatlingTests("Performance Tests with Gatling", QualityCheckCategory.PerformanceTests),

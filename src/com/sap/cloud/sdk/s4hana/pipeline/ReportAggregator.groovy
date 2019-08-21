@@ -104,14 +104,19 @@ class ReportAggregator {
         }
 
         TestResult result = script.currentBuild?.getRawBuild()?.getAction(hudson.tasks.junit.TestResultAction.class)?.getResult()
-        failedTests = result?.getFailCount()
-        skippedTests = result?.getSkipCount()
-        passedTests = result?.getPassCount()
+
+        if (result) {
+            failedTests = result.getFailCount()
+            skippedTests = result.getSkipCount()
+            passedTests = result.getPassCount()
+        }
 
         CoverageReport coverageReport = script.currentBuild?.getRawBuild()?.getAction(hudson.plugins.jacoco.JacocoBuildAction.class)?.getResult()
 
-        lineCoverage = coverageReport?.lineCoverage.percentage
-        branchCoverage = coverageReport?.branchCoverage.percentage
+        if (coverageReport) {
+            lineCoverage = coverageReport.lineCoverage.percentage
+            branchCoverage = coverageReport.branchCoverage.percentage
+        }
     }
 
     def reportDeploymentToNexus() {

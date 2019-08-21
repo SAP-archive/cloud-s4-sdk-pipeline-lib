@@ -110,7 +110,6 @@ private Set extractForbiddenEnvironmentVariables(Set extractedEnvironmentVariabl
     return extractedEnvironmentVariables.intersect(forbiddenEnvironmentVariables)
 }
 
-@NonCPS
 private logUnsafeUsage(usedForbiddenEnvironmentVariables) {
     if (usedForbiddenEnvironmentVariables) {
         String message = formatLogMessage(usedForbiddenEnvironmentVariables)
@@ -132,7 +131,6 @@ private logUnsafeUsage(usedForbiddenEnvironmentVariables) {
     }
 }
 
-@NonCPS
 private String formatLogMessage(Set usedForbiddenEnvironmentVariables) {
     """The environment variables \n\n\t\"$usedForbiddenEnvironmentVariables\" \n\nset in the deployment descriptor should never be used in a productive environment. \n
 This is a very high security threat, please consider removing those variables. For more information on securing your application visit: \n

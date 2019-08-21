@@ -1,3 +1,4 @@
+import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
@@ -13,14 +14,11 @@ def call(Map parameters = [:]) {
         error "No modules found in mta.yaml file, but at least one module is required."
     }
 
-    // Example for the map structure: "java:[srv]"
-    Map moduleTypeToListOfModules = listOfMtaModules
-        .groupBy { module -> module.type }
-        .collectEntries { type, module -> [(type): module.path] }
+    Map moduleTypeToListOfModules = groupModulesByType(listOfMtaModules)
 
     assertCorrectMtaProjectStructure(moduleTypeToListOfModules)
 
-    moduleTypeToListOfModules.entrySet().stream().forEach { Map.Entry entry ->
+    for(entry in moduleTypeToListOfModules.entrySet()) {
         echo entry.getKey() + " has modules:  " + entry.getValue().join(" - ")
     }
 
@@ -33,6 +31,16 @@ def call(Map parameters = [:]) {
     // TODO Need salt
     Analytics.instance.hashProject(mta.ID)
     assertCorrectIntegrationTestStructure(script)
+}
+
+// Example:
+// Given: [["type": "java", "path": "srv"] , ["type": "nodejs", "path": "app"]]
+// Produces: {java=[srv], nodejs=[app]}
+@NonCPS
+Map groupModulesByType(List listOfMtaModules) {
+    return listOfMtaModules
+        .groupBy { module -> module.type }
+        .collectEntries { type, module -> [(type): module.path] }
 }
 
 def assertCorrectMtaProjectStructure(Map moduleTypeToListOfModules) {

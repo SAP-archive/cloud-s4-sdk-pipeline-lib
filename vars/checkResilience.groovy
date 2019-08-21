@@ -1,7 +1,7 @@
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
 def call() {
-    handleStepErrors(stepName: 'checkHystrix') {
+    handleStepErrors(stepName: 'checkResilience') {
         assertPluginIsActive('pipeline-utility-steps')
         String reportFile = "${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_http_audit.log"
         final List<String> violations = extractViolations(reportFile)
@@ -24,7 +24,7 @@ List<String> extractViolations(String reportFile) {
         // [][] = [line][column]; report format: [uri, threadName]
         String threadName = reportAsCsvRecords[i][1].trim().replace('\"', '')
         String uri = reportAsCsvRecords[i][0].trim().replace('\"', '')
-        if (!((threadName =~ /^hystrix-.+-\d+$/) || threadName == "main")) {
+        if (!((threadName =~ /^hystrix-.+-\d+$/) || threadName == "main" || threadName =~ /^ForkJoinPool\..+$/)) {
             violations.add("   - HTTP access to '$uri' outside of hystrix context (thread was '$threadName')")
         }
     }

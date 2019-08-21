@@ -19,8 +19,12 @@ def call(Map parameters) {
             script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
         }
 
-        if (npmScripts['ci-integration-test']) {
-            script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+        if (npmScripts['ci-integration-test'] || npmScripts['ci-it-backend']) {
+            script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
+        }
+
+        if (npmScripts['ci-it-frontend']) {
+            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_INTEGRATION_TESTS = true
         }
 
         // Activate ARCHIVE_REPORT when reporting is available for JS-Pipeline
@@ -30,7 +34,7 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.BUILD = true
         script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
         if (BuildToolEnvironment.instance.isMtaWithIntegrationTests(script) || BuildToolEnvironment.instance.isMaven()) {
-            script.commonPipelineEnvironment.configuration.runStage.INTEGRATION_TESTS = true
+            script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
         }
         script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true

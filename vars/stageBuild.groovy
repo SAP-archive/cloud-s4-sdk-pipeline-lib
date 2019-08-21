@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 import static com.sap.cloud.sdk.s4hana.pipeline.MavenUtils.installMavenArtifacts
 
@@ -68,9 +69,12 @@ private build(Script script) {
 
 private packageJsApp(script) {
     String stageName = 'package'
+    def dockerOptions = []
+    DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
     runAsStage(stageName: stageName, script: script) {
-        executeNpm(script: script, dockerOptions: []) {
+        executeNpm(script: script, dockerOptions: dockerOptions) {
             sh "npm run ci-package"
         }
     }
 }
+

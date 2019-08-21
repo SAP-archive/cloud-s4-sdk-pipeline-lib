@@ -1,4 +1,3 @@
-import com.cloudbees.groovy.cps.NonCPS
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 import com.sap.piper.k8s.ContainerMap
@@ -17,7 +16,6 @@ Map getContainersMap(script) {
     return containers
 }
 
-@NonCPS
 def getContainerForStage(script, stageName, List stepsList) {
     def containers = [:]
     stepsList.each { stepName ->
@@ -29,7 +27,6 @@ def getContainerForStage(script, stageName, List stepsList) {
     return containers
 }
 
-@NonCPS
 def getDockerImageNameForStep(script, stageName, stepName) {
     def stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
     final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, stepName)
