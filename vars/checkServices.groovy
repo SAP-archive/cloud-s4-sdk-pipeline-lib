@@ -3,7 +3,6 @@ import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assert
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkServices', stepParameters: parameters) {
         assertPluginIsActive('pipeline-utility-steps')
-        assertPluginIsActive('badge')
 
         Set<String> parameterKeys = ['nonErpDestinations', 'customODataServices']
         final Map configuration = parameters.subMap(parameterKeys)
@@ -134,12 +133,15 @@ private List downloadServicesList() {
     } catch (Exception e) {
         def message = "Failed to download the list of available services from API Business Hub (https://api.sap.com/). " +
             "If you encounter this, please open an issue at https://github.com/SAP/cloud-s4-sdk-pipeline/issues/new/choose.\nException: $e"
-        markUnstable(message)
+        def html = 'Failed to download the list of available services from API Business Hub (<a href="https://api.sap.com/">api.sap.com</a>).<br/>' +
+            'If you encounter this, please open an issue <a href="https://github.com/SAP/cloud-s4-sdk-pipeline/issues/new/choose">here</a>.<br/>Exception: ' + e
+        markBuildAsUnstable(message: message, htmlFormattedMessage: html)
         return []
     }
 
     if (!serviceJson?.d?.results) {
-        markUnstable("Response from API Business Hub (https://api.sap.com/) did not fit the expected format.")
+        markBuildAsUnstable(message: "Response from API Business Hub (https://api.sap.com/) did not fit the expected format.")
+        return []
     }
 
     return serviceJson.d.results
