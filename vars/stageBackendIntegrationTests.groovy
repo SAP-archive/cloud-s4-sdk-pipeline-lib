@@ -57,24 +57,26 @@ private Closure jsIntegrationTests(Script script, Map configuration) {
             // Disable the DL-cache in the integration-tests with sidecar with empty npm registry
             // This is necessary because it is currently not possible to not connect a container to multiple networks.
             //  FIXME: Remove when docker plugin supports multiple networks and jenkins-library implemented that feature
-            if (configuration.sidecarImage) {
+            try {
+                if (configuration.sidecarImage) {
 
-                Map executeNpmConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
+                    Map executeNpmConfiguration = ConfigurationLoader.stepConfiguration(script, 'executeNpm')
 
-                if (!executeNpmConfiguration.defaultNpmRegistry) {
-                    executeNpmParameters.defaultNpmRegistry = ''
+                    if (!executeNpmConfiguration.defaultNpmRegistry) {
+                        executeNpmParameters.defaultNpmRegistry = ''
+                    }
                 }
-            }
-            String name = 'Backend Integration Tests'
-            String pattern = 's4hana_pipeline/reports/backend-integration/**'
-            NpmUtils.renameNpmScript(script, 'package.json', 'ci-integration-test', 'ci-it-backend')
-            collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
-                executeNpm(executeNpmParameters) {
-                    sh "npm run ci-it-backend"
+                String name = 'Backend Integration Tests'
+                String pattern = 's4hana_pipeline/reports/backend-integration/**'
+                NpmUtils.renameNpmScript(script, 'package.json', 'ci-integration-test', 'ci-it-backend')
+                collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
+                    executeNpm(executeNpmParameters) {
+                        sh "npm run ci-it-backend"
+                    }
                 }
+            } finally {
+                archiveArtifacts artifacts: 's4hana_pipeline/reports/backend-integration/**', allowEmptyArchive: true
             }
-
-            archiveArtifacts artifacts: 's4hana_pipeline/reports/backend-integration/**'
         }
     }
 }

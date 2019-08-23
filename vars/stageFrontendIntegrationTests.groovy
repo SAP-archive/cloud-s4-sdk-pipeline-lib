@@ -19,7 +19,8 @@ private void executeFrontendIntegrationTest(def script, Map stageConfiguration) 
     def dockerOptions = ['--cap-add=SYS_ADMIN']
     DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
 
-    collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
+    try {
+        collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: pattern) {
         executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: dockerOptions) {
             sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
             withEnv(['DISPLAY=:99']) {
@@ -27,6 +28,8 @@ private void executeFrontendIntegrationTest(def script, Map stageConfiguration) 
             }
         }
         ReportAggregator.instance.reportTestExecution(QualityCheck.FrontendIntegrationTests)
+        }
+    } finally {
+        archiveArtifacts artifacts: 's4hana_pipeline/reports/frontend-integration/**', allowEmptyArchive: true
     }
-    archiveArtifacts artifacts: 's4hana_pipeline/reports/frontend-integration/**', allowEmptyArchive: true
 }
