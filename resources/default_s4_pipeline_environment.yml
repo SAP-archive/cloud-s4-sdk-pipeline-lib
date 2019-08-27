@@ -3,21 +3,20 @@ general:
   unsafeMode: false
   productiveBranch: master
   collectTelemetryData: true
-  defaultNode: ''
+  defaultNode: ""
   automaticVersioning: true
-
 
 #Steps Specific Configuration
 steps:
   artifactSetVersion:
-    gitCredentialsId: ''
+    gitCredentialsId: ""
     commitVersion: false
-    buildTool: 'maven'
-    timestampTemplate: '%Y-%m-%dT%H%M%S%Z'
+    buildTool: "maven"
+    timestampTemplate: "%Y-%m-%dT%H%M%S%Z"
 
   mavenExecute:
     dockerImage: maven:3.5-jdk-8-alpine
-    dockerOptions: ''
+    dockerOptions: ""
 
   executeNpm:
     dockerImage: s4sdk/docker-node-browsers
@@ -31,22 +30,22 @@ steps:
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
     scanModules:
-      - 'application'
+      - "application"
 
   createHdiContainer:
-    dockerImage: 's4sdk/docker-cf-cli'
+    dockerImage: "s4sdk/docker-cf-cli"
 
   executeFortifyScan:
     verbose: false
     sourceVersion: 1.8
     use64BitVersion: true
     maximumMemoryUsage: 3000M
-    exclude: '**/resources/**/*,**/target/**/*,**/unit-tests/**/*,**/integration-tests/**/*'
+    exclude: "**/resources/**/*,**/target/**/*,**/unit-tests/**/*,**/integration-tests/**/*"
     skipNgComponents: true
 
   checkPmd:
     scanModules:
-      - 'application'
+      - "application"
 
   checkJMeter:
     dockerImage: famiko/jmeter-base
@@ -61,11 +60,11 @@ steps:
     stashContent: []
 
   neoDeploy:
-    deployMode: 'warParams'
-    neoHome: '/sdk'
+    deployMode: "warParams"
+    neoHome: "/sdk"
 
   mtaBuild:
-    buildTarget: 'CF'
+    buildTarget: "CF"
 
   checkCodeCoverage:
     codeCoverageFrontend:
@@ -83,11 +82,11 @@ stages:
     onlyRunInProductiveBranch: false
 
   checkmarxScan:
-    filterPattern: '!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts'
+    filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
     fullScansScheduled: true
     generatePdfReport: true
     incremental: true
-    preset: '36'
+    preset: "36"
     vulnerabilityThresholdLow: 99999
     vulnerabilityThresholdMedium: 0
 
