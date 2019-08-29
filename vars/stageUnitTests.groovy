@@ -50,6 +50,7 @@ private void executeJavaUnitTest(def script, String basePath, Map configuration)
         }
     } else {
         String pomPath = PathUtils.normalize(basePath, "unit-tests/pom.xml")
+        injectQualityListenerDependencies(script: script, basePath: unitTestsPath)
         collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: reportLocationPattern) {
             mavenExecute(
                 script: script,

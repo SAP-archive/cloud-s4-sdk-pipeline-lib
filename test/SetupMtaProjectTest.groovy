@@ -1,11 +1,12 @@
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import com.sap.cloud.sdk.s4hana.pipeline.mock.NullScript
+import com.sap.cloud.sdk.s4hana.pipeline.util.BaseCloudSdkTest
 import org.junit.Before
 import org.junit.Test
 
 import static org.junit.Assert.*
 
-class SetupMtaProjectTest extends BasePipelineTest {
+class SetupMtaProjectTest extends BaseCloudSdkTest {
 
     Script dummyScript
 

@@ -97,6 +97,8 @@ private Closure javaIntegrationTests(def script, Map configuration) {
 
             String pomPath = "integration-tests/pom.xml"
 
+            injectQualityListenerDependencies(script: script, basePath: 'integration-tests')
+
             Map mavenExecuteParameters = [
                 script     : script,
                 flags      : "--batch-mode",

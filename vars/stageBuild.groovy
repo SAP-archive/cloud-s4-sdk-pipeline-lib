@@ -17,6 +17,16 @@ private build(Script script) {
     runAsStage(stageName: stageName, script: script) {
         if (BuildToolEnvironment.instance.isMta()) {
 
+            runOverModules(script: this, moduleType: "java") { String basePath ->
+
+                String pathToPom = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
+
+                if (!fileExists(pathToPom)) {
+                    error("File ${pathToPom} was expected, but does not exist.")
+                }
+                injectQualityListenerDependencies(script: script, basePath: basePath)
+            }
+
             withEnv(['MAVEN_OPTS=-Dmaven.repo.local=../s4hana_pipeline/maven_local_repo']) {
                 mtaBuild(script: script)
             }
