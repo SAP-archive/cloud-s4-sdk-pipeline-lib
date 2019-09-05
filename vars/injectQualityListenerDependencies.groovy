@@ -28,8 +28,8 @@ def call(Map parameters = [:]) {
         String httpclientPattern = groupId + ':httpclient-listener:jar:'  + version + ':test'
 
         if (!(dependencyTree.contains(odataPattern)) || !(dependencyTree.contains(rfcPattern)) || !(dependencyTree.contains(httpclientPattern))) {
-            echo "One of the following dependencies were not found in the pom.xml at $basePath: \n \n \t $odataPattern \n \t $rfcPattern \n \t $httpclientPattern \n\n" +
-                "Those depedencies will be substituted with '$groupId:$artifactId:$version:$scope' which will be used in the unit- and integrationtests."
+            echo "Adding the following dependency on the fly: '$groupId:$artifactId:$version:$scope' to the `dependencies` section in $basePath/pom.xml. \n" +
+            "The dependency will be used in the unit- and integrationtests. For more information about this modification please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/cloud-qualities.md#required-dependencies"
 
             injectListenersAndWritePom(groupId, artifactId, version, scope, PathUtils.normalize(basePath, 'pom.xml'))
         }
