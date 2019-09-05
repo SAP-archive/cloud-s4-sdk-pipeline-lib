@@ -25,11 +25,11 @@ def call(Map parameters = [:]) {
 
         String odataPattern = groupId + ':odata-querylistener:jar:' + version + ':test'
         String rfcPattern = groupId + ':rfc-querylistener:jar:' + version + ':test'
-        String httpclientPattern = groupId + ':httpclient-listener:jar:'  + version + ':test'
+        String httpclientPattern = groupId + ':httpclient-listener:jar:' + version + ':test'
 
         if (!(dependencyTree.contains(odataPattern)) || !(dependencyTree.contains(rfcPattern)) || !(dependencyTree.contains(httpclientPattern))) {
             echo "Adding the following dependency on the fly: '$groupId:$artifactId:$version:$scope' to the `dependencies` section in $basePath/pom.xml. \n" +
-            "The dependency will be used in the unit- and integrationtests. For more information about this modification please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/cloud-qualities.md#required-dependencies"
+                "The dependency will be used in the unit- and integrationtests. For more information about this modification please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/cloud-qualities.md#required-dependencies"
 
             injectListenersAndWritePom(groupId, artifactId, version, scope, PathUtils.normalize(basePath, 'pom.xml'))
         }
@@ -54,7 +54,13 @@ private void injectListenersAndWritePom(String groupId, String artifactId, Strin
     String pomXml = readFile file: pathToPom
 
     def xml = new XmlParser().parseText(pomXml)
-    def dependency = xml.dependencies[0].appendNode('dependency')
+    def dependency
+    if (xml.dependencies) {
+        dependency = xml.dependencies[0].appendNode('dependency')
+    } else {
+        def dependencies = xml.appendNode('dependencies')
+        dependency = dependencies.appendNode('dependency')
+    }
     dependency.appendNode('groupId', groupId)
     dependency.appendNode('artifactId', artifactId)
     dependency.appendNode('version', version)
