@@ -124,7 +124,7 @@ private void prepareAndSendAnalytics(def script, String stageName, def startTime
     stageInfo.e_8 = globalExtensions
 
     sendAnalytics(script: script, telemetryData: stageInfo)
-    echo "Duration of stage ${stageName}: ${stageInfo.e_6 / 60000} minutes"
+    echo "Duration of stage ${stageName}: ${String.format("%.1f", (stageInfo.e_6 / 60000))} minutes"
 }
 
 
