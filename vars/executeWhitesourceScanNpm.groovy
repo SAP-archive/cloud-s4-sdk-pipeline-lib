@@ -10,7 +10,8 @@ def call(Map parameters = [:]) {
                 apiKey       : orgToken,
                 productName  : parameters.product,
                 devDep       : false,
-                checkPolicies: true
+                checkPolicies: true,
+                ignoreNpmLsErrors: true
             ]
 
             if (parameters.projectName) {
