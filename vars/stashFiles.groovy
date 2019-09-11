@@ -21,7 +21,7 @@ def call(Map parameters = [:]) {
                 steps.stash name: name, includes: include, excludes: exclude, allowEmpty: true
             }
         }
-        if(isNotInsidePod()) {
+        if(isNotInsidePod(script)) {
             deleteDir()
         }
     }
