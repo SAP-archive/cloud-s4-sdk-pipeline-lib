@@ -41,7 +41,7 @@ def call(Map parameters = [:], body) {
     handleStepErrors(stepName: stageName, stepParameters: [:]) {
         if (Boolean.valueOf(env.ON_K8S) && containerMap.size() > 0) {
             withEnv(["POD_NAME=${stageName}"]) {
-                dockerExecuteOnKubernetes(script: script, containerMap: containerMap) {
+                dockerExecuteOnKubernetes(script: script, containerMap: containerMap, stageName: stageName) {
                     executeStage(script, body, stageName, configuration)
                 }
             }
