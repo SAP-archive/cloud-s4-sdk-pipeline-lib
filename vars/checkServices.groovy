@@ -147,13 +147,3 @@ private List downloadServicesList() {
     return serviceJson.d.results
 }
 
-private void markUnstable(String message) {
-    try {
-        unstable(message)
-    } catch (NoSuchMethodError nsme) {
-        echo message
-        currentBuild.result = "UNSTABLE"
-    }
-    addBadge(icon: 'error.gif', text: message)
-    createSummary(icon: 'error.gif', text: message)
-}

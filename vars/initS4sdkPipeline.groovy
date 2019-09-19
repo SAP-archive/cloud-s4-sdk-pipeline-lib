@@ -40,6 +40,10 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.general = generalConfiguration
     }
 
+    if (scmCheckoutResult.GIT_URL) {
+        script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
+    }
+
     def isMtaProject = fileExists('mta.yaml')
     def pomFile = 'pom.xml'
 

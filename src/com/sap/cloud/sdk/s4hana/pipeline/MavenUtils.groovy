@@ -47,4 +47,14 @@ class MavenUtils implements Serializable {
             )
         }
     }
+
+    static String getMavenDependencyTree(def script, String basePath) {
+        script.mavenExecute(script: script,
+            flags: "--batch-mode -DoutputFile=mvnDependencyTree.txt",
+            m2Path: script.s4SdkGlobals.m2Directory,
+            pomPath: PathUtils.normalize(basePath, 'pom.xml'),
+            goals: "dependency:tree")
+
+        return script.readFile(PathUtils.normalize(basePath, 'mvnDependencyTree.txt'))
+    }
 }

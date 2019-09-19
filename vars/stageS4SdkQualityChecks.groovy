@@ -19,8 +19,6 @@ private void executeQualityChecks(def script, String basePath, Map configuration
     if (BuildToolEnvironment.instance.isMaven() || BuildToolEnvironment.instance.isMta()) {
         checkDeploymentDescriptors script: script
 
-        checkDependencies script: script, basePath: basePath
-
         aggregateListenerLogs()
 
         checkResilience()

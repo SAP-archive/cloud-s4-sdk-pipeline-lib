@@ -21,6 +21,14 @@ def call(Map parameters = [:]) {
                 steps.stash name: name, includes: include, excludes: exclude, allowEmpty: true
             }
         }
-        deleteDir()
+        //FIXME We do not delete the directory because it failed on JaaS because of infrastructure issues.
+        // DeleteDir is not required in pods, but would be nice to have the same behaviour and leave a clean fileSystem.
+        if(isNotInsidePod(script)) {
+            deleteDir()
+        }
     }
+}
+
+private boolean isNotInsidePod(script){
+    return !script.env.POD_NAME
 }

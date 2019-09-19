@@ -3,113 +3,112 @@
 initS4sdkPipeline:
   unstash: []
   stashes:
-  - name: "SOURCE"
-    includes: "**"
-    excludes: "**/.git/**, s4hana_pipeline/reports/**, s4hana_pipeline/maven_local_repo/**"
-  - name: "M2"
-    includes: "s4hana_pipeline/maven_local_repo/**"
-#    Following stash will contain only empty directory.
-#    This is required to support the concurrency in the stashing mechanism where
-#    we merge the stashes from multiple stages into one.
-  - name: "REPORTS"
-    includes: "s4hana_pipeline/reports/**"
-
+    - name: "SOURCE"
+      includes: "**"
+      excludes: "**/.git/**, s4hana_pipeline/reports/**, s4hana_pipeline/maven_local_repo/**"
+    - name: "M2"
+      includes: "s4hana_pipeline/maven_local_repo/**"
+    #    Following stash will contain only empty directory.
+    #    This is required to support the concurrency in the stashing mechanism where
+    #    we merge the stashes from multiple stages into one.
+    - name: "REPORTS"
+      includes: "s4hana_pipeline/reports/**"
 
 build:
-  unstash: ['SOURCE','M2']
+  unstash: ["SOURCE", "M2"]
   stashes:
-  - name: "M2"
-    includes: "s4hana_pipeline/maven_local_repo/**"
-  - name: "TARGET"
-    includes: "**/target/**"
-  - name: "NODE_MODULES"
-    includes: "**/node_modules/**"
-  - name: "PACKAGE_LOCK"
-    includes: "**/package-lock.json, **/npm-shrinkwrap.json"
+    - name: "M2"
+      includes: "s4hana_pipeline/maven_local_repo/**"
+    - name: "TARGET"
+      includes: "**/target/**"
+    - name: "NODE_MODULES"
+      includes: "**/node_modules/**"
+    - name: "PACKAGE_LOCK"
+      includes: "**/package-lock.json, **/npm-shrinkwrap.json"
 
 unitTests:
-  unstash: ['SOURCE', 'M2', 'TARGET']
+  unstash: ["SOURCE", "M2", "TARGET"]
   stashes:
-  - name: "REPORTS"
-    merge: true
-    includes: "s4hana_pipeline/reports/**"
+    - name: "REPORTS"
+      merge: true
+      includes: "s4hana_pipeline/reports/**"
 
 backendIntegrationTests:
-  unstash: ['SOURCE', 'M2', 'TARGET']
+  unstash: ["SOURCE", "M2", "TARGET"]
   stashes:
-  - name: "REPORTS"
-    merge: true
-    includes: "s4hana_pipeline/reports/**"
+    - name: "REPORTS"
+      merge: true
+      includes: "s4hana_pipeline/reports/**"
 
 frontendIntegrationTests:
-  unstash: ['SOURCE', 'NODE_MODULES']
+  unstash: ["SOURCE", "NODE_MODULES"]
   stashes:
-    - name: 'REPORTS'
+    - name: "REPORTS"
       merge: true
-      includes: 's4hana_pipeline/reports/**'
+      includes: "s4hana_pipeline/reports/**"
 
 staticCodeChecks:
-  unstash: ['SOURCE', 'TARGET', 'REPORTS', 'M2']
+  unstash: ["SOURCE", "TARGET", "REPORTS", "M2"]
   stashes:
-  - name: "REPORTS"
-    merge: true
-    includes: "s4hana_pipeline/reports/**"
+    - name: "REPORTS"
+      merge: true
+      includes: "s4hana_pipeline/reports/**"
 
 lint:
-  unstash: ['SOURCE']
+  unstash: ["SOURCE"]
 
 checkmarxScan:
-  unstash: ['SOURCE', 'TARGET']
+  unstash: ["SOURCE", "TARGET"]
   stashes: []
 
 whitesourceScan:
-  unstash: ['SOURCE', 'M2', 'NODE_MODULES', 'PACKAGE_LOCK']
+  unstash: ["SOURCE", "M2", "NODE_MODULES", "PACKAGE_LOCK"]
   stashes: []
 
 sourceClearScan:
-  unstash: ['SOURCE', 'M2', 'NODE_MODULES']
+  unstash: ["SOURCE", "M2", "NODE_MODULES"]
   stashes: []
 
 additionalTools:
-  unstash: ['SOURCE', 'M2', 'NODE_MODULES']
+  unstash: ["SOURCE", "M2", "NODE_MODULES"]
   stashes: []
 
 fortifyScan:
-  unstash: ['SOURCE', 'M2', 'TARGET']
+  unstash: ["SOURCE", "M2", "TARGET"]
   stashes: []
 
 npmAudit:
-  unstash: ['SOURCE', 'PACKAGE_LOCK']
+  unstash: ["SOURCE", "PACKAGE_LOCK"]
   stashes: []
 
 frontendUnitTests:
-  unstash: ['SOURCE', 'NODE_MODULES']
+  unstash: ["SOURCE", "NODE_MODULES"]
   stashes:
-  - name: "REPORTS"
-    merge: true
-    includes: "s4hana_pipeline/reports/**"
+    - name: "REPORTS"
+      merge: true
+      includes: "s4hana_pipeline/reports/**"
 
 endToEndTests:
-  unstash: ['SOURCE', 'TARGET', 'NODE_MODULES']
+  unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
   stashes: []
 
 performanceTests:
-  unstash: ['SOURCE', 'TARGET']
+  unstash: ["SOURCE", "TARGET"]
   stashes:
-  - name: "REPORTS"
-    merge: true
-    includes: "s4hana_pipeline/reports/**"
+    - name: "REPORTS"
+      merge: true
+      includes: "s4hana_pipeline/reports/**"
 
 s4SdkQualityChecks:
-  unstash: ['SOURCE', 'M2', 'TARGET',  'REPORTS']
+  unstash: ["SOURCE", "M2", "TARGET", "REPORTS"]
   stashes:
-  - name: "REPORTS"
-    includes: "s4hana_pipeline/reports/**"
+    - name: "REPORTS"
+      includes: "s4hana_pipeline/reports/**"
 
 artifactDeployment:
-  unstash: ['SOURCE', 'TARGET', 'NODE_MODULES']
+  unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
   stashes: []
 
 productionDeployment:
-  unstash: ['SOURCE', 'TARGET', 'NODE_MODULES']
+  unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
   stashes: []

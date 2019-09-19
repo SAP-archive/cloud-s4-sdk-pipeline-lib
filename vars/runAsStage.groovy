@@ -41,7 +41,7 @@ def call(Map parameters = [:], body) {
     handleStepErrors(stepName: stageName, stepParameters: [:]) {
         if (Boolean.valueOf(env.ON_K8S) && containerMap.size() > 0) {
             withEnv(["POD_NAME=${stageName}"]) {
-                dockerExecuteOnKubernetes(script: script, containerMap: containerMap) {
+                dockerExecuteOnKubernetes(script: script, containerMap: containerMap, stageName: stageName) {
                     executeStage(script, body, stageName, configuration)
                 }
             }
@@ -124,7 +124,7 @@ private void prepareAndSendAnalytics(def script, String stageName, def startTime
     stageInfo.e_8 = globalExtensions
 
     sendAnalytics(script: script, telemetryData: stageInfo)
-    echo "Duration of stage ${stageName}: ${stageInfo.e_6 / 60000} minutes"
+    echo "Duration of stage ${stageName}: ${String.format("%.1f", (stageInfo.e_6 / 60000))} minutes"
 }
 
 
