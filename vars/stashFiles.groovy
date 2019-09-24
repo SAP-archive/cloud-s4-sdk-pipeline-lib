@@ -5,7 +5,7 @@ def call(Map parameters = [:]) {
 
         Map stashConfig = script.commonPipelineEnvironment.configuration.s4SdkStashConfiguration
 
-        for (def stash : stashConfig[stage].stashes) {
+        for (def stash : stashConfig[stage].stashes ?: []) {
             def name = stash.name
             def include = stash.includes
             def exclude = stash.excludes
