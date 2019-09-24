@@ -1,5 +1,4 @@
 def call(Map parameters) {
-    def stageName = 'initS4sdkPipeline'
     def script = parameters.script
 
     loadPiper script: script
@@ -10,7 +9,13 @@ def call(Map parameters) {
     server has a ssh key and it has been added to the git server. This is necessary if Jenkins has to push
     code changes to the git server.
     */
-    runAsStage(stageName: stageName, script: script, node: 'master') {
+
+    runAsStage(stageName: 'checkoutAndInit', script: script, node: 'master') {
+        checkoutAndInit(script: script)
+    }
+
+
+    runAsStage(stageName: 'initS4sdkPipeline', script: script) {
         initS4sdkPipeline script:script
     }
 }
