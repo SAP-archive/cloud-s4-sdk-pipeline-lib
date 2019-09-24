@@ -6,6 +6,8 @@ def call(Map parameters) {
 
     Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
 
+    initS4SdkPipelineLibrary script: script
+
     if (scmCheckoutResult.GIT_COMMIT) {
         ReportAggregator.instance.reportVersionControlUsed('Git')
     }
@@ -13,8 +15,6 @@ def call(Map parameters) {
     if (scmCheckoutResult.GIT_URL) {
         script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
     }
-
-    initS4SdkPipelineLibrary script: script
 
     Analytics.instance.initAnalytics(script)
 
