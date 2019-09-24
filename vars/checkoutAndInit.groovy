@@ -25,5 +25,5 @@ def call(Map parameters) {
         initContainersMap script: script
     }
 
-    stash allowEmpty: true, excludes: '', includes: '**/*', name: 'scm'
+    stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'scm'
 }
