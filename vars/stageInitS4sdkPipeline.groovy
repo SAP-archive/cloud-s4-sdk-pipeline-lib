@@ -1,6 +1,5 @@
 def call(Map parameters) {
     def script = parameters.script
-
     loadPiper script: script
 
     /*
@@ -10,10 +9,10 @@ def call(Map parameters) {
     code changes to the git server.
     */
 
-    runAsStage(stageName: 'checkoutAndInit', script: script, node: 'master') {
+    node('master'){
+        deleteDir()
         checkoutAndInit(script: script)
     }
-
 
     runAsStage(stageName: 'initS4sdkPipeline', script: script) {
         initS4sdkPipeline script:script

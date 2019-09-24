@@ -1,11 +1,9 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
-import com.sap.piper.ConfigurationMerger
 import com.sap.piper.k8s.ContainerMap
-import hudson.model.Result
-
 import groovy.transform.Field
+import hudson.model.Result
 
 @Field String STEP_NAME = 'runAsStage'
 
