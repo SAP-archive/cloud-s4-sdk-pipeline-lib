@@ -19,13 +19,13 @@ steps:
     dockerOptions: ""
 
   executeNpm:
-    dockerImage: s4sdk/docker-node-browsers
+    dockerImage: ppiper/node-browsers
 
   executeGradle:
     dockerImage: gradle:5.4.1-jdk8
 
   executeSourceClearScan:
-    dockerImage: s4sdk/docker-maven-npm
+    dockerImage: ppiper/mta-archive-builder
 
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
@@ -33,7 +33,7 @@ steps:
       - "application"
 
   createHdiContainer:
-    dockerImage: "s4sdk/docker-cf-cli"
+    dockerImage: ppiper/cf-cli
 
   executeFortifyScan:
     verbose: false
@@ -55,11 +55,12 @@ steps:
     unstableThreshold: 90
 
   cloudFoundryDeploy:
-    dockerImage: s4sdk/docker-cf-cli
+    dockerImage: ppiper/cf-cli
     keepOldInstance: true
     stashContent: []
 
   neoDeploy:
+    dockerImage: ppiper/neo-cli
     deployMode: "warParams"
     neoHome: "/sdk"
 
