@@ -79,7 +79,7 @@ def executeMavenPMD(script, options, Map configuration, String pomPath) {
         flags: '--batch-mode',
         pomPath: pomPath,
         m2Path: s4SdkGlobals.m2Directory,
-        goals: "com.sap.cloud.sdk.quality:pmd-plugin:3.2.0:pmd",
+        goals: "com.sap.cloud.sdk.quality:pmd-plugin:3.4.0:pmd",
         defines: options,
         dockerImage: configuration.dockerImage
     )
