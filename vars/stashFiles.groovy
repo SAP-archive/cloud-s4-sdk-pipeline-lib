@@ -10,13 +10,13 @@ def call(Map parameters = [:]) {
             def include = stash.includes
             def exclude = stash.excludes
 
-
             if (stash?.merge == true) {
                 String lockName = "${script.commonPipelineEnvironment.configuration.stashFiles}/${stash.name}"
                 lock(lockName) {
                     unstash stash.name
                     steps.stash name: name, includes: include, excludes: exclude, allowEmpty: true
                 }
+
             } else {
                 steps.stash name: name, includes: include, excludes: exclude, allowEmpty: true
             }
