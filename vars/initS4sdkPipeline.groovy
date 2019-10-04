@@ -4,9 +4,25 @@ import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
+import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
+import com.sap.cloud.sdk.s4hana.pipeline.EnvironmentUtils
 
 def call(Map parameters) {
     def script = parameters.script
+
+    Set buildDetails = []
+    buildDetails.add("Jenkins Version | " + env.JENKINS_VERSION)
+    buildDetails.add("JAVA Version | " + env.JAVA_VERSION)
+    Debuglogger.instance.environment.put("build_details", buildDetails)
+
+    if (EnvironmentUtils.cxServerDirectoryExists() && !Boolean.valueOf(env.ON_K8S)) {
+        Debuglogger.instance.environment.put("environment", "cx-server")
+
+        String serverConfigAsString = new File('/var/cx-server/server.cfg').getText('UTF-8')
+        String docker_image = EnvironmentUtils.getDockerFile(serverConfigAsString)
+        Debuglogger.instance.environment.put("docker_image", docker_image)
+    }
+
 
     Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
 
@@ -42,6 +58,8 @@ def call(Map parameters) {
 
     if (scmCheckoutResult.GIT_URL) {
         script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
+        Debuglogger.instance.github.put("URI", scmCheckoutResult.GIT_URL)
+        Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_LOCAL_BRANCH)
     }
 
     def isMtaProject = fileExists('mta.yaml')
@@ -77,6 +95,7 @@ def call(Map parameters) {
     initStashConfiguration script: script
 
     ReportAggregator.instance.reportProjectIdentifier(generalConfiguration.projectName)
+    Debuglogger.instance.projectIdentifier = generalConfiguration.projectName
 
     if (env.JOB_URL) {
         Analytics.instance.hashBuildUrl(env.JOB_URL)
@@ -142,3 +161,4 @@ private String getProjectSaltFromPom(String pomfile) {
     }
     return salt
 }
+

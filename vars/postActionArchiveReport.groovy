@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
         String result = ReportAggregator.instance.generateReport(script)
 
         if (parameters.printToConsole) {
-            echo result 
+            echo result
         }
 
         script.writeFile file: ReportAggregator.instance.fileName, text: result

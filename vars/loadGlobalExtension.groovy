@@ -1,4 +1,5 @@
 import com.sap.piper.MapUtils
+import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'loadGlobalExtension') {
@@ -8,6 +9,7 @@ def call(Map parameters = [:]) {
         if (extensionRepository != null) {
             try {
                 sh "git clone --depth 1 ${extensionRepository} ${s4SdkGlobals.repositoryExtensionsDirectory}"
+                Debuglogger.instance.globalExtensionRepository = extensionRepository
             } catch (Exception e) {
                 error("Error while executing git clone for repository ${extensionRepository}.")
             }
