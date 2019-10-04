@@ -32,8 +32,9 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
             echo "Running npm audit check in '${basePath}'. Falling back to default public npm registry while executing npm audit check."
 
             // Retry npm audit in case it failed
-            final int MAX_RETRIES = 3
+            final int MAX_RETRIES = 4
             int retryCount = 1
+            int waitTimeInSeconds = 10
             boolean hasSucceeded = false
             while (retryCount <= MAX_RETRIES && (!hasSucceeded)) {
 
@@ -52,10 +53,11 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
                         error npmAuditRegistryNotReachableErrorMessage + " Won't retry audit anymore."
                     } else {
                         echo npmAuditRegistryNotReachableErrorMessage + " Will retry to run npm audit."
-                        sleep time: 5, unit: 'SECONDS'
+                        sleep time: waitTimeInSeconds, unit: 'SECONDS'
                     }
                 }
                 retryCount++
+                waitTimeInSeconds += 30
             }
         }
 

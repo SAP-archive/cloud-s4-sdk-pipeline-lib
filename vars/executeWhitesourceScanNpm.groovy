@@ -11,7 +11,6 @@ def call(Map parameters = [:]) {
                 productName  : parameters.product,
                 devDep       : false,
                 checkPolicies: true,
-                ignoreNpmLsErrors: true
             ]
 
             if (parameters.projectName) {
@@ -36,6 +35,7 @@ def call(Map parameters = [:]) {
 
             try {
                 executeNpm(script: script, dockerOptions: DownloadCacheUtils.downloadCacheNetworkParam()) {
+                    reinstallNodeModulesIfNpmLsFails()
                     sh 'npx whitesource run'
                 }
             }
@@ -43,5 +43,21 @@ def call(Map parameters = [:]) {
                 sh "rm -f whitesource.config.json"
             }
         }
+    }
+}
+
+private reinstallNodeModulesIfNpmLsFails(){
+    try {
+        sh 'npm ls'
+    }
+    catch (ex){
+        echo "[Warning] npm ls failed. Reinstalling Node Modules"
+        dir('node_modules'){
+            deleteDir()
+        }
+        if(fileExists('package-lock.json')){
+            sh "rm -f package-lock.json"
+        }
+        sh 'npm install'
     }
 }

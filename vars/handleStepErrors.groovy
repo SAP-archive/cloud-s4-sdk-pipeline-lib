@@ -1,3 +1,5 @@
+import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
+
 def call(Map parameters = [:], body) {
 
     def stepParameters = parameters.stepParameters //mandatory
@@ -12,6 +14,9 @@ def call(Map parameters = [:], body) {
         body()
 
     } catch (Throwable err) {
+        Debuglogger.instance.failedBuild.put("stage", stepName)
+        Debuglogger.instance.failedBuild.put("reason", err)
+        Debuglogger.instance.failedBuild.put("stack_trace", err.getStackTrace())
         def paramString = ''
         if (echoParameters)
             paramString = """FOLLOWING PARAMETERS WERE AVAILABLE TO THIS STEP:

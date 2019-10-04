@@ -3,7 +3,7 @@ package com.sap.cloud.sdk.s4hana.pipeline.mock
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import com.lesfurets.jenkins.unit.PipelineTestHelper
 
-class NullScript extends Script{
+class NullScript extends Script {
     BasePipelineTest test
     Map commonPipelineEnvironment = ['configuration': ['artifactId': 'irrelevant']]
 

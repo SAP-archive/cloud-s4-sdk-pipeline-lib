@@ -12,40 +12,38 @@ class MavenUtils implements Serializable {
             defines: "-Doutput=${effectivePomFile}")
     }
 
-    static void installMavenArtifacts(script, pom, String basePath, String pathToPom) {
+    static void installMavenArtifacts(Script script, pom, String basePath, String pathToPom) {
 
-        String pathToTargetDirectory = PathUtils.normalize(BuildToolEnvironment.instance.getApplicationPath(basePath), '/target')
+        String pathToApplication = BuildToolEnvironment.instance.getApplicationPath(basePath)
+        String pathToTargetDirectory = PathUtils.normalize(pathToApplication, '/target')
 
         if (pom.packaging == "war") {
-            List classesJars = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*-classes.jar")
+            List<String> classesJars = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*-classes.jar")
             if (classesJars.size() != 1) {
                 script.error "Expected exactly one *-classes.jar file in $pathToTargetDirectory, but found ${classesJars?.join(', ')}"
             }
-            script.mavenExecute(
-                script: script,
-                goals: 'install:install-file',
-                m2Path: 's4hana_pipeline/maven_local_repo',
-                defines: [
-                    "-Dfile=${classesJars[0]}",
-                    "-DpomFile=$pathToPom",
-                    "-Dpackaging=jar",
-                    "-Dclassifier=classes"
-                ].join(" ")
-            )
+            installFile(script, pathToPom, classesJars[0].getPath(), [ "-Dpackaging=jar", "-Dclassifier=classes"])
         }
 
-        List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
-        packagingFiles.each { file ->
-            script.mavenExecute(
-                script: script,
-                goals: 'install:install-file',
-                m2Path: 's4hana_pipeline/maven_local_repo',
-                defines: [
-                    "-Dfile=${file}",
-                    "-DpomFile=$pathToPom"
-                ].join(" ")
-            )
+        if(pom.packaging == "pom"){
+            installFile(script, pathToPom, PathUtils.normalize(pathToApplication, 'pom.xml'))
         }
+        else {
+            List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
+            packagingFiles.each { file -> installFile(script, pathToPom, file.getPath()) }
+        }
+    }
+
+    static void installFile(Script script, String pathToPom, String file, List additionalDefines=[]){
+        script.mavenExecute(
+            script: script,
+            goals: 'install:install-file',
+            m2Path: 's4hana_pipeline/maven_local_repo',
+            defines: [
+                "-Dfile=${file}",
+                "-DpomFile=$pathToPom"
+            ].plus(additionalDefines).join(" ")
+        )
     }
 
     static String getMavenDependencyTree(def script, String basePath) {

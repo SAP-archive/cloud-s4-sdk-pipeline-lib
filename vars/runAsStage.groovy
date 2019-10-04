@@ -4,7 +4,7 @@ import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 import com.sap.piper.k8s.ContainerMap
 import hudson.model.Result
-
+import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
 import groovy.transform.Field
 
 @Field String STEP_NAME = 'runAsStage'
@@ -40,6 +40,7 @@ def call(Map parameters = [:], body) {
 
     handleStepErrors(stepName: stageName, stepParameters: [:]) {
         if (Boolean.valueOf(env.ON_K8S) && containerMap.size() > 0) {
+            Debuglogger.instance.environment.put("environment", "Kubernetes")
             withEnv(["POD_NAME=${stageName}"]) {
                 dockerExecuteOnKubernetes(script: script, containerMap: containerMap, stageName: stageName) {
                     executeStage(script, body, stageName, configuration)
@@ -81,8 +82,14 @@ private executeStage(Script script,
         if (globalExtensions) {
             echo "Found repository interceptor for ${stageName}."
             // If we call the repository interceptor, we will pass on originalStage as parameter
+            Debuglogger.instance.globalExtensions.put(stageName, "Overwrites")
+            Closure modifiedOriginalStage = {
+                Debuglogger.instance.globalExtensions.put(stageName, "Extends")
+                originalStage()
+            }
+
             body = {
-                callInterceptor(script, repositoryInterceptorFile, originalStage, stageName, configuration)
+                callInterceptor(script, repositoryInterceptorFile, modifiedOriginalStage, stageName, configuration)
             }
         }
 
@@ -90,7 +97,19 @@ private executeStage(Script script,
         if (projectExtensions) {
             echo "Found project interceptor for ${stageName}."
             // If we call the project interceptor, we will pass on body as parameter which contains either originalStage or the repository interceptor
-            callInterceptor(script, projectInterceptorFile, body, stageName, configuration)
+            if (projectExtensions && globalExtensions) {
+                Debuglogger.instance.globalExtensions.put(stageName, "Unknown (Overwritten by local extension)")
+            }
+            Debuglogger.instance.localExtensions.put(stageName, "Overwrites")
+            Closure modifiedOriginalBody = {
+                Debuglogger.instance.localExtensions.put(stageName, "Extends")
+                if (projectExtensions && globalExtensions) {
+                    Debuglogger.instance.globalExtensions.put(stageName, "Overwrites")
+                }
+                body.call()
+            }
+
+            callInterceptor(script, projectInterceptorFile, modifiedOriginalBody, stageName, configuration)
         } else {
             // This calls either originalStage if no interceptors where found, or repository interceptor if no project interceptor was found
             body.call()
