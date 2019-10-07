@@ -23,47 +23,12 @@ def call(Map parameters) {
         Debuglogger.instance.environment.put("docker_image", docker_image)
     }
 
-
-    Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
-
-    if (scmCheckoutResult.GIT_COMMIT) {
-        ReportAggregator.instance.reportVersionControlUsed('Git')
-    }
-
-    initS4SdkPipelineLibrary script: script
-
-    Analytics.instance.initAnalytics(script)
-
-    loadGlobalExtension script: script
-    convertLegacyExtensions(script: script)
-
-    def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
-    def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)
-
-    mavenLocalRepository.mkdirs()
-    reportsDirectory.mkdirs()
-    if (!fileExists(mavenLocalRepository.absolutePath) || !fileExists(reportsDirectory.absolutePath)) {
-        errorWhenCurrentBuildResultIsWorseOrEqualTo(
-            script: script,
-            errorCurrentBuildStatus: 'FAILURE',
-            errorMessage: "Please check if the user can create report directory."
-        )
-    }
+    unstash name: 'scm'
 
     Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
     if (!generalConfiguration) {
         generalConfiguration = [:]
         script.commonPipelineEnvironment.configuration.general = generalConfiguration
-    }
-
-    if (scmCheckoutResult.GIT_URL) {
-        script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
-        Debuglogger.instance.github.put("URI", scmCheckoutResult.GIT_URL)
-        if (scmCheckoutResult.GIT_LOCAL_BRANCH) {
-            Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_LOCAL_BRANCH)
-        } else {
-            Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_BRANCH)
-        }
     }
 
     def isMtaProject = fileExists('mta.yaml')
@@ -117,10 +82,6 @@ def call(Map parameters) {
     generalConfiguration.gitCommitId = getGitCommitId()
 
     String prefix = generalConfiguration.projectName
-
-    if (Boolean.valueOf(env.ON_K8S)) {
-        initContainersMap script: script
-    }
 
     script.commonPipelineEnvironment.configuration.currentBuildResultLock = "${prefix}/currentBuildResult"
     script.commonPipelineEnvironment.configuration.performanceTestLock = "${prefix}/performanceTest"

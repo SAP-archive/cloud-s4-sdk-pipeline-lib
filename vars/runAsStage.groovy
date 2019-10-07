@@ -1,7 +1,6 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
-import com.sap.piper.ConfigurationMerger
 import com.sap.piper.k8s.ContainerMap
 import hudson.model.Result
 import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
