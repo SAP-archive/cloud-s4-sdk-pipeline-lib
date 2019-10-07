@@ -59,7 +59,11 @@ def call(Map parameters) {
     if (scmCheckoutResult.GIT_URL) {
         script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
         Debuglogger.instance.github.put("URI", scmCheckoutResult.GIT_URL)
-        Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_LOCAL_BRANCH)
+        if (scmCheckoutResult.GIT_LOCAL_BRANCH) {
+            Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_LOCAL_BRANCH)
+        } else {
+            Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_BRANCH)
+        }
     }
 
     def isMtaProject = fileExists('mta.yaml')
@@ -161,4 +165,3 @@ private String getProjectSaltFromPom(String pomfile) {
     }
     return salt
 }
-
