@@ -1,6 +1,10 @@
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
+import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
+import com.sap.cloud.sdk.s4hana.pipeline.EnvironmentUtils
+
 def call(Map parameters) {
     def script = parameters.script
 
@@ -13,6 +17,9 @@ def call(Map parameters) {
     }
 
     if (scmCheckoutResult.GIT_URL) {
+        if (!script.commonPipelineEnvironment.configuration.general) {
+            script.commonPipelineEnvironment.configuration.general = [:]
+        }
         script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
         Debuglogger.instance.github.put("URI", scmCheckoutResult.GIT_URL)
         if (scmCheckoutResult.GIT_LOCAL_BRANCH) {
@@ -29,6 +36,27 @@ def call(Map parameters) {
 
     if (Boolean.valueOf(env.ON_K8S)) {
         initContainersMap script: script
+    }
+
+    Map configWithDefault = loadEffectiveGeneralConfiguration script: script
+    boolean isMtaProject = fileExists('mta.yaml')
+    def isMaven = fileExists('pom.xml')
+    def isNpm = fileExists('package.json')
+
+    if (isMtaProject) {
+        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
+    } else if (isMaven) {
+        BuildToolEnvironment.instance.setBuildTool(BuildTool.MAVEN)
+    } else if (isNpm) {
+        BuildToolEnvironment.instance.setBuildTool(BuildTool.NPM)
+    } else {
+        throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
+    }
+
+    //TODO activate automatic versioning for JS
+    if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
+        artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
+        ReportAggregator.instance.reportAutomaticVersioning()
     }
 
     stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'scm'

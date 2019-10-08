@@ -31,15 +31,11 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.general = generalConfiguration
     }
 
-    def isMtaProject = fileExists('mta.yaml')
     def pomFile = 'pom.xml'
 
-    if (isMtaProject) {
+    if (BuildToolEnvironment.instance.isMta()) {
         setupMtaProject(script: script, generalConfiguration: generalConfiguration)
-    } else if (fileExists(pomFile)) {
-
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MAVEN)
-
+    } else if (BuildToolEnvironment.instance.isMaven()) {
         pom = readMavenPom file: pomFile
         readAndUpdateProjectSalt(script, pomFile)
         Analytics.instance.hashProject(pom.groupId + pom.artifactId)
@@ -47,14 +43,11 @@ def call(Map parameters) {
             generalConfiguration.projectName = "${pom.groupId}-${pom.artifactId}"
         }
 
-    } else if (fileExists('package.json')) {
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.NPM)
+    } else if (BuildToolEnvironment.instance.isNpm()) {
         Map packageJson = readJSON file: 'package.json'
         def projectName = packageJson.name
         generalConfiguration.projectName = projectName ?: ''
         Analytics.instance.hashProject(generalConfiguration.projectName)
-    } else {
-        throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
 
     if (!generalConfiguration.projectName) {
@@ -73,12 +66,6 @@ def call(Map parameters) {
     }
     Analytics.instance.buildNumber(env.BUILD_NUMBER)
 
-    Map configWithDefault = loadEffectiveGeneralConfiguration script: script
-    //TODO activate automatic versioning for JS
-    if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
-        artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
-        ReportAggregator.instance.reportAutomaticVersioning()
-    }
     generalConfiguration.gitCommitId = getGitCommitId()
 
     String prefix = generalConfiguration.projectName
