@@ -1,4 +1,5 @@
 import com.cloudbees.groovy.cps.NonCPS
+import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 
@@ -23,7 +24,7 @@ private boolean lessThanOneGigabytePlusBufferAvailable() throws NumberFormatExce
     int freeDiskSpaceInMb = parseInt(freeDiskSpace)
 
     String lastBuildDirectoryPath = getLastBuildDirectoryPath()
-    String lastBuildSizeInMb = sh(returnStdout: true, script: "du -md 0 ${lastBuildDirectoryPath} | awk \'{print \$1}\'")
+    String lastBuildSizeInMb = sh(returnStdout: true, script: "du -md 0 ${BashUtils.escape(lastBuildDirectoryPath)} | awk \'{print \$1}\'")
 
     int lastBuildBuffer = parseInt(lastBuildSizeInMb) * 3
 
@@ -32,7 +33,10 @@ private boolean lessThanOneGigabytePlusBufferAvailable() throws NumberFormatExce
 
 private String getLastBuildDirectoryPath() throws ArrayIndexOutOfBoundsException {
     String currentBuildNumber = env.BUILD_NUMBER
-    int lastBuildNumber = parseInt(currentBuildNumber) - 1
+    int lastBuildNumber = parseInt(currentBuildNumber)
+    if (lastBuildNumber != 1) {
+        lastBuildNumber = lastBuildNumber - 1
+    }
     def (jobName, branch) = env.JOB_NAME.split('/')
 
     return "${env.JENKINS_HOME}/jobs/${jobName}/branches/${branch}/builds/${lastBuildNumber}"
