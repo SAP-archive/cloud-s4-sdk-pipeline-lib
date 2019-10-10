@@ -13,6 +13,23 @@ def call(Map parameters = [:]) {
         def enableZeroDowntimeDeployment = parameters.enableZeroDowntimeDeployment
 
         if (parameters.cfTargets) {
+
+            String appName = parameters.cfTargets.appName.toString()
+            boolean isValidCfAppName = appName.matches("^[a-zA-Z0-9]*\$")
+
+            if(appName.contains("_")){
+                error("Application name may not contain non-alphanumeric characters. Please rename $appName that it does not contain any non-alphanumeric characters, as they are not supported by CloudFoundry. \n" +
+                    "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings")
+            }
+            else if(!isValidCfAppName){
+                echo ("This application name can lead to errors in the future, as non-alphanumeric characters are not supported by CloudFoundry. \n" +
+                    "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings")
+
+                addBadge(icon: "warning.gif", text: "This application name can lead to errors in the future, as non-alphanumeric characters are not supported by CloudFoundry. \n" +
+                    "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings")
+            }
+
+
             for (int i = 0; i < parameters.cfTargets.size(); i++) {
                 def target = parameters.cfTargets[i]
                 Closure deployment = {
