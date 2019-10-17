@@ -5,6 +5,11 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@master
-    - name: Run Unittests
-      run: ./gradlew check
-
+#    - name: Run Unittests
+#      run: ./gradlew check
+    - name: Run a pipeline
+      run: |
+        ls
+        rm Jenkinsfile
+        unzip <(( curl -q https://github.com/piper-validation/cloud-s4-sdk-book/archive/validate-mta.zip ))
+        docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/workspace -v /tmp -e CASC_JENKINS_CONFIG=/workspace/jenkins.yml -e CF_PW -e ERP_PW -e BRANCH_NAME=not_master ppiper/jenkinsfile-runner
