@@ -11,8 +11,8 @@ jobs:
       run: |
         ls
         rm Jenkinsfile
-        wget https://github.com/piper-validation/cloud-s4-sdk-book/archive/validate-mta.zip
-        unzip validate-mta.zip -d .
-        mv cloud-s4-sdk-book-validate-mta/* .
-        rm -rf cloud-s4-sdk-book-validate-mta validate-mta.zip
+        wget https://github.com/piper-validation/cloud-s4-sdk-book/archive/validate-mta-v24.zip
+        unzip validate-mta-v24.zip -d .
+        mv cloud-s4-sdk-book-validate-mta-v24/* .
+        rm -rf cloud-s4-sdk-book-validate-mta-v24 validate-mta-v24.zip
         docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/workspace -v /tmp -e CASC_JENKINS_CONFIG=/workspace/jenkins.yml -e CF_PW -e ERP_PW -e BRANCH_NAME=not_master ppiper/jenkinsfile-runner
