@@ -97,7 +97,7 @@ def call(Map parameters) {
 
     Map productionDeploymentConfiguration = ConfigurationLoader.stageConfiguration(script, 'productionDeployment')
 
-    if ((productionDeploymentConfiguration.cfTargets || productionDeploymentConfiguration.neoTargets) && isProductiveBranch(script: script)) {
+    if ((productionDeploymentConfiguration.cfTargets || productionDeploymentConfiguration.neoTargets || productionDeploymentConfiguration.tmsUpload) && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.PRODUCTION_DEPLOYMENT = true
     }
 

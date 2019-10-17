@@ -72,6 +72,9 @@ steps:
       unstable: 0
       failing: 0
 
+  tmsUpload:
+    namedUser: 'CLOUD SDK PIPELINE'
+
 #Stage Specific Configurations
 stages:
   backendIntegrationTests:
