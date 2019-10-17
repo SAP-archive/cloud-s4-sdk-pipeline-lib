@@ -1,0 +1,10 @@
+on: push
+name: Test
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@master
+    - name: Run Unittests
+      run: ./gradlew check
+
