@@ -1,4 +1,6 @@
 import com.lesfurets.jenkins.unit.BasePipelineTest
+import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.mock.NullScript
 import com.sap.cloud.sdk.s4hana.pipeline.util.BaseCloudSdkTest
 import org.junit.Before
@@ -43,6 +45,7 @@ class SetupMtaProjectTest extends BaseCloudSdkTest {
 
             throw new RuntimeException("Did not expect to get here in this test.")
         })
+        BuildToolEnvironment.instance.buildTool = BuildTool.MTA
 
         def script = loadScript("vars/setupMtaProject.groovy")
         script.invokeMethod("call", [script: dummyScript, generalConfiguration: [:]])
