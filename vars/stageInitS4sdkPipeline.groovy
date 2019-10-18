@@ -11,7 +11,7 @@ def call(Map parameters) {
 
     node('master'){
         deleteDir()
-        checkoutAndInitLibrary(script: script)
+        checkoutAndInitLibrary(script: script, customDefaults: parameters.customDefaults)
     }
 
     runAsStage(stageName: 'initS4sdkPipeline', script: script) {

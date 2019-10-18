@@ -8,7 +8,7 @@ def call(Map parameters) {
             parameters.configFile = 'pipeline_config.yml'
         }
 
-        parameters.customDefaults = ['default_s4_pipeline_environment.yml']
+        parameters.customDefaults = parameters.customDefaults ?: ['default_s4_pipeline_environment.yml']
         setupCommonPipelineEnvironment(parameters)
         convertLegacyConfiguration script: script
         if (!Boolean.valueOf(env.ON_K8S)) {
