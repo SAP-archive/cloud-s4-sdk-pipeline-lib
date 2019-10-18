@@ -15,10 +15,15 @@ def call(Map parameters) {
     buildDetails.add("JAVA Version | " + env.JAVA_VERSION)
     Debuglogger.instance.environment.put("build_details", buildDetails)
 
-    if (EnvironmentUtils.cxServerDirectoryExists() && !Boolean.valueOf(env.ON_K8S)) {
+    if (!Boolean.valueOf(env.ON_K8S) && EnvironmentUtils.cxServerDirectoryExists()) {
         Debuglogger.instance.environment.put("environment", "cx-server")
 
-        String serverConfigAsString = new File('/var/cx-server/server.cfg').getText('UTF-8')
+        String serverConfigAsString = ""
+        if (new File('/var/cx-server/server.cfg').exists()) {
+            serverConfigAsString = new File('/var/cx-server/server.cfg').getText('UTF-8')
+        } else if (new File('/workspace/var/cx-server/server.cfg').exists()) {
+            serverConfigAsString = new File('/workspace/var/cx-server/server.cfg').getText('UTF-8')
+        }
         String docker_image = EnvironmentUtils.getDockerFile(serverConfigAsString)
         Debuglogger.instance.environment.put("docker_image", docker_image)
     }
