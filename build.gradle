@@ -38,4 +38,8 @@ sourceSets {
     }
 }
 
+test {
+    forkEvery=1
+}
+
 tasks.withType(GroovyCompile) { groovyClasspath += configurations.ivy }
