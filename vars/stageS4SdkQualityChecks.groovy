@@ -31,6 +31,7 @@ private void executeQualityChecks(def script, String basePath, Map configuration
     checkCodeCoverage(
         script: script,
         jacocoExcludes: configuration.jacocoExcludes,
+        threshold: configuration.threshold,
         codeCoverageFrontend: configuration.codeCoverageFrontend,
         basePath: basePath
     )
