@@ -1,4 +1,3 @@
-import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.CloudPlatform
 import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
@@ -74,12 +73,12 @@ def call(Map parameters = [:]) {
 
                                 mtaExtensionCredentilas.each { key, credentialsId ->
                                     withCredentials([string(credentialsId: credentialsId, variable: 'mtaExtensionCredential')]) {
-                                        binding["${key}"] = "${mtaExtensionCredential}"
+                                        fileContent = fileContent.replaceFirst('<%= ' + key.toString() + ' %>', mtaExtensionCredential.toString())
                                     }
                                 }
 
                                 try {
-                                    writeFile file: target.mtaExtensionDescriptor, text: fillTemplate(fileContent, binding)
+                                    writeFile file: target.mtaExtensionDescriptor, text: fileContent
                                 } catch (Exception e) {
                                     error("Unable to write credentials values to the mta extension file ${target.mtaExtensionDescriptor}\n. \n Kindly refer to the manual at https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment. \nIf this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup.")
                                 }
@@ -168,17 +167,4 @@ def call(Map parameters = [:]) {
             }
         }
     }
-}
-
-@NonCPS
-String fillTemplate(String input, Map binding) {
-    try {
-        return new groovy.text.GStringTemplateEngine()
-            .createTemplate(input)
-            .make(binding)
-            .toString()
-    } catch (Exception e) {
-        error("Error replacing the password placeholder with a password from Jenkins." + e.getMessage() + "\nKindly refer to the manual at https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment")
-    }
-    return ''
 }
