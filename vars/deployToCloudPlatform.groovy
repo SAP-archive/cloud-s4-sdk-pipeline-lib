@@ -16,18 +16,16 @@ def call(Map parameters = [:]) {
             String appName = parameters.cfTargets.appName.toString()
             boolean isValidCfAppName = appName.matches("^[a-zA-Z0-9]*\$")
 
-            if(appName.contains("_")){
-                error("Application name may not contain non-alphanumeric characters. Please rename $appName that it does not contain any non-alphanumeric characters, as they are not supported by CloudFoundry. \n" +
+            if (appName.contains("_")) {
+                error("Your application name contains non-alphanumeric character i.e 'underscore'. Please rename $appName that it does not contain any non-alphanumeric characters, as they are not supported by CloudFoundry.. \n" +
+                    "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings")
+            } else if (!isValidCfAppName) {
+                echo "Your application name contains non-alphanumeric characters that may lead to errors in the future, as they are not supported by CloudFoundry. \n" +
+                    "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings"
+
+                addBadge(icon: "warning.gif", text: "Your application name contains non-alphanumeric characters that may lead to errors in the future, as they are not supported by CloudFoundry. \n" +
                     "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings")
             }
-            else if(!isValidCfAppName){
-                echo ("This application name can lead to errors in the future, as non-alphanumeric characters are not supported by CloudFoundry. \n" +
-                    "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings")
-
-                addBadge(icon: "warning.gif", text: "This application name can lead to errors in the future, as non-alphanumeric characters are not supported by CloudFoundry. \n" +
-                    "For more details please visit https://docs.cloudfoundry.org/devguide/deploy-apps/deploy-app.html#basic-settings")
-            }
-
 
             for (int i = 0; i < parameters.cfTargets.size(); i++) {
                 def target = parameters.cfTargets[i]
