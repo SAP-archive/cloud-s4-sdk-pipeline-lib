@@ -20,6 +20,7 @@ steps:
 
   executeNpm:
     dockerImage: ppiper/node-browsers
+    sapNpmRegistry: 'https://npm.sap.com'
 
   executeGradle:
     dockerImage: gradle:5.4.1-jdk8
