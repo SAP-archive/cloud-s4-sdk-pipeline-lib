@@ -6,7 +6,7 @@ def call(Map parameters = [:]) {
     Script script = parameters.script
 
     // If you change the version please also the corresponding jar file. They must always be at the same commit/tag/version.
-    String piperOsVersion = '565ac99742197d25852a2be84f9eb2a1df3b101a'
+    String piperOsVersion = '0f3436d1a5a3b4ec7ec45b9a76ad74a5725b573a'
 
     String piperIdentifier = 'None'
 
