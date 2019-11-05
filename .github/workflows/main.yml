@@ -1,0 +1,11 @@
+on: push
+name: Test
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    container:
+      image: gradle:jdk8
+    steps:
+    - uses: actions/checkout@master
+    - name: Test
+      run: gradle check
