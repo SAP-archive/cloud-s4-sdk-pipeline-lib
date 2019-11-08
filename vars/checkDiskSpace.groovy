@@ -93,7 +93,7 @@ private void sendOutOfDiskSpaceMail(Map parameters) {
     String recipientsAsString = getRecipients(parameters)
 
     if (recipientsAsString) {
-        emailext(recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+        emailext(recipientProviders: [[$class: 'DevelopersRecipientProvider']],
             to: recipientsAsString,
             subject: subject,
             body: body
