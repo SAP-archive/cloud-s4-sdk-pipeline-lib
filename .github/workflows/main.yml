@@ -8,8 +8,8 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Test
-      run: gradle check jacocoTestCoverageVerification jacocoTestReport
+      run: gradle check jacocoTestReport
     - uses: actions/upload-artifact@master
       with:
         name: Test coverage
-        path: build/reports/jacoco/test/html
+        path: build/reports/jacoco
