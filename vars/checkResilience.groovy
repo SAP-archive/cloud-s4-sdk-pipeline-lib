@@ -1,7 +1,7 @@
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
-def call() {
-    handleStepErrors(stepName: 'checkResilience') {
+def call(Map parameters = [:]) {
+    handleStepErrors(stepName: 'checkResilience', stepParameters: parameters) {
         assertPluginIsActive('pipeline-utility-steps')
         String reportFile = "${s4SdkGlobals.reportsDirectory}/service_audits/aggregated_http_audit.log"
         final List<String> violations = extractViolations(reportFile)

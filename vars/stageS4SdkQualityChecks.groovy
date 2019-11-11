@@ -19,9 +19,9 @@ private void executeQualityChecks(def script, String basePath, Map configuration
     if (BuildToolEnvironment.instance.isMaven() || BuildToolEnvironment.instance.isMta()) {
         checkDeploymentDescriptors script: script
 
-        aggregateListenerLogs()
+        aggregateListenerLogs script: script
 
-        checkResilience()
+        checkResilience script: script
         ReportAggregator.instance.reportResilienceCheck()
 
         checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices

@@ -7,7 +7,7 @@ import com.sap.piper.ConfigurationMerger
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'executeFortifyScan') {
+    handleStepErrors(stepName: 'executeFortifyScan', stepParameters: parameters) {
         final script = parameters.script
         final String basePath = parameters.basePath
         final Set parameterKeys = [
