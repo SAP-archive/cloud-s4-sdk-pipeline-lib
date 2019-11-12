@@ -2,7 +2,7 @@ import com.sap.piper.MapUtils
 import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'loadGlobalExtension') {
+    handleStepErrors(stepName: 'loadGlobalExtension', stepParameters: parameters) {
         def script = parameters.script
 
         String extensionRepository = loadEffectiveGeneralConfiguration(script: script).extensionRepository

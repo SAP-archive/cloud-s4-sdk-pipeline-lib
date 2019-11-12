@@ -5,6 +5,19 @@ general:
   collectTelemetryData: true
   defaultNode: ""
   automaticVersioning: true
+  mandatoryStages:
+    - "initS4sdkPipeline"
+    - "build"
+    - "backendIntegrationTests"
+    - "staticCodeChecks"
+    - "unitTests"
+    - "npmAudit"
+    - "lint"
+    - "frontendUnitTests"
+    - "frontendIntegrationTests"
+    - "s4SdkQualityChecks"
+    - "artifactDeployment"
+    - "productionDeployment"
 
 #Steps Specific Configuration
 steps:
@@ -20,7 +33,7 @@ steps:
 
   executeNpm:
     dockerImage: ppiper/node-browsers
-    sapNpmRegistry: 'https://npm.sap.com'
+    sapNpmRegistry: "https://npm.sap.com"
 
   executeGradle:
     dockerImage: gradle:5.4.1-jdk8
@@ -74,7 +87,7 @@ steps:
       failing: 0
 
   tmsUpload:
-    namedUser: 'CLOUD SDK PIPELINE'
+    namedUser: "CLOUD SDK PIPELINE"
 
 #Stage Specific Configurations
 stages:
