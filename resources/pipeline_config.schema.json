@@ -525,7 +525,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/node-browsers"
+                            "default": "ppiper/node-browsers:v2"
                         },
                         "defaultNpmRegistry": {
                             "description": "The default npm registry url to be used as the remote mirror. Bypasses the local download cache if specified.",
