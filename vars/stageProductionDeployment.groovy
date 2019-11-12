@@ -6,15 +6,6 @@ import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 def call(Map parameters = [:]) {
     def stageName = 'productionDeployment'
     def script = parameters.script
-
-    def commonPipelineEnvironment = script.commonPipelineEnvironment
-    List unstableSteps = commonPipelineEnvironment?.getValue('unstableSteps') ?: []
-    if (unstableSteps) {
-        piperPipelineStageConfirm script: script
-        unstableSteps = []
-        commonPipelineEnvironment.setValue('unstableSteps', unstableSteps)
-    }
-
     runAsStage(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 

@@ -30,7 +30,6 @@ def call(Map parameters = [:], body) {
         .use()
 
     configuration.uniqueId = UUID.randomUUID().toString()
-    configuration.script = script
     String nodeLabel = configuration.defaultNode
 
     Map containerMap = ContainerMap.instance.getMap().get(stageName) ?: [:]
@@ -38,7 +37,7 @@ def call(Map parameters = [:], body) {
         nodeLabel = configuration.node
     }
 
-    handleStepErrors(stepName: stageName, stepParameters: configuration) {
+    handleStepErrors(stepName: stageName, stepParameters: [:]) {
         if (Boolean.valueOf(env.ON_K8S) && containerMap.size() > 0) {
             Debuglogger.instance.environment.put("environment", "Kubernetes")
             withEnv(["POD_NAME=${stageName}"]) {

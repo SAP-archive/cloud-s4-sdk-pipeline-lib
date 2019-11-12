@@ -3,7 +3,7 @@ import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
 
-    handleStepErrors(stepName: 'executeGradle', stepParameters: parameters) {
+    handleStepErrors(stepName: 'executeGradle') {
         final script = parameters.script
 
         final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'executeGradle')

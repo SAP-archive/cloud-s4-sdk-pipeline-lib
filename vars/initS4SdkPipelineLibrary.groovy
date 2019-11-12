@@ -12,7 +12,7 @@ def call(Map parameters) {
         setupCommonPipelineEnvironment(parameters)
         convertLegacyConfiguration script: script
         if (!Boolean.valueOf(env.ON_K8S)) {
-            checkDiskSpace script: script
+            checkDiskSpace script: parameters
         }
         setupDownloadCache script: script
     }

@@ -12,14 +12,6 @@ def call(Map parameters = [:]) {
         Map defaultConfig = ConfigurationLoader.defaultStageConfiguration(script, stageName)
         Map stageConfig = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        def commonPipelineEnvironment = script.commonPipelineEnvironment
-        List unstableSteps = commonPipelineEnvironment?.getValue('unstableSteps') ?: []
-        if (unstableSteps) {
-            piperPipelineStageConfirm script: script
-            unstableSteps = []
-            commonPipelineEnvironment.setValue('unstableSteps', unstableSteps)
-        }
-
         if (stageConfig.nexus) {
 
             //add pomPath & target folder
