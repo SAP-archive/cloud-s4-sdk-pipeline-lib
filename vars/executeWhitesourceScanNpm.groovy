@@ -11,6 +11,7 @@ def call(Map parameters = [:]) {
                 productName  : parameters.product,
                 devDep       : false,
                 checkPolicies: true,
+                ignoreNpmLsErrors: true
             ]
 
             if (parameters.projectName) {
