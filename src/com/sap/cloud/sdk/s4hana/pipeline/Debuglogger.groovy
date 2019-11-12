@@ -8,6 +8,9 @@ class Debuglogger {
     String fileName
     String projectIdentifier = null
     Map environment = ["environment": "custom"]
+    String buildTool = null
+    Map modulesMap = [:]
+    List npmModules = []
     Set plugins = []
     Map github = [:]
     Map localExtensions = [:]

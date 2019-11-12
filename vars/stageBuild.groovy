@@ -16,7 +16,6 @@ private build(Script script) {
     def stageName = 'build'
     runAsStage(stageName: stageName, script: script) {
         if (BuildToolEnvironment.instance.isMta()) {
-
             runOverModules(script: this, moduleType: "java") { String basePath ->
 
                 String pathToPom = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)

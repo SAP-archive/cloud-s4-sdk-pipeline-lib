@@ -1,22 +1,55 @@
 # SAP Cloud SDK `<% print shareConfidentialInformation ? "Confidential" : "Redacted" %>` Debug Log
 
-The debug log is generated with each build and should be included in every support request, don't worry in case you don't understand all of the contents.
+The debug log is generated with each build and should be included in every support request, don't worry in case you don't understand all of its contents.
 
 The log was generated at: `$utcTimestamp UTC`
 
 #### Please be sure that this file doesn't contain any information that you are not allowed to share.
 
-## 1. Pipeline Environment
+<% print failedBuild ? "## Unsuccessful Build" : "" %>
 
-The pipeline is running in a `${environment.get("environment")}` environment.
+<% print failedBuild ? "#### Failed Stage" : "" %>
+<% print failedBuild.get("stage") ? "`${failedBuild.get("stage")}`" : "" %>
 
-<% print environment.get("build_details") ? "Environment Variable | Value" : "" %>
-<% print environment.get("build_details") ? "---------------------|------" : "" %>
+<% print failedBuild.get("reason") ? "#### Error Message" : "" %>
+<% print failedBuild.get("reason") ? "```\n${failedBuild.get("reason")}\n```" : "" %>
+<% print failedBuild.get("stack_trace") ? "#### Stacktrace" : "" %>
+<% print failedBuild.get("stack_trace") ? "```" : "" %>
+<% print failedBuild.get("stack_trace").collect({each -> "${each}"}).join("\n") %>
+<% print failedBuild.get("stack_trace") ? "```" : "" %>
+
+## Pipeline Environment
+
+#### Environment
+`${environment.get("environment")}`
+
+#### Environment Variables
+Environment Variable | Value
+---------------------|------
 <% print environment.get("build_details").collect({each -> "${each}"}).join("\n") %>
 
-<% print environment.get("docker_image") ? "It is using this docker image: `${environment.get("docker_image")}`" : "" %>
+#### Docker Image
+`${environment.get("docker_image")}`
 
-## 2. Plugins
+## Build Tools Environment
+
+#### Build Tool
+`${buildTool}`
+
+<% print modulesMap && shareConfidentialInformation ? "#### MTA Modules" : "" %>
+
+<% print modulesMap && shareConfidentialInformation ? "Type | Path" : "" %>
+<% print modulesMap && shareConfidentialInformation ? "-----|-----" : "" %>
+<% print modulesMap && shareConfidentialInformation ? modulesMap.collect({each -> "${each.key} | ${each.value}"}).join("\n") : "" %>
+
+<% print npmModules && shareConfidentialInformation ? "#### NPM Modules" : "" %>
+
+<% print npmModules && shareConfidentialInformation ? "Path | Scripts" : "" %>
+<% print npmModules && shareConfidentialInformation ? "-----|--------" : "" %>
+<% print npmModules && shareConfidentialInformation ? npmModules.collect({each -> "${each.basePath} | ${each.npmScripts}"}).join("\n") : "" %>
+
+
+## Plugins
 
 <% print plugins ? "" : "No plugins were used for this build." %>
 
@@ -24,7 +57,7 @@ The pipeline is running in a `${environment.get("environment")}` environment.
 <% print plugins ? "----------|---------|------------" : "" %>
 <% print plugins.collect({each -> "${each}"}).join("\n") %>
 
-<% print shareConfidentialInformation ? "## 3. GitHub Repository" : "" %>
+<% print shareConfidentialInformation ? "## GitHub Repository" : "" %>
 
 <% print shareConfidentialInformation ? github ? "" : "GitHub isn't used for version control" : "" %>
 
@@ -32,7 +65,7 @@ The pipeline is running in a `${environment.get("environment")}` environment.
 <% print github && shareConfidentialInformation ? "-----------|-------" : "" %>
 <% print github && shareConfidentialInformation ? "${github.get("URI")} | ${github.get("branch")}" : "" %>
 
-<% print shareConfidentialInformation ? "## 4. Local Extensions" : "## 3. Local Extensions" %>
+## Local Extensions
 
 <% print localExtensions ? "" : "No local extensions were used" %>
 
@@ -40,30 +73,19 @@ The pipeline is running in a `${environment.get("environment")}` environment.
 <% print localExtensions ? "----------------|-------" : "" %>
 <% print localExtensions.collect({each -> "${each.key} | ${each.value}"}).join("\n") %>
 
-<% print shareConfidentialInformation ? "## 5. Global Extension Repository" : "## 4. Global Extension Repository" %>
+## Global Extension Repository
 
-<% print shareConfidentialInformation ? globalExtensionRepository ? "The following global extension repository was loaded for this build: \n\n${globalExtensionRepository}\n" : "No global extension repository was loaded." : "" %>
-<% print globalExtensions ? "The repository included the following extensions:" : "No extension of the global extension repository was used" %>
+<% print shareConfidentialInformation ? globalExtensionRepository ? "${globalExtensionRepository}" : "No global extension repository was loaded." : "" %>
+<% print globalExtensions ? "The repository included the following extensions:" : "No extension of the global extension repository was used." %>
 
 <% print globalExtensions ? "Global Extension | relationToOriginalStage" : "" %>
 <% print globalExtensions ? "-----------------|-------" : "" %>
 <% print globalExtensions.collect({each -> "${each.key} | ${each.value}"}).join("\n") %>
 
-<% print shareConfidentialInformation ? "## 6. Shared Libraries" : "" %>
+<% print shareConfidentialInformation ? "## Shared Libraries" : "" %>
 
 <% print shareConfidentialInformation ? additionalSharedLibraries ? "" : "No additional shared libraries were loaded." : "" %>
 
 <% print additionalSharedLibraries && shareConfidentialInformation ? "name | branch | loadedByExtension" : "" %>
 <% print additionalSharedLibraries && shareConfidentialInformation ? "-----|--------|-------" : "" %>
 <% print shareConfidentialInformation ? additionalSharedLibraries.collect({each -> "${each}"}).join("\n") : "" %>
-
-<% print shareConfidentialInformation && failedBuild ? "## 7. Unsuccessful Build" : !shareConfidentialInformation && failedBuild ?  "## 5. Unsuccessful Build" : "" %>
-
-<% print failedBuild.get("stage") ? "The build failed in the `${failedBuild.get("stage")}` stage." : "" %>
-
-<% print failedBuild.get("reason") ? "The following error message was generated:" : "" %>
-<% print failedBuild.get("reason") ? "```\n${failedBuild.get("reason")}\n```" : "" %>
-<% print failedBuild.get("stack_trace") ? "The following stack trace was generated:" : "" %>
-<% print failedBuild.get("stack_trace") ? "```" : "" %>
-<% print failedBuild.get("stack_trace").collect({each -> "${each}"}).join("\n") %>
-<% print failedBuild.get("stack_trace") ? "```" : "" %>

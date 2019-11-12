@@ -1,5 +1,6 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
 import com.sap.cloud.sdk.s4hana.pipeline.NpmModule
 
 import java.nio.file.Path
@@ -22,6 +23,7 @@ def call (Map parameters = [:]) {
     }
 
     BuildToolEnvironment.instance.npmModules = npmModules
+    Debuglogger.instance.npmModules = npmModules
 }
 
 @NonCPS

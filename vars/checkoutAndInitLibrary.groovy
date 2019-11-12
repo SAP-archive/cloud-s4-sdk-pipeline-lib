@@ -53,6 +53,8 @@ def call(Map parameters) {
         throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
 
+    Debuglogger.instance.buildTool = BuildToolEnvironment.instance.buildTool
+
     //TODO activate automatic versioning for JS
     if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
         artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
