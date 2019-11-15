@@ -53,9 +53,15 @@ Environment Variable | Value
 
 <% print plugins ? "" : "No plugins were used for this build." %>
 
+<details><summary>Full list of plugins</summary>
+<p>
+
 <% print plugins ? "Shortname | Version | Displayname" : "" %>
 <% print plugins ? "----------|---------|------------" : "" %>
 <% print plugins.collect({each -> "${each}"}).join("\n") %>
+
+</p>
+</details>
 
 <% print shareConfidentialInformation ? "## GitHub Repository" : "" %>
 
