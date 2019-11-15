@@ -36,7 +36,7 @@ steps:
     sapNpmRegistry: "https://npm.sap.com"
 
   executeGradle:
-    dockerImage: gradle:5.4.1-jdk8
+    dockerImage: gradle:6.0.0-jdk8
 
   executeSourceClearScan:
     dockerImage: ppiper/mta-archive-builder
