@@ -63,6 +63,10 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN = true
     }
 
+    if (ConfigurationLoader.stageConfiguration(script, 'sonarQubeScan') && isProductiveBranch(script: script)) {
+        script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN = true
+    }
+
     def projectInterceptorFile = "${s4SdkGlobals.projectExtensionsDirectory}/additionalTools.groovy"
     def repositoryInterceptorFile = "${s4SdkGlobals.repositoryExtensionsDirectory}/additionalTools.groovy"
 
@@ -91,7 +95,8 @@ def call(Map parameters) {
         || script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN
-        || script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS) {
+        || script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS
+        || script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN) {
         script.commonPipelineEnvironment.configuration.runStage.THIRD_PARTY_CHECKS = true
     }
 

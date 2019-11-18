@@ -56,6 +56,10 @@ package:
     - name: "DEPLOYMENTARTIFACT"
       includes: "deployment/**"
 
+sonarQubeScan:
+  unstash: ['SOURCE', 'NODE_MODULES', 'DIST']
+  stashes: []
+
 npmAudit:
   unstash: ["SOURCE", "PACKAGE_LOCK"]
   stashes: []
