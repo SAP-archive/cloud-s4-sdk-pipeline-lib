@@ -29,7 +29,7 @@ def sendEmail(Result buildStatus, Result previousStatus, List recipients) {
     String body = "Build result of ${env.JOB_NAME} is ${buildStatus} (was ${previousStatus}). For more information, see: ${env.BUILD_URL}"
     String recipientsAsString = recipients.join(", ")
 
-    emailext(recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+    emailext(recipientProviders: [[$class: 'DevelopersRecipientProvider']],
         to: recipientsAsString,
         subject: subject,
         body: body

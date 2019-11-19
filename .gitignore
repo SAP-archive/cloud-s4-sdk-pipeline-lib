@@ -21,3 +21,4 @@ resources/check-ui5-best-practices/package-lock.json
 *ui5lint.json
 out/
 .vscode/
+bin

@@ -13,9 +13,10 @@ def call(Map parameters = [:], body) {
         Set parameterKeys = [
             'dockerImage',
             'dockerOptions',
-            'defaultNpmRegistry'
+            'defaultNpmRegistry',
+            'sapNpmRegistry'
         ]
-        Set stepConfigurationKeys = ['dockerImage', 'defaultNpmRegistry']
+        Set stepConfigurationKeys = ['dockerImage', 'defaultNpmRegistry', 'sapNpmRegistry']
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
@@ -23,6 +24,9 @@ def call(Map parameters = [:], body) {
             try {
                 if (configuration.defaultNpmRegistry) {
                     sh "npm config set registry ${configuration.defaultNpmRegistry}"
+                }
+                if (configuration.sapNpmRegistry) {
+                    sh "npm config set @sap:registry ${configuration.sapNpmRegistry}"
                 }
                 body()
             }

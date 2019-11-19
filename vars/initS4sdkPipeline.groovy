@@ -15,40 +15,20 @@ def call(Map parameters) {
     buildDetails.add("JAVA Version | " + env.JAVA_VERSION)
     Debuglogger.instance.environment.put("build_details", buildDetails)
 
-    if (EnvironmentUtils.cxServerDirectoryExists() && !Boolean.valueOf(env.ON_K8S)) {
+    if (!Boolean.valueOf(env.ON_K8S) && EnvironmentUtils.cxServerDirectoryExists()) {
         Debuglogger.instance.environment.put("environment", "cx-server")
 
-        String serverConfigAsString = new File('/var/cx-server/server.cfg').getText('UTF-8')
+        String serverConfigAsString = ""
+        if (new File('/var/cx-server/server.cfg').exists()) {
+            serverConfigAsString = new File('/var/cx-server/server.cfg').getText('UTF-8')
+        } else if (new File('/workspace/var/cx-server/server.cfg').exists()) {
+            serverConfigAsString = new File('/workspace/var/cx-server/server.cfg').getText('UTF-8')
+        }
         String docker_image = EnvironmentUtils.getDockerFile(serverConfigAsString)
         Debuglogger.instance.environment.put("docker_image", docker_image)
     }
 
-
-    Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
-
-    if (scmCheckoutResult.GIT_COMMIT) {
-        ReportAggregator.instance.reportVersionControlUsed('Git')
-    }
-
-    initS4SdkPipelineLibrary script: script
-
-    Analytics.instance.initAnalytics(script)
-
-    loadGlobalExtension script: script
-    convertLegacyExtensions(script: script)
-
-    def mavenLocalRepository = new File(script.s4SdkGlobals.m2Directory)
-    def reportsDirectory = new File(script.s4SdkGlobals.reportsDirectory)
-
-    mavenLocalRepository.mkdirs()
-    reportsDirectory.mkdirs()
-    if (!fileExists(mavenLocalRepository.absolutePath) || !fileExists(reportsDirectory.absolutePath)) {
-        errorWhenCurrentBuildResultIsWorseOrEqualTo(
-            script: script,
-            errorCurrentBuildStatus: 'FAILURE',
-            errorMessage: "Please check if the user can create report directory."
-        )
-    }
+    unstash name: 'scm'
 
     Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
     if (!generalConfiguration) {
@@ -56,21 +36,11 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.general = generalConfiguration
     }
 
-    if (scmCheckoutResult.GIT_URL) {
-        script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
-        Debuglogger.instance.github.put("URI", scmCheckoutResult.GIT_URL)
-        Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_LOCAL_BRANCH)
-    }
-
-    def isMtaProject = fileExists('mta.yaml')
     def pomFile = 'pom.xml'
 
-    if (isMtaProject) {
+    if (BuildToolEnvironment.instance.isMta()) {
         setupMtaProject(script: script, generalConfiguration: generalConfiguration)
-    } else if (fileExists(pomFile)) {
-
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MAVEN)
-
+    } else if (BuildToolEnvironment.instance.isMaven()) {
         pom = readMavenPom file: pomFile
         readAndUpdateProjectSalt(script, pomFile)
         Analytics.instance.hashProject(pom.groupId + pom.artifactId)
@@ -78,14 +48,11 @@ def call(Map parameters) {
             generalConfiguration.projectName = "${pom.groupId}-${pom.artifactId}"
         }
 
-    } else if (fileExists('package.json')) {
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.NPM)
+    } else if (BuildToolEnvironment.instance.isNpm()) {
         Map packageJson = readJSON file: 'package.json'
         def projectName = packageJson.name
         generalConfiguration.projectName = projectName ?: ''
         Analytics.instance.hashProject(generalConfiguration.projectName)
-    } else {
-        throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
 
     if (!generalConfiguration.projectName) {
@@ -104,19 +71,9 @@ def call(Map parameters) {
     }
     Analytics.instance.buildNumber(env.BUILD_NUMBER)
 
-    Map configWithDefault = loadEffectiveGeneralConfiguration script: script
-    //TODO activate automatic versioning for JS
-    if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
-        artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
-        ReportAggregator.instance.reportAutomaticVersioning()
-    }
     generalConfiguration.gitCommitId = getGitCommitId()
 
     String prefix = generalConfiguration.projectName
-
-    if (Boolean.valueOf(env.ON_K8S)) {
-        initContainersMap script: script
-    }
 
     script.commonPipelineEnvironment.configuration.currentBuildResultLock = "${prefix}/currentBuildResult"
     script.commonPipelineEnvironment.configuration.performanceTestLock = "${prefix}/performanceTest"
@@ -161,4 +118,3 @@ private String getProjectSaltFromPom(String pomfile) {
     }
     return salt
 }
-

@@ -42,8 +42,11 @@ def call(Map parameters) {
 
     if (BuildToolEnvironment.instance.getNpmModules()) {
         script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
-
     }
+
+    // Always run by default, but allow disabling via extension
+    script.commonPipelineEnvironment.configuration.runStage.LINT = true
+
     if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-test', 'ci-frontend-unit-test'])) {
         script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
     }
@@ -61,6 +64,10 @@ def call(Map parameters) {
     }
     if (ConfigurationLoader.stageConfiguration(script, 'checkmarxScan') && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN = true
+    }
+
+    if (ConfigurationLoader.stageConfiguration(script, 'sonarQubeScan') && isProductiveBranch(script: script)) {
+        script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN = true
     }
 
     def projectInterceptorFile = "${s4SdkGlobals.projectExtensionsDirectory}/additionalTools.groovy"
@@ -91,13 +98,14 @@ def call(Map parameters) {
         || script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN
-        || script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS) {
+        || script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS
+        || script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN) {
         script.commonPipelineEnvironment.configuration.runStage.THIRD_PARTY_CHECKS = true
     }
 
     Map productionDeploymentConfiguration = ConfigurationLoader.stageConfiguration(script, 'productionDeployment')
 
-    if ((productionDeploymentConfiguration.cfTargets || productionDeploymentConfiguration.neoTargets) && isProductiveBranch(script: script)) {
+    if ((productionDeploymentConfiguration.cfTargets || productionDeploymentConfiguration.neoTargets || productionDeploymentConfiguration.tmsUpload) && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.PRODUCTION_DEPLOYMENT = true
     }
 

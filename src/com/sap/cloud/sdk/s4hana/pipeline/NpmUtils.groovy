@@ -3,7 +3,7 @@ package com.sap.cloud.sdk.s4hana.pipeline
 class NpmUtils {
     def static renameNpmScript(Script script, String packageJsonPath, String oldName, String newName) {
         Map packageJson = script.readJSON file: packageJsonPath
-        if (packageJson.scripts[oldName]) {
+        if (packageJson?.scripts && packageJson.scripts[oldName]) {
             packageJson.scripts[newName] = packageJson.scripts[oldName]
             packageJson.scripts.remove(oldName)
             script.writeJSON json: packageJson, file: packageJsonPath

@@ -29,7 +29,8 @@ import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assert
 
 @Field Set PARAMETER_KEYS = [
     'jacocoExcludes',
-    'codeCoverageFrontend'
+    'codeCoverageFrontend',
+    'threshold'
 ]
 
 def call(Map parameters = [:]) {
@@ -43,7 +44,8 @@ def call(Map parameters = [:]) {
 
         if (BuildToolEnvironment.instance.isMaven() || BuildToolEnvironment.instance.isMta()) {
             List jacocoExcludes = configuration.jacocoExcludes
-            assertJacocoCodeCoverage(script, jacocoExcludes)
+            Map threshold = configuration.threshold
+            assertJacocoCodeCoverage(script, jacocoExcludes, threshold)
         } else if (BuildToolEnvironment.instance.isNpm()) {
             assertCodeCoverageJsBackend(script)
         }
@@ -130,12 +132,14 @@ private assertCodeCoverageFrontend(Script script, Map codeCoverageFrontend) {
     }
 }
 
-private assertJacocoCodeCoverage(Script script, List jacocoExcludes) {
+private assertJacocoCodeCoverage(Script script, List jacocoExcludes, Map threshold) {
     assertPluginIsActive("jacoco")
     def jacocoExclusionPattern
+    int successCodeCoverage = 70
+    int unstableCodeCoverage = 65
 
-    String successCodeCoverage = '70'
-    String unstableCodeCoverage = '65'
+    successCodeCoverage = (threshold?.successCoverage != null) ? calculateCodeCoverage(threshold.successCoverage, successCodeCoverage, "success code coverage") : successCodeCoverage
+    unstableCodeCoverage = (threshold?.unstableCoverage != null) ? calculateCodeCoverage(threshold.unstableCoverage, unstableCodeCoverage, "unstable code coverage") : unstableCodeCoverage
 
     jacocoExclusionPattern = jacocoExcludes == null ? '' : jacocoExcludes.join(',')
     executeWithLockedCurrentBuildResult(
@@ -151,10 +155,10 @@ private assertJacocoCodeCoverage(Script script, List jacocoExcludes) {
         jacoco execPattern: "${s4SdkGlobals.coverageReports}/**/*.exec",
             exclusionPattern: "${jacocoExclusionPattern}",
             changeBuildStatus: true,
-            maximumLineCoverage: successCodeCoverage,
-            minimumLineCoverage: unstableCodeCoverage
+            maximumLineCoverage: successCodeCoverage.toString(),
+            minimumLineCoverage: unstableCodeCoverage.toString()
 
-        ReportAggregator.instance.reportCodeCoverageCheck(script, unstableCodeCoverage, jacocoExcludes)
+        ReportAggregator.instance.reportCodeCoverageCheck(script, unstableCodeCoverage.toString(), jacocoExcludes)
     }
 }
 
@@ -164,5 +168,15 @@ private visualizeCodeCoverageForJavaScript() {
         coberturaReportFile: "${s4SdkGlobals.coverageReports}/*.xml",
         failNoReports: false, failUnstable: false,
         maxNumberOfBuilds: 0, onlyStable: false, zoomCoverageChart: false)
+}
 
+private int calculateCodeCoverage(int userProvidedCoverage, int defaultCodeCoverage, String message) {
+    int codeCoverage
+    if (userProvidedCoverage > defaultCodeCoverage) {
+        codeCoverage = userProvidedCoverage
+    } else {
+        codeCoverage = defaultCodeCoverage
+        echo("User provided " + message + " value should be greater than default " + message + " value which is " + defaultCodeCoverage)
+    }
+    return codeCoverage
 }

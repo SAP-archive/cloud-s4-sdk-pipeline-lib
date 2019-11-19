@@ -9,7 +9,7 @@ import org.junit.Test
 import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertTrue
 
-class injectQualityListenerDependenciesTest extends BaseCloudSdkTest {
+class InjectQualityListenerDependenciesTest extends BaseCloudSdkTest {
 
     @Before
     void prepareTests() throws Exception {

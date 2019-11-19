@@ -11,6 +11,7 @@ def call(Map parameters = [:]) {
                 productName  : parameters.product,
                 devDep       : false,
                 checkPolicies: true,
+                ignoreNpmLsErrors: true
             ]
 
             if (parameters.projectName) {
@@ -26,7 +27,7 @@ def call(Map parameters = [:]) {
             if (fileExists('whitesource.config.json')) {
                 error(
                     "File whitesource.config.json already exists. Please delete it and only use the file pipeline_config.yml to configure WhiteSource.\n" +
-                    "Check https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#whitesourcescan for more details."
+                        "Check https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#whitesourcescan for more details."
                 )
             }
 

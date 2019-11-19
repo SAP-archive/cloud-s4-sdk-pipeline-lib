@@ -4,13 +4,14 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkServices', stepParameters: parameters) {
         assertPluginIsActive('pipeline-utility-steps')
 
-        Set<String> parameterKeys = ['nonErpDestinations', 'customODataServices']
+        Set<String> parameterKeys = ['nonErpDestinations', 'customODataServices', 'nonErpUrls']
         final Map configuration = parameters.subMap(parameterKeys)
 
         final Set<String> nonErpDestinations = configuration.nonErpDestinations
+        final Set<String> nonErpUrls = configuration.nonErpUrls
         final Set<String> customODataServices = configuration.customODataServices
 
-        checkODataServices(nonErpDestinations, customODataServices)
+        checkODataServices(nonErpDestinations, customODataServices, nonErpUrls)
         checkBapiServices(nonErpDestinations)
     }
 }
@@ -82,7 +83,7 @@ private void checkBapiServices(Set<String> nonErpDestinations) {
     }
 }
 
-private void checkODataServices(Set<String> nonErpDestinations, Set<String> customODataServices) {
+private void checkODataServices(Set<String> nonErpDestinations, Set<String> customODataServices, Set<String> nonErpUrls) {
     final Set<String> allowedServiceNames = []
     List services = downloadServicesList()
     if (services.empty) {
@@ -103,11 +104,13 @@ private void checkODataServices(Set<String> nonErpDestinations, Set<String> cust
 
     final Set<String> usedServiceNames = []
     for (int i = 0; i < reportAsCsvRecords.size(); i++) {
-        // columns: [destination, serviceUrl, entityName, threadName]
-        String usedDestination = reportAsCsvRecords[i][0].replace('\"', '')
-        String usedService = reportAsCsvRecords[i][1].replace('\"', '')
+        // < SDKv3.2.0 columns: [destination, serviceUrl, entityName, threadName]
+        // >= SDKv3.2.0 columns: [serviceUrlHost, servicePath, entityName, threadName]
+        String destinationOrServiceUrl = reportAsCsvRecords[i][0].replace('\"', '')
 
-        if (!nonErpDestinations?.contains(usedDestination)) {
+        String usedService = reportAsCsvRecords[i][1].replace('\"', '')
+        // SDK does not log the scheme of the URI therefore we do not do any further sanity checks and treat Urls the same way as destinations
+        if (!nonErpDestinations?.contains(destinationOrServiceUrl) && !nonErpUrls?.contains(destinationOrServiceUrl)) {
             usedServiceNames.add(usedService.tokenize('/').last())
         }
     }

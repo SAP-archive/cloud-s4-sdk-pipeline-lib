@@ -2,7 +2,7 @@ import com.cloudbees.groovy.cps.NonCPS
 import jenkins.model.*
 
 def call(Map parameters = [:]) {
-    handleStepErrors(stepName: 'abortOldBuilds') {
+    handleStepErrors(stepName: 'abortOldBuilds', stepParameters: parameters) {
         def script = parameters.script;
 
         String jobName = script.JOB_NAME
