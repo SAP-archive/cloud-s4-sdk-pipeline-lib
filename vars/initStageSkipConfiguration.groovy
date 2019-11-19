@@ -42,8 +42,11 @@ def call(Map parameters) {
 
     if (BuildToolEnvironment.instance.getNpmModules()) {
         script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
-
     }
+
+    // Always run by default, but allow disabling via extension
+    script.commonPipelineEnvironment.configuration.runStage.LINT = true
+
     if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-test', 'ci-frontend-unit-test'])) {
         script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
     }
