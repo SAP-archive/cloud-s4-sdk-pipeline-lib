@@ -16,6 +16,8 @@ class Debuglogger {
     Map localExtensions = [:]
     String globalExtensionRepository = null
     Map globalExtensions = [:]
+    String globalExtensionConfigurationFilePath = null
+    String sharedConfigFilePath = null
     Set additionalSharedLibraries = []
     Map failedBuild = [:]
     boolean shareConfidentialInformation
