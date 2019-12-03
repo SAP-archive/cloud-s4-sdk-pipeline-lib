@@ -3,13 +3,21 @@ import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters) {
     def script = parameters.script
+    Map packageJson
+    Map npmScripts
 
     script.commonPipelineEnvironment.configuration.runStage = [:]
 
-    if (BuildToolEnvironment.instance.isNpm()) {
+    if (fileExists('package.json')) {
+        packageJson = readJSON file: 'package.json'
+        npmScripts = packageJson.scripts
 
-        Map packageJson = readJSON file: 'package.json'
-        Map npmScripts = packageJson.scripts
+        if (npmScripts['ci-it-frontend']) {
+            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_INTEGRATION_TESTS = true
+        }
+    }
+
+    if (BuildToolEnvironment.instance.isNpm()) {
 
         if (npmScripts['ci-build']) {
             script.commonPipelineEnvironment.configuration.runStage.BUILD = true
@@ -21,10 +29,6 @@ def call(Map parameters) {
 
         if (npmScripts['ci-integration-test'] || npmScripts['ci-it-backend']) {
             script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
-        }
-
-        if (npmScripts['ci-it-frontend']) {
-            script.commonPipelineEnvironment.configuration.runStage.FRONTEND_INTEGRATION_TESTS = true
         }
 
         // Activate ARCHIVE_REPORT when reporting is available for JS-Pipeline
