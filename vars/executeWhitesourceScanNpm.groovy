@@ -24,6 +24,10 @@ def call(Map parameters = [:]) {
                 }
             }
 
+            if (parameters.productVersion) {
+                whiteSourceConfiguration.productVer = parameters.productVersion
+            }
+
             if (fileExists('whitesource.config.json')) {
                 error(
                     "File whitesource.config.json already exists. Please delete it and only use the file pipeline_config.yml to configure WhiteSource.\n" +
@@ -32,7 +36,6 @@ def call(Map parameters = [:]) {
             }
 
             writeJSON json: JSONObject.fromObject(whiteSourceConfiguration), file: "whitesource.config.json"
-
 
             try {
                 executeNpm(script: script, dockerOptions: DownloadCacheUtils.downloadCacheNetworkParam()) {

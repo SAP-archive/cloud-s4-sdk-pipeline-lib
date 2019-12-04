@@ -25,6 +25,10 @@ def call(Map parameters = [:]) {
                     if(userKey){
                         defines.add("-Dorg.whitesource.userKey=${BashUtils.escape(userKey)}")
                     }
+
+                    if(parameters.productVersion) {
+                        defines.add("-Dorg.whitesource.productVersion=${parameters.productVersion}")
+                    }
                     mavenExecute(
                         script: script,
                         m2Path: s4SdkGlobals.m2Directory,

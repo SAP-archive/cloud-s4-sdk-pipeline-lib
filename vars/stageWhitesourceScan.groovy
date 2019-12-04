@@ -68,6 +68,7 @@ private Map getWhiteSourceArgumentMap(script, Map whitesourceConfiguration) {
     whiteSourceArguments['script'] = script
     whiteSourceArguments['credentialsId'] = whitesourceConfiguration.credentialsId
     whiteSourceArguments['product'] = whitesourceConfiguration.product
+    whiteSourceArguments['productVersion'] = whitesourceConfiguration.staticVersion
 
     if (whitesourceConfiguration.whitesourceUserTokenCredentialsId) {
         whiteSourceArguments['whitesourceUserTokenCredentialsId'] = whitesourceConfiguration.whitesourceUserTokenCredentialsId
