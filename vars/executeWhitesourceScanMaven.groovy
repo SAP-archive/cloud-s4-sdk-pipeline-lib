@@ -9,7 +9,7 @@ def call(Map parameters = [:]) {
 
         try {
             withCredentials([string(credentialsId: parameters.credentialsId, variable: 'orgToken')]) {
-                loadUserKey(parameters.whitesourceUserTokenCredentialsId){ userKey ->
+                loadUserKey(parameters.whitesourceUserTokenCredentialsId) { userKey ->
                     List defines = [
                         "-Dorg.whitesource.orgToken=${BashUtils.escape(orgToken)}",
                         "-Dorg.whitesource.product=${BashUtils.escape(parameters.product)}",
@@ -22,12 +22,13 @@ def call(Map parameters = [:]) {
                         defines.add('-Dorg.whitesource.aggregateModules=true')
                     }
 
-                    if(userKey){
+                    if (userKey) {
                         defines.add("-Dorg.whitesource.userKey=${BashUtils.escape(userKey)}")
                     }
 
-                    if(parameters.productVersion) {
-                        defines.add("-Dorg.whitesource.productVersion=${parameters.productVersion}")
+                    if (parameters.productVersion) {
+                        String productVersion = (parameters.productVersion == true) ? 'current' : parameters.productVersion
+                        defines.add("-Dorg.whitesource.productVersion=$productVersion")
                     }
                     mavenExecute(
                         script: script,
@@ -48,13 +49,12 @@ def call(Map parameters = [:]) {
     }
 }
 
-private loadUserKey(whitesourceUserTokenCredentialsId, body){
-    if(whitesourceUserTokenCredentialsId) {
+private loadUserKey(whitesourceUserTokenCredentialsId, body) {
+    if (whitesourceUserTokenCredentialsId) {
         withCredentials([string(credentialsId: whitesourceUserTokenCredentialsId, variable: 'userKey')]) {
             body(userKey)
         }
-    }
-    else {
+    } else {
         body(null)
     }
 }

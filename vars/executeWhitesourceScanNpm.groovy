@@ -7,10 +7,10 @@ def call(Map parameters = [:]) {
 
         withCredentials([string(credentialsId: parameters.credentialsId, variable: 'orgToken')]) {
             Map whiteSourceConfiguration = [
-                apiKey       : orgToken,
-                productName  : parameters.product,
-                devDep       : false,
-                checkPolicies: true,
+                apiKey           : orgToken,
+                productName      : parameters.product,
+                devDep           : false,
+                checkPolicies    : true,
                 ignoreNpmLsErrors: true
             ]
 
@@ -25,7 +25,7 @@ def call(Map parameters = [:]) {
             }
 
             if (parameters.productVersion) {
-                whiteSourceConfiguration.productVer = parameters.productVersion
+                whiteSourceConfiguration.productVer = (parameters.productVersion == true) ? 'current' : parameters.productVersion
             }
 
             if (fileExists('whitesource.config.json')) {
@@ -50,16 +50,16 @@ def call(Map parameters = [:]) {
     }
 }
 
-private reinstallNodeModulesIfNpmLsFails(){
+private reinstallNodeModulesIfNpmLsFails() {
     try {
         sh 'npm ls'
     }
-    catch (ex){
+    catch (ex) {
         echo "[Warning] npm ls failed. Reinstalling Node Modules"
-        dir('node_modules'){
+        dir('node_modules') {
             deleteDir()
         }
-        if(fileExists('package-lock.json')){
+        if (fileExists('package-lock.json')) {
             sh "rm -f package-lock.json"
         }
         sh 'npm install'
