@@ -1,0 +1,19 @@
+on: push
+name: JFR Tests
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Test
+      run: |
+        git clone https://github.com/piper-validation/cloud-s4-sdk-book.git -b sdk-lib-test-mta test-project
+        cat >test-project/Jenkinsfile <<EOL
+        @Library("s4sdk-pipeline-library@${GITHUB_SHA}") _ 
+        node {
+            deleteDir()
+            sh "git clone --depth 1 https://github.com/SAP/cloud-s4-sdk-pipeline.git pipelines"
+            load "./pipelines/s4sdk-pipeline.groovy"
+        }
+        EOL
+        docker run -v //var/run/docker.sock:/var/run/docker.sock -v $(pwd)/test-project:/workspace -v /tmp -e BRANCH_NAME=master -e CASC_JENKINS_CONFIG=/workspace/jenkins.yml -e HOST=$(hostname) ppiper/jenkinsfile-runner
+
