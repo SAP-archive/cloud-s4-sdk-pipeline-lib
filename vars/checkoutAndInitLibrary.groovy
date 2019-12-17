@@ -10,6 +10,8 @@ def call(Map parameters) {
     def script = parameters.script
 
     Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
+    
+    echo "Hello Actions"
 
     initS4SdkPipelineLibrary script: script, customDefaults: parameters.customDefaults
 
