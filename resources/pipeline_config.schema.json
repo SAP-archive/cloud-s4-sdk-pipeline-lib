@@ -748,6 +748,11 @@
                             "description": "The target platform to which the mtar can be deployed.",
                             "default": "NEO"
                         },
+                        "mtaBuildTool": {
+                            "type": "string",
+                            "description": "Choose which tool is used to build your mta project. The default option is `classic` uses the java based mta builder, which is deprecated. The newer version `cloudMbt` is written in go. For more information refer to https://sap.github.io/cloud-mta-build-tool.",
+                            "default": "classic"
+                        },
                         "applicationName": {
                             "description": "The name of the application which is being built. If the parameter has been provided and no mta.yaml exists, the mta.yaml will be automatically generated using this parameter and the information (name and version) from package.json before the actual build starts.",
                             "type": "string"
