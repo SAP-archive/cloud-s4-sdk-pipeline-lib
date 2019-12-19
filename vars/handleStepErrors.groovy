@@ -8,7 +8,9 @@ def call(Map parameters = [:], body) {
 
 
     if (stepParameters == null || stepName == null || script == null) {
-        error "step handleStepError requires following mandatory parameters: stepParameters, stepName and script"
+        String message = "The parameter "+ stepParameters ? (stepName ? "script" : "stepName") : "stepParameters" + " is null"
+        message += "step handleStepError requires following mandatory parameters: stepParameters, stepName and script"
+        error message
     }
 
     def echoParameters = parameters.get('echoParameters', true)

@@ -79,11 +79,11 @@ checkmarxScan:
   stashes: []
 
 endToEndTests:
-  unstash: ["DEPLOYMENTARTIFACT", "SOURCE", "NODE_MODULES"]
+  unstash: ["SOURCE", "DEPLOYMENTARTIFACT", "NODE_MODULES"]
   stashes: []
 
 artifactDeployment:
-  unstash: ["DEPLOYMENTARTIFACT"]
+  unstash: ["SOURCE", "DEPLOYMENTARTIFACT"]
   stashes: []
 
 productionDeployment:

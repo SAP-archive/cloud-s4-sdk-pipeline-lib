@@ -6,6 +6,6 @@ jobs:
     container:
       image: gradle:jdk8
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v1
     - name: Test
       run: gradle check

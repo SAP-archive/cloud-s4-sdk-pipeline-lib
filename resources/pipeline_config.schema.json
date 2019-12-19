@@ -203,7 +203,10 @@
                             "description": "In case you audited an advisory, and it turns out to be a false positive, you can mark it as audited by adding its id to the auditedAdvisories in the stage configuration. A false positive in this case is when you are confident your application is not affected in any way by the underlying bug or vulnerability.",
                             "type": "array",
                             "items": {
-                                "type": ["integer", "string"]
+                                "type": [
+                                    "integer",
+                                    "string"
+                                ]
                             }
                         }
                     },
@@ -269,7 +272,10 @@
                                 }
                             },
                             "additionalProperties": false,
-                            "required": ["successCoverage", "unstableCoverage"]
+                            "required": [
+                                "successCoverage",
+                                "unstableCoverage"
+                            ]
                         }
                     },
                     "additionalProperties": false
@@ -400,6 +406,10 @@
                     "properties": {
                         "product": {
                             "description": "Name of your product in WhiteSource.",
+                            "type": "string"
+                        },
+                        "staticVersion": {
+                            "description": "Overwrites the respective version in the whitesource UI per scan with the staticVersion. Per default for every new version of a pom/package.json a new project will be created in the whitesource UI. To deactivate the creation of new projects and always have a fixed version for each project in the whitesource UI, configure the staticVersion.",
                             "type": "string"
                         },
                         "credentialsId": {
@@ -737,6 +747,11 @@
                             "type": "string",
                             "description": "The target platform to which the mtar can be deployed.",
                             "default": "NEO"
+                        },
+                        "mtaBuildTool": {
+                            "type": "string",
+                            "description": "Choose which tool is used to build your mta project. The default option is `classic` uses the java based mta builder, which is deprecated. The newer version `cloudMbt` is written in go. For more information refer to https://sap.github.io/cloud-mta-build-tool.",
+                            "default": "classic"
                         },
                         "applicationName": {
                             "description": "The name of the application which is being built. If the parameter has been provided and no mta.yaml exists, the mta.yaml will be automatically generated using this parameter and the information (name and version) from package.json before the actual build starts.",
