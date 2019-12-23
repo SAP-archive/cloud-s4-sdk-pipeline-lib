@@ -24,8 +24,9 @@ private void executeQualityChecks(def script, String basePath, Map configuration
         checkResilience script: script
         ReportAggregator.instance.reportResilienceCheck()
 
-        checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
-        ReportAggregator.instance.reportServicesCheck(configuration.nonErpDestinations, configuration.customODataServices)
+        //Fixme: Disabled API checks as it does not work with sdk v3
+        //checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
+        //ReportAggregator.instance.reportServicesCheck(configuration.nonErpDestinations, configuration.customODataServices)
     }
 
     checkCodeCoverage(
