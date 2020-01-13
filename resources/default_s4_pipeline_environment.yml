@@ -80,7 +80,7 @@ steps:
 
   mtaBuild:
     buildTarget: "CF"
-    mtaBuildTool: "classic"
+    mtaBuildTool: "cloudMbt"
 
   checkCodeCoverage:
     codeCoverageFrontend:
