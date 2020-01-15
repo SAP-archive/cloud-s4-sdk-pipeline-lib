@@ -24,7 +24,11 @@ private void executeFrontendIntegrationTest(def script, Map stageConfiguration) 
         executeNpm(script: script, dockerImage: stageConfiguration?.dockerImage, dockerOptions: dockerOptions) {
             sh "Xvfb -ac :99 -screen 0 1280x1024x16 &"
             withEnv(['DISPLAY=:99']) {
-                sh "npm run ci-it-frontend"
+                runOverNpmModules(script: script, npmScripts: ['ci-it-frontend']) { basePath ->
+                    dir(basePath) {
+                        sh "npm run ci-it-frontend"
+                    }
+                }
             }
         }
         ReportAggregator.instance.reportTestExecution(QualityCheck.FrontendIntegrationTests)

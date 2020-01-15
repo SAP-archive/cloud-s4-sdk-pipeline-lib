@@ -11,23 +11,27 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
         Map configuration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        if (BuildToolEnvironment.instance.isNpm()) {
-            executeJsUnitTest(script)
-        } else {
+        if (!BuildToolEnvironment.instance.isNpm()) {
             runOverModules(script: script, moduleType: 'java') { basePath ->
                 executeJavaUnitTest(script, basePath, configuration)
             }
         }
+
+        runOverNpmModules(script: script, npmScripts: ['ci-backend-unit-test']) { basePath ->
+            executeJsUnitTest(script, basePath)
+        }
     }
 }
 
-private void executeJsUnitTest(def script) {
+private void executeJsUnitTest(def script, String basePath) {
 
     String name = 'Backend Unit Tests'
     String reportLocationPattern = 's4hana_pipeline/reports/backend-unit/**'
     collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: reportLocationPattern) {
         executeNpm(script: script, dockerOptions: []) {
-            sh "npm run ci-backend-unit-test"
+            dir(basePath) {
+                sh "npm run ci-backend-unit-test"
+            }
         }
     }
 }
@@ -40,7 +44,7 @@ private void executeJavaUnitTest(def script, String basePath, Map configuration)
     String reportLocationPattern = PathUtils.normalize(unitTestsPath, "/target/surefire-reports/TEST-*.xml")
 
     //Remove ./ in path as it does not work with surefire 3.0.0-M1
-    if(reportLocationPattern.startsWith("./")){
+    if (reportLocationPattern.startsWith("./")) {
         reportLocationPattern = reportLocationPattern.substring(2)
     }
 
@@ -67,7 +71,7 @@ private void executeJavaUnitTest(def script, String basePath, Map configuration)
         "${unitTestsPath}/target/jacoco.exec",
         "${unitTestsPath}/target/coverage-reports/jacoco.exec",
         "${unitTestsPath}/target/coverage-reports/jacoco-ut.exec"
-    ], targetFolder:basePath, targetFile: 'unit-tests.exec'
+    ], targetFolder: basePath, targetFile: 'unit-tests.exec'
 
     if (BuildToolEnvironment.instance.isMta()) {
         sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp $basePath/s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")

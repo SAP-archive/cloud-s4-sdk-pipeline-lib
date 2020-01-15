@@ -29,7 +29,7 @@ build:
       includes: "**/src/main/resources/edmx/**, db/src/gen/**"
 
 unitTests:
-  unstash: ["SOURCE", "M2", "TARGET"]
+  unstash: ["SOURCE", "M2", "TARGET", "NODE_MODULES"]
   stashes:
     - name: "REPORTS"
       merge: true
