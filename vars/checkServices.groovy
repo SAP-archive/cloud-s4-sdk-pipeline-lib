@@ -107,11 +107,19 @@ private void checkODataServices(Set<String> nonErpDestinations, Set<String> cust
         // < SDKv3.2.0 columns: [destination, serviceUrl, entityName, threadName]
         // >= SDKv3.2.0 columns: [serviceUrlHost, servicePath, entityName, threadName]
         String destinationOrServiceUrl = reportAsCsvRecords[i][0].replace('\"', '')
-
         String usedService = reportAsCsvRecords[i][1].replace('\"', '')
+        String entityName = reportAsCsvRecords[i][2].replace('\"', '')
+
         // SDK does not log the scheme of the URI therefore we do not do any further sanity checks and treat Urls the same way as destinations
-        if (!nonErpDestinations?.contains(destinationOrServiceUrl) && !nonErpUrls?.contains(destinationOrServiceUrl)) {
-            usedServiceNames.add(usedService.tokenize('/').last())
+        if (!nonErpDestinations?.contains(destinationOrServiceUrl) && !nonErpUrls?.any { nonErpUrl -> destinationOrServiceUrl.startsWith(nonErpUrl)} ) {
+            String[] tokenizedService = usedService.tokenize('/')
+            // Until SDKv3.9.0 the service url contains the entity name
+            if(tokenizedService.last() == entityName){
+                usedServiceNames.add(tokenizedService[tokenizedService.length-2])
+            }
+            else {
+                usedServiceNames.add(tokenizedService.last())
+            }
         }
     }
 

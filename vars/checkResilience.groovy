@@ -22,10 +22,10 @@ List<String> extractViolations(String reportFile) {
         // by arquillian are named differently.
         // line.threadName == "main" is an indicator for the usage of the vdm in test code and thus should be allowed.
         // [][] = [line][column]; report format: [uri, threadName]
-        String threadName = reportAsCsvRecords[i][1].trim().replace('\"', '')
+        String threadNameOrAnnotations = reportAsCsvRecords[i][1].trim().replace('\"', '')
         String uri = reportAsCsvRecords[i][0].trim().replace('\"', '')
-        if (!((threadName =~ /^hystrix-.+-\d+$/) || threadName == "main" || threadName =~ /^ForkJoinPool\..+$/)) {
-            violations.add("   - HTTP access to '$uri' outside of hystrix context (thread was '$threadName')")
+        if (!(threadNameOrAnnotations =~ /^hystrix-.+-\d+$/ || threadNameOrAnnotations == "main" || threadNameOrAnnotations =~ /^ForkJoinPool\..+$/ || threadNameOrAnnotations =~ /^.*\([\w,\s]*RESILIENCE[\w,\s]*\).*$/)) {
+            violations.add("   - HTTP access to '$uri' outside of a resillient context (thread or annotation were '$threadNameOrAnnotations')")
         }
     }
     return violations

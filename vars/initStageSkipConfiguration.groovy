@@ -8,30 +8,31 @@ def call(Map parameters) {
 
     script.commonPipelineEnvironment.configuration.runStage = [:]
 
-    if (fileExists('package.json')) {
-        packageJson = readJSON file: 'package.json'
-        npmScripts = packageJson.scripts
+    // Check for test scripts in all npm package.json files in the project, as they don't have to be implemented in the top-level file
+    if (BuildToolEnvironment.instance.npmModules) {
 
-        if (npmScripts['ci-it-frontend']) {
+        if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-it-frontend'])) {
             script.commonPipelineEnvironment.configuration.runStage.FRONTEND_INTEGRATION_TESTS = true
+        }
+        if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-backend-unit-test'])) {
+            script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
+        }
+
+        if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-integration-test', 'ci-it-backend'])) {
+            script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
         }
     }
 
     if (BuildToolEnvironment.instance.isNpm()) {
+        // Check for "build" only in top-level package json, as one repo typically contains one deployable unit
+        packageJson = readJSON file: 'package.json'
+        npmScripts = packageJson.scripts
 
         if (npmScripts['ci-build']) {
             script.commonPipelineEnvironment.configuration.runStage.BUILD = true
         }
 
-        if (npmScripts['ci-backend-unit-test']) {
-            script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
-        }
-
-        if (npmScripts['ci-integration-test'] || npmScripts['ci-it-backend']) {
-            script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
-        }
-
-        // Activate ARCHIVE_REPORT when reporting is available for JS-Pipeline
+        //TODO Activate ARCHIVE_REPORT when reporting is available for JS-Pipeline
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = false
 
     } else {

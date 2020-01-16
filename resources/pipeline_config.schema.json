@@ -750,8 +750,8 @@
                         },
                         "mtaBuildTool": {
                             "type": "string",
-                            "description": "Choose which tool is used to build your mta project. The default option is `classic` uses the java based mta builder, which is deprecated. The newer version `cloudMbt` is written in go. For more information refer to https://sap.github.io/cloud-mta-build-tool.",
-                            "default": "classic"
+                            "description": "Choose which tool is used to build your mta project. The default option is `cloudMbt` which is not backwards compatible with the `classic` tool. For more information on migrating from `classic` to `cloudMbt`, please refer to https://sap.github.io/cloud-mta-build-tool/migration/.",
+                            "default": "cloudMbt"
                         },
                         "applicationName": {
                             "description": "The name of the application which is being built. If the parameter has been provided and no mta.yaml exists, the mta.yaml will be automatically generated using this parameter and the information (name and version) from package.json before the actual build starts.",

@@ -8,13 +8,11 @@ def call(Map parameters = [:]) {
     runAsStage(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        runOverModules(script: script, moduleType: "java") { String basePath ->
-            executeQualityChecks(script, basePath, stageConfiguration)
-        }
+        executeQualityChecks(script, stageConfiguration)
     }
 }
 
-private void executeQualityChecks(def script, String basePath, Map configuration) {
+private void executeQualityChecks(def script, Map configuration) {
 
     if (BuildToolEnvironment.instance.isMaven() || BuildToolEnvironment.instance.isMta()) {
         checkDeploymentDescriptors script: script
@@ -24,6 +22,7 @@ private void executeQualityChecks(def script, String basePath, Map configuration
         checkResilience script: script
         ReportAggregator.instance.reportResilienceCheck()
 
+
         checkServices script: script, nonErpDestinations: configuration.nonErpDestinations, customODataServices: configuration.customODataServices
         ReportAggregator.instance.reportServicesCheck(configuration.nonErpDestinations, configuration.customODataServices)
     }
@@ -32,7 +31,6 @@ private void executeQualityChecks(def script, String basePath, Map configuration
         script: script,
         jacocoExcludes: configuration.jacocoExcludes,
         threshold: configuration.threshold,
-        codeCoverageFrontend: configuration.codeCoverageFrontend,
-        basePath: basePath
+        codeCoverageFrontend: configuration.codeCoverageFrontend
     )
 }

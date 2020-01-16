@@ -46,7 +46,10 @@ def call(Map parameters = [:]) {
             List jacocoExcludes = configuration.jacocoExcludes
             Map threshold = configuration.threshold
             assertJacocoCodeCoverage(script, jacocoExcludes, threshold)
-        } else if (BuildToolEnvironment.instance.isNpm()) {
+        }
+
+        // No else-if branch because we want to get in here if we have a js/mta project
+        if (BuildToolEnvironment.instance.isNpm() || BuildToolEnvironment.instance.isMta()) {
             assertCodeCoverageJsBackend(script)
         }
 
@@ -62,38 +65,46 @@ def call(Map parameters = [:]) {
 }
 
 private assertCodeCoverageJsBackend(Script script) {
-    String backendUnitTestCoberturaReport = "${s4SdkGlobals.coverageReports}/backend-unit/cobertura-coverage.xml"
-    String backendIntegrationTestCoberturaReport = "${s4SdkGlobals.coverageReports}/backend-integration/cobertura-coverage.xml"
+    List unitTestCoverageFiles = script.findFiles(glob: "**/backend-unit/cobertura-coverage.xml")
+    List integrationTestCoverageFiles = script.findFiles(glob: "**/backend-integration/cobertura-coverage.xml")
 
-    if (!fileExists(backendUnitTestCoberturaReport) || !fileExists(backendIntegrationTestCoberturaReport)) {
-        error "Could not determine code coverage. " +
+    if (unitTestCoverageFiles || integrationTestCoverageFiles) {
+        // The cobertura plugin can only handle multiple files if they are in a common directory. Therefore, the reports are copied to a single directory.
+        for (int i = 0; i < unitTestCoverageFiles.size(); i++) {
+            sh "cp ${unitTestCoverageFiles[i]} ${s4SdkGlobals.coverageReports}/backend-unit-coverage-${i}.xml"
+        }
+
+        for (int i = 0; i < integrationTestCoverageFiles.size(); i++) {
+            sh "cp ${integrationTestCoverageFiles[i]} ${s4SdkGlobals.coverageReports}/backend-integration-coverage-${i}.xml"
+        }
+
+        String successBoundary = '70'
+        String failureBoundary = '65'
+        String unstableBoundary = '70'
+
+        executeWithLockedCurrentBuildResult(
+            script: script,
+            errorStatus: 'FAILURE',
+            errorHandler: script.buildFailureReason.setFailureReason,
+            errorHandlerParameter: 'Check Code Coverage',
+            errorMessage: "Please examine Code Coverage results."
+        ) {
+            assertPluginIsActive("cobertura")
+            cobertura(autoUpdateHealth: false, autoUpdateStability: false,
+                coberturaReportFile: "${s4SdkGlobals.coverageReports}/*.xml",
+                failNoReports: false, failUnstable: false,
+                lineCoverageTargets: "$successBoundary, $failureBoundary, $unstableBoundary",
+                maxNumberOfBuilds: 0, onlyStable: false, zoomCoverageChart: false)
+        }
+    } else {
+        String message = "Could not determine code coverage for JavaScript. " +
             "Please ensure the reports are generated as in cobertura format in the files `${s4SdkGlobals.coverageReports}/backend-unit/cobertura-coverage.xml`" +
             "and `${s4SdkGlobals.coverageReports}/backend-integration/cobertura-coverage.xml`. " +
             "If this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup."
-    }
-
-
-    // The cobertura plugin can only handle multiple files if they are in a common directory. Therefore the reports are copied to a single directory
-    sh "cp $backendUnitTestCoberturaReport ${s4SdkGlobals.coverageReports}/backend-unit-coverage.xml"
-    sh "cp $backendIntegrationTestCoberturaReport ${s4SdkGlobals.coverageReports}/backend-integration-coverage.xml"
-
-    String successBoundary = '70'
-    String failureBoundary = '65'
-    String unstableBoundary = '70'
-
-    executeWithLockedCurrentBuildResult(
-        script: script,
-        errorStatus: 'FAILURE',
-        errorHandler: script.buildFailureReason.setFailureReason,
-        errorHandlerParameter: 'Check Code Coverage',
-        errorMessage: "Please examine Code Coverage results."
-    ) {
-        assertPluginIsActive("cobertura")
-        cobertura(autoUpdateHealth: false, autoUpdateStability: false,
-            coberturaReportFile: "${s4SdkGlobals.coverageReports}/*.xml",
-            failNoReports: false, failUnstable: false,
-            lineCoverageTargets: "$successBoundary, $failureBoundary, $unstableBoundary",
-            maxNumberOfBuilds: 0, onlyStable: false, zoomCoverageChart: false)
+        echo message
+        assertPluginIsActive('badge')
+        addBadge(icon: "warning.gif", text: message)
+        createSummary(icon: "warning.gif", text: message)
     }
 }
 

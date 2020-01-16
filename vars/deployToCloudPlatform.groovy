@@ -58,7 +58,7 @@ def call(Map parameters = [:]) {
                                 echo "Modifying ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor}. Adding credential values from Jenkins."
                                 sh "cp ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor} ${cloudFoundryDeploymentParameters.mtaExtensionDescriptor}.original"
 
-                                Map mtaExtensionCredentilas = target.mtaExtensionCredentials
+                                Map matExtensionCredentials = target.mtaExtensionCredentials
 
                                 String fileContent = ''
                                 Map binding = [:]
@@ -69,7 +69,7 @@ def call(Map parameters = [:]) {
                                     error("Unable to read mta extension file ${target.mtaExtensionDescriptor}. If this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup.")
                                 }
 
-                                mtaExtensionCredentilas.each { key, credentialsId ->
+                                matExtensionCredentials.each { key, credentialsId ->
                                     withCredentials([string(credentialsId: credentialsId, variable: 'mtaExtensionCredential')]) {
                                         fileContent = fileContent.replaceFirst('<%= ' + key.toString() + ' %>', mtaExtensionCredential.toString())
                                     }
@@ -78,7 +78,7 @@ def call(Map parameters = [:]) {
                                 try {
                                     writeFile file: target.mtaExtensionDescriptor, text: fileContent
                                 } catch (Exception e) {
-                                    error("Unable to write credentials values to the mta extension file ${target.mtaExtensionDescriptor}\n. \n Kindly refer to the manual at https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment. \nIf this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup.")
+                                    error("Unable to write credentials values to the mta extension file ${target.mtaExtensionDescriptor}\n. \n Please refer to the manual at https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#productiondeployment. \nIf this should not happen, please open an issue at https://github.com/sap/cloud-s4-sdk-pipeline/issues and describe your project setup.")
                                 }
                             }
                         }
