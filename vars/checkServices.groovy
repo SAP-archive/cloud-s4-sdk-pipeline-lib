@@ -111,7 +111,7 @@ private void checkODataServices(Set<String> nonErpDestinations, Set<String> cust
         String entityName = reportAsCsvRecords[i][2].replace('\"', '')
 
         // SDK does not log the scheme of the URI therefore we do not do any further sanity checks and treat Urls the same way as destinations
-        if (!nonErpDestinations?.contains(destinationOrServiceUrl) && !nonErpUrls?.contains(destinationOrServiceUrl)) {
+        if (!nonErpDestinations?.contains(destinationOrServiceUrl) && !nonErpUrls?.any { nonErpUrl -> destinationOrServiceUrl.startsWith(nonErpUrl)} ) {
             String[] tokenizedService = usedService.tokenize('/')
             // Until SDKv3.9.0 the service url contains the entity name
             if(tokenizedService.last() == entityName){
