@@ -17,10 +17,11 @@ def call(Map parameters) {
         ReportAggregator.instance.reportVersionControlUsed('Git')
     }
 
+    if (!script.commonPipelineEnvironment.configuration.general) {
+        script.commonPipelineEnvironment.configuration.general = [:]
+    }
+
     if (scmCheckoutResult.GIT_URL) {
-        if (!script.commonPipelineEnvironment.configuration.general) {
-            script.commonPipelineEnvironment.configuration.general = [:]
-        }
         script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
         Debuglogger.instance.github.put("URI", scmCheckoutResult.GIT_URL)
         if (scmCheckoutResult.GIT_LOCAL_BRANCH) {
