@@ -35,7 +35,6 @@ private void executeSonarQubeChecks(def script, List pathList, Map configuration
     sonarProperties.add(projectKey)
     sonarExecuteScan([
         script     : script,
-        dockerImage: 'ppiper/node-browsers',
         instance   : configuration.instance,
         options    : sonarProperties
     ])

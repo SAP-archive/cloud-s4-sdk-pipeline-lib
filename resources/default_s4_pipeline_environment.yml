@@ -90,6 +90,9 @@ steps:
   tmsUpload:
     namedUser: "CLOUD SDK PIPELINE"
 
+  sonarExecuteScan:
+    dockerImage: 'ppiper/node-browsers'
+
 #Stage Specific Configurations
 stages:
   backendIntegrationTests:
