@@ -22,14 +22,12 @@ import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assert
 // When setting Success and Unstable to the same value Cobertura will:
 // Succeed on >= SuccessCodeCoverage, be unstable on < SuccessCodeCoverage and fail on < FailureCodeCoverage
 //
-// For the frontend the code coverage is configurable because we need no guarantees for further checks.
-// Furthermore, the frontend could also be tested in the end to end tests.
 
-@Field String STEP_NAME = 'checkCodeCoverage'
+
+@Field String STEP_NAME = 'checkBackendCodeCoverage'
 
 @Field Set PARAMETER_KEYS = [
     'jacocoExcludes',
-    'codeCoverageFrontend',
     'threshold'
 ]
 
@@ -51,15 +49,6 @@ def call(Map parameters = [:]) {
         // No else-if branch because we want to get in here if we have a js/mta project
         if (BuildToolEnvironment.instance.isNpm() || BuildToolEnvironment.instance.isMta()) {
             assertCodeCoverageJsBackend(script)
-        }
-
-        Map codeCoverageFrontend = configuration.codeCoverageFrontend
-        assertCodeCoverageFrontend(script, codeCoverageFrontend)
-
-        //Collect all coverage reports from backend and frontend in the cobertura format
-        List coverageReports = findFiles(glob: "${s4SdkGlobals.coverageReports}/*.xml")
-        if (coverageReports.size() > 0) {
-            visualizeCodeCoverageForJavaScript()
         }
     }
 }
@@ -108,41 +97,6 @@ private assertCodeCoverageJsBackend(Script script) {
     }
 }
 
-private assertCodeCoverageFrontend(Script script, Map codeCoverageFrontend) {
-    runOverModules(script: script, moduleType: 'html5') { basePath ->
-        String coverageReportPath = Paths.get(s4SdkGlobals.coverageReports, 'frontend-unit', basePath, 'cobertura.frontend.unit.xml').normalize()
-        if (fileExists(coverageReportPath)) {
-            // The cobertura plugin can only handle multiple files if they are in a common directory. Therefore the reports are copied to a single directory
-            String moduleName = Paths.get("./").getFileName().toString()
-            if (moduleName == ".") {
-                moduleName = 'root'
-            }
-            sh "cp ${coverageReportPath} ${s4SdkGlobals.coverageReports}/${moduleName}.cobertura.frontend.unit.xml"
-
-            String successBoundary = codeCoverageFrontend.unstable
-            String failureBoundary = codeCoverageFrontend.failing
-            String unstableBoundary = codeCoverageFrontend.unstable
-
-            executeWithLockedCurrentBuildResult(
-                script: script,
-                errorStatus: 'FAILURE',
-                errorHandler: script.buildFailureReason.setFailureReason,
-                errorHandlerParameter: 'Check Code Coverage',
-                errorMessage: "Please examine Code Coverage results."
-            ) {
-                assertPluginIsActive("cobertura")
-                cobertura(autoUpdateHealth: false, autoUpdateStability: false,
-                    coberturaReportFile: "${s4SdkGlobals.coverageReports}/*.cobertura.frontend.unit.xml",
-                    failNoReports: false, failUnstable: false,
-                    lineCoverageTargets: "$successBoundary, $failureBoundary, $unstableBoundary",
-                    maxNumberOfBuilds: 0, onlyStable: false, zoomCoverageChart: false)
-            }
-        } else {
-            echo "[Warning] No code coverage file named cobertura.frontend.unit.xml found for frontend unit tests in path $basePath"
-        }
-    }
-}
-
 private assertJacocoCodeCoverage(Script script, List jacocoExcludes, Map threshold) {
     assertPluginIsActive("jacoco")
     def jacocoExclusionPattern
@@ -171,14 +125,6 @@ private assertJacocoCodeCoverage(Script script, List jacocoExcludes, Map thresho
 
         ReportAggregator.instance.reportCodeCoverageCheck(script, unstableCodeCoverage.toString(), jacocoExcludes)
     }
-}
-
-private visualizeCodeCoverageForJavaScript() {
-    assertPluginIsActive("cobertura")
-    cobertura(autoUpdateHealth: false, autoUpdateStability: false,
-        coberturaReportFile: "${s4SdkGlobals.coverageReports}/*.xml",
-        failNoReports: false, failUnstable: false,
-        maxNumberOfBuilds: 0, onlyStable: false, zoomCoverageChart: false)
 }
 
 private int calculateCodeCoverage(int userProvidedCoverage, int defaultCodeCoverage, String message) {

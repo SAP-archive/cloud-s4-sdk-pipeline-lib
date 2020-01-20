@@ -276,6 +276,15 @@
                                 "successCoverage",
                                 "unstableCoverage"
                             ]
+                        },
+                        "disabledChecks": {
+                            "description": "A list of checks which should not be executed. Possible values are: checkDeploymentDescriptors (Check for insecure options, such as ALLOW_MOCKED_AUTH_HEADER in deployment descriptors), checkResilience(Check that application is resilient to faults in the network), checkServices (Check that only official APIs are used), checkFrontendCodeCoverage (Ensures high frontend code coverage), checkBackendCodeCoverage (Ensures high backend code coverage)",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["checkDeploymentDescriptors", "checkResilience", "checkServices", "checkFrontendCodeCoverage", "checkBackendCodeCoverage"]
+                            },
+                            "default": []
                         }
                     },
                     "additionalProperties": false

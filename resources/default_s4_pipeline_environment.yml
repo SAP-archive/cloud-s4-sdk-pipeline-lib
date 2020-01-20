@@ -82,7 +82,7 @@ steps:
     buildTarget: "CF"
     mtaBuildTool: "cloudMbt"
 
-  checkCodeCoverage:
+  checkFrontendCodeCoverage:
     codeCoverageFrontend:
       unstable: 0
       failing: 0
@@ -112,3 +112,6 @@ stages:
   artifactDeployment:
     nexus:
       version: nexus3
+
+  s4SdkQualityChecks:
+    disabledChecks: []
