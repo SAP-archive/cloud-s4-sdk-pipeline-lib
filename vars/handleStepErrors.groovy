@@ -4,7 +4,7 @@ import com.sap.piper.ConfigurationLoader
 def call(Map parameters = [:], body) {
     def stepParameters = parameters.stepParameters //mandatory
     def stepName = parameters.stepName //mandatory
-    Script script = stepParameters.script //mandatory
+    Script script = stepParameters?.script //mandatory
 
 
     if (stepParameters == null || stepName == null || script == null) {
@@ -33,10 +33,6 @@ def call(Map parameters = [:], body) {
                 script.currentBuild.result = 'UNSTABLE'
             }
             List unstableSteps = commonPipelineEnvironment?.getValue('unstableSteps') ?: []
-            if(!unstableSteps) {
-                unstableSteps = []
-            }
-
             // add information about unstable steps to pipeline environment
             // this helps to bring this information to users in a consolidated manner inside a pipeline
             unstableSteps.add(stepName)
@@ -59,7 +55,7 @@ def call(Map parameters = [:], body) {
 private displayErrorMessage(stepName, stepParameters, error, echoParameters) {
     def errorMessage= """
 ----------------------------------------------------------
-    ERROR OCCURRED IN LIBRARY STEP: ${stepName}           
+    ERROR OCCURRED IN LIBRARY STEP: ${stepName}
 ----------------------------------------------------------
 
 Error Details:
