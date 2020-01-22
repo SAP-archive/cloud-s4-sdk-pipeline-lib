@@ -94,5 +94,6 @@ def call(Map parameters) {
         ReportAggregator.instance.reportAutomaticVersioning()
     }
 
-    stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'scm'
+    stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
+    script.commonPipelineEnvironment.configuration.s4SdkStashConfiguration = [ initS4sdkPipeline: [ unstash : ["INIT"]]]
 }

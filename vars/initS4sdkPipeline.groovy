@@ -28,8 +28,6 @@ def call(Map parameters) {
         Debuglogger.instance.environment.put("docker_image", docker_image)
     }
 
-    unstash name: 'scm'
-
     Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
     if (!generalConfiguration) {
         generalConfiguration = [:]
