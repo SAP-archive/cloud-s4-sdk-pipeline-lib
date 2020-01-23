@@ -6,21 +6,20 @@ def call(Map parameters = [:], body) {
     def stepName = parameters.stepName //mandatory
     Script script = stepParameters?.script //mandatory
 
-
     if (stepParameters == null || stepName == null || script == null) {
         String message = "The parameter "+ stepParameters ? (stepName ? "script" : "stepName") : "stepParameters" + " is null"
         message += "step handleStepError requires following mandatory parameters: stepParameters, stepName and script"
         error message
     }
 
-    def echoParameters = parameters.get('echoParameters', true)
-    def commonPipelineEnvironment = script.commonPipelineEnvironment
-    List mandatoryStages = ConfigurationLoader.generalConfiguration(script)?.get('mandatoryStages') ?: []
-
     try {
         echo "--- BEGIN LIBRARY STEP: ${stepName}.groovy ---"
         body()
     } catch (Throwable err) {
+        def echoParameters = parameters.get('echoParameters', true)
+        def commonPipelineEnvironment = script.commonPipelineEnvironment
+        List mandatoryStages = ConfigurationLoader.generalConfiguration(script)?.get('mandatoryStages') ?: []
+
         Debuglogger.instance.failedBuild.put("stage", stepName)
         Debuglogger.instance.failedBuild.put("reason", err)
         Debuglogger.instance.failedBuild.put("stack_trace", err.getStackTrace())
