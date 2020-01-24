@@ -62,9 +62,9 @@ def warnAboutDisabledChecks(List disabledChecks) {
         """
 <h2>Some checks in the stage Quality Checks are disabled</h2>
 <p>The following checks are currently disabled in the pipeline:</p>
-${disabledChecks.collect({ each -> "<p>$each</p>" }).join("")}
+<ul>${disabledChecks.collect({ each -> "<li>$each</li>" }).join("")}</ul>
 <p>Those quality checks support you to ensure qualities that are necessary in cloud-native environment.</p>
-<p>To learn how to enable these checks, please consult the <a href="https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#s4sdkqualitychecks">documentation</a></p>
+<p>To learn how to enable these checks, please consult the <a href="https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#s4sdkqualitychecks">documentation</a>.</p>
 """
 
     createSummary(icon: "warning.gif", text: html)
