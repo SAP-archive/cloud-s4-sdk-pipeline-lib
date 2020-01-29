@@ -89,3 +89,7 @@ artifactDeployment:
 productionDeployment:
   unstash: ["DEPLOYMENTARTIFACT", "SOURCE", "NODE_MODULES"]
   stashes: []
+
+postPipelineHook:
+  unstash: ["SOURCE"]
+  stashes: []

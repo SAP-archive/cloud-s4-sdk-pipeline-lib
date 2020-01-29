@@ -122,6 +122,10 @@ def call(Map parameters) {
     if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.runStage.SEND_NOTIFICATION = true
     }
+
+    if (ConfigurationLoader.stageConfiguration(script, 'postPipelineHook')) {
+        script.commonPipelineEnvironment.configuration.runStage.POST_PIPELINE_HOOK = true
+    }
 }
 
 private static boolean endToEndTestsShouldRun(script) {

@@ -76,8 +76,8 @@ additionalTools:
   stashes: []
 
 sonarQubeScan:
-    unstash: ['SOURCE', 'M2', 'NODE_MODULES', 'REPORTS', 'TARGET']
-    stashes: []
+  unstash: ['SOURCE', 'M2', 'NODE_MODULES', 'REPORTS', 'TARGET']
+  stashes: []
 
 fortifyScan:
   unstash: ["SOURCE", "M2", "TARGET"]
@@ -117,4 +117,8 @@ artifactDeployment:
 
 productionDeployment:
   unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
+  stashes: []
+
+postPipelineHook:
+  unstash: ["SOURCE"]
   stashes: []
