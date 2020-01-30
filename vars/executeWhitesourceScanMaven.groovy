@@ -34,7 +34,7 @@ def call(Map parameters = [:]) {
                         script: script,
                         m2Path: s4SdkGlobals.m2Directory,
                         pomPath: pomPath,
-                        goals: 'org.whitesource:whitesource-maven-plugin:update',
+                        goals: 'org.whitesource:whitesource-maven-plugin:19.5.1:update',
                         defines: defines.join(' ')
                     )
                 }

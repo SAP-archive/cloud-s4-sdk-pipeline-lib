@@ -567,7 +567,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/mta-archive-builder"
+                            "default": "ppiper/mta-archive-builder:v1"
                         }
                     }
                 },
@@ -577,7 +577,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/cf-cli"
+                            "default": "ppiper/cf-cli:v2"
                         },
                         "smokeTestStatusCode": {
                             "description": "Expected return code for smoke test success.",
@@ -599,7 +599,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/neo-cli"
+                            "default": "ppiper/neo-cli:v2"
                         },
                         "neo": {
                             "description": "The map for neo.",
@@ -801,7 +801,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/cf-cli"
+                            "default": "ppiper/cf-cli:v2"
                         }
                     }
                 }
