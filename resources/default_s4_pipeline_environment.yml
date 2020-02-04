@@ -32,7 +32,7 @@ steps:
     dockerOptions: ""
 
   executeNpm:
-    dockerImage: ppiper/node-browsers:v2
+    dockerImage: ppiper/node-browsers:v3
     sapNpmRegistry: "https://npm.sap.com"
 
   executeGradle:
