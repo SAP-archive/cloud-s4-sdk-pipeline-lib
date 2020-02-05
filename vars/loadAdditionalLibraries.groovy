@@ -1,4 +1,4 @@
-import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
+import com.sap.piper.DebugReport
 
 def call(Map parameters) {
     def script = parameters.script
@@ -22,6 +22,6 @@ private loadLibrariesFromFile(String filename, String loadedByExtension) {
             additionalLibraries.add("${libName} | ${branch} | ${loadedByExtension}")
             library "${libName}@${branch}"
         }
-        Debuglogger.instance.additionalSharedLibraries.addAll(additionalLibraries)
+        DebugReport.instance.additionalSharedLibraries.addAll(additionalLibraries)
     }
 }

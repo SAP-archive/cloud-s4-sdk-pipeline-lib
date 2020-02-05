@@ -2,8 +2,8 @@ import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
-import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
-import com.sap.cloud.sdk.s4hana.pipeline.EnvironmentUtils
+
+import com.sap.piper.DebugReport
 import com.sap.piper.MapUtils
 
 def call(Map parameters) {
@@ -23,13 +23,9 @@ def call(Map parameters) {
 
     if (scmCheckoutResult.GIT_URL) {
         script.commonPipelineEnvironment.configuration.general.gitUrl = scmCheckoutResult.GIT_URL
-        Debuglogger.instance.github.put("URI", scmCheckoutResult.GIT_URL)
-        if (scmCheckoutResult.GIT_LOCAL_BRANCH) {
-            Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_LOCAL_BRANCH)
-        } else {
-            Debuglogger.instance.github.put("branch", scmCheckoutResult.GIT_BRANCH)
-        }
     }
+
+    DebugReport.instance.setGitRepoInfo(scmCheckoutResult)
 
     Analytics.instance.initAnalytics(script)
 
@@ -62,7 +58,7 @@ def call(Map parameters) {
 
         // The second parameter takes precedence, so shared config can be overridden by the project config
         script.commonPipelineEnvironment.configuration = MapUtils.merge(sharedConfig, script.commonPipelineEnvironment.configuration)
-        Debuglogger.instance.sharedConfigFilePath = script.commonPipelineEnvironment.configuration.general.sharedConfiguration
+        DebugReport.instance.sharedConfigFilePath = script.commonPipelineEnvironment.configuration.general.sharedConfiguration
     }
 
     convertLegacyExtensions(script: script)
@@ -86,7 +82,7 @@ def call(Map parameters) {
         throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
 
-    Debuglogger.instance.buildTool = BuildToolEnvironment.instance.buildTool
+    DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool
 
     //TODO activate automatic versioning for JS
     if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {

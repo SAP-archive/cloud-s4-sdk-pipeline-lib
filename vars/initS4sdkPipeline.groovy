@@ -1,32 +1,14 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
-import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
-import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
-import com.sap.cloud.sdk.s4hana.pipeline.EnvironmentUtils
+import com.sap.piper.DebugReport
 
 def call(Map parameters) {
     def script = parameters.script
 
-    Set buildDetails = []
-    buildDetails.add("Jenkins Version | " + env.JENKINS_VERSION)
-    buildDetails.add("JAVA Version | " + env.JAVA_VERSION)
-    Debuglogger.instance.environment.put("build_details", buildDetails)
-
-    if (!Boolean.valueOf(env.ON_K8S) && EnvironmentUtils.cxServerDirectoryExists()) {
-        Debuglogger.instance.environment.put("environment", "cx-server")
-
-        String serverConfigAsString = ""
-        if (new File('/var/cx-server/server.cfg').exists()) {
-            serverConfigAsString = new File('/var/cx-server/server.cfg').getText('UTF-8')
-        } else if (new File('/workspace/var/cx-server/server.cfg').exists()) {
-            serverConfigAsString = new File('/workspace/var/cx-server/server.cfg').getText('UTF-8')
-        }
-        String docker_image = EnvironmentUtils.getDockerFile(serverConfigAsString)
-        Debuglogger.instance.environment.put("docker_image", docker_image)
-    }
+    DebugReport.instance.initFromEnvironment(env)
 
     Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
     if (!generalConfiguration) {
@@ -60,7 +42,7 @@ def call(Map parameters) {
     initStashConfiguration script: script
 
     ReportAggregator.instance.reportProjectIdentifier(generalConfiguration.projectName)
-    Debuglogger.instance.projectIdentifier = generalConfiguration.projectName
+    DebugReport.instance.projectIdentifier = generalConfiguration.projectName
 
     if (env.JOB_URL) {
         Analytics.instance.hashBuildUrl(env.JOB_URL)

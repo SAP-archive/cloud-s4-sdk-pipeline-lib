@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
 import com.sap.piper.ConfigurationLoader
+import com.sap.piper.DebugReport
 
 def call(Map parameters = [:]) {
     echo "BEGINNING TO ARCHIVE DEBUG LOG"
@@ -7,16 +7,17 @@ def call(Map parameters = [:]) {
         def script = parameters.script
 
         Map postActionConfiguration = ConfigurationLoader.postActionConfiguration(script, 'archiveDebugLog')
-        Debuglogger.instance.shareConfidentialInformation = postActionConfiguration?.get('shareConfidentialInformation') ?: false
+        DebugReport.instance.shareConfidentialInformation = postActionConfiguration?.get('shareConfidentialInformation') ?: false
 
-        String result = Debuglogger.instance.generateReport(script)
+        String result = DebugReport.instance.generateReport(script)
 
         if (parameters.printToConsole) {
             echo result
         }
 
-        script.writeFile file: Debuglogger.instance.fileName, text: result
-        script.archiveArtifacts artifacts: Debuglogger.instance.fileName
+        script.writeFile file: DebugReport.instance.fileName, text: result
+        script.archiveArtifacts artifacts: DebugReport.instance.fileName
+        echo "Successfully archived debug report as '${DebugReport.instance.fileName}'"
     }
     catch (Exception e) {
         println("WARNING: The debug log was not created, it threw the following error message:")

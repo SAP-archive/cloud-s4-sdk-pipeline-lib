@@ -1,9 +1,10 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.piper.ConfigurationHelper
 import com.sap.piper.ConfigurationLoader
+import com.sap.piper.DebugReport
 import com.sap.piper.k8s.ContainerMap
 import hudson.model.Result
-import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
+
 import groovy.transform.Field
 
 @Field String STEP_NAME = 'runAsStage'
@@ -40,7 +41,7 @@ def call(Map parameters = [:], body) {
 
     handleStepErrors(stepName: stageName, stepParameters: configuration) {
         if (Boolean.valueOf(env.ON_K8S) && containerMap.size() > 0) {
-            Debuglogger.instance.environment.put("environment", "Kubernetes")
+            DebugReport.instance.environment.put("environment", "Kubernetes")
             withEnv(["POD_NAME=${stageName}"]) {
                 dockerExecuteOnKubernetes(script: script, containerMap: containerMap, stageName: stageName) {
                     executeStage(script, body, stageName, configuration)
@@ -82,9 +83,9 @@ private executeStage(Script script,
         if (globalExtensions) {
             echo "Found repository interceptor for ${stageName}."
             // If we call the repository interceptor, we will pass on originalStage as parameter
-            Debuglogger.instance.globalExtensions.put(stageName, "Overwrites")
+            DebugReport.instance.globalExtensions.put(stageName, "Overwrites")
             Closure modifiedOriginalStage = {
-                Debuglogger.instance.globalExtensions.put(stageName, "Extends")
+                DebugReport.instance.globalExtensions.put(stageName, "Extends")
                 originalStage()
             }
 
@@ -98,13 +99,13 @@ private executeStage(Script script,
             echo "Found project interceptor for ${stageName}."
             // If we call the project interceptor, we will pass on body as parameter which contains either originalStage or the repository interceptor
             if (projectExtensions && globalExtensions) {
-                Debuglogger.instance.globalExtensions.put(stageName, "Unknown (Overwritten by local extension)")
+                DebugReport.instance.globalExtensions.put(stageName, "Unknown (Overwritten by local extension)")
             }
-            Debuglogger.instance.localExtensions.put(stageName, "Overwrites")
+            DebugReport.instance.localExtensions.put(stageName, "Overwrites")
             Closure modifiedOriginalBody = {
-                Debuglogger.instance.localExtensions.put(stageName, "Extends")
+                DebugReport.instance.localExtensions.put(stageName, "Extends")
                 if (projectExtensions && globalExtensions) {
-                    Debuglogger.instance.globalExtensions.put(stageName, "Overwrites")
+                    DebugReport.instance.globalExtensions.put(stageName, "Overwrites")
                 }
                 body.call()
             }

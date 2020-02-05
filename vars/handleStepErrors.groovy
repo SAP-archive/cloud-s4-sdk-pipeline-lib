@@ -1,5 +1,5 @@
-import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
 import com.sap.piper.ConfigurationLoader
+import com.sap.piper.DebugReport
 
 def call(Map parameters = [:], body) {
     def stepParameters = parameters.stepParameters //mandatory
@@ -20,11 +20,10 @@ def call(Map parameters = [:], body) {
         def commonPipelineEnvironment = script.commonPipelineEnvironment
         List mandatoryStages = ConfigurationLoader.generalConfiguration(script)?.get('mandatoryStages') ?: []
 
-        Debuglogger.instance.failedBuild.put("stage", stepName)
-        Debuglogger.instance.failedBuild.put("reason", err)
-        Debuglogger.instance.failedBuild.put("stack_trace", err.getStackTrace())
-        if (stepParameters.isResilient && !mandatoryStages.contains(stepName)) {
-            Debuglogger.instance.failedBuild.put("isResilient", "true")
+        boolean isResilientAndNotMandatory = stepParameters.isResilient && !mandatoryStages.contains(stepName)
+        DebugReport.instance.storeStepFailure(stepName, err, !isResilientAndNotMandatory)
+
+        if (isResilientAndNotMandatory) {
             try {
                 //use new unstable feature if available: see https://jenkins.io/blog/2019/07/05/jenkins-pipeline-stage-result-visualization-improvements/
                 unstable(err.toString())
