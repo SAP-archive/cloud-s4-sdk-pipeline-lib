@@ -5,7 +5,7 @@ import com.sap.piper.ConfigurationLoader
 def call(Map parameters = [:]) {
     def stageName = 'staticCodeChecks'
     def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         Map configuration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         runOverModules(script: script, moduleType: "java") { basePath ->

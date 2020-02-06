@@ -6,7 +6,7 @@ import com.sap.piper.ConfigurationLoader
 def call(Map parameters = [:]) {
     def stageName = 'frontendIntegrationTests'
     def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         executeFrontendIntegrationTest(script, stageConfiguration)
     }

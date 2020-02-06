@@ -1,6 +1,7 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.CloudPlatform
 import com.sap.cloud.sdk.s4hana.pipeline.DeploymentType
+import com.sap.piper.Utils
 import com.sap.piper.k8s.ContainerMap
 
 def call(Map parameters = [:]) {
@@ -30,7 +31,8 @@ def call(Map parameters = [:]) {
             for (int i = 0; i < parameters.cfTargets.size(); i++) {
                 def target = parameters.cfTargets[i]
                 Closure deployment = {
-                    unstashFiles script: script, stage: stageName
+                    Utils utils = new Utils()
+                    utils.unstashStageFiles(script, stageName)
 
                     String deploymentType
                     if (enableZeroDowntimeDeployment) {
@@ -93,7 +95,7 @@ def call(Map parameters = [:]) {
                         }
                     }
 
-                    stashFiles script: script, stage: stageName
+                    utils.stashStageFiles(script, stageName)
                 }
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
                     if (env.POD_NAME) {
@@ -121,7 +123,8 @@ def call(Map parameters = [:]) {
                 def target = parameters.neoTargets[i]
 
                 Closure deployment = {
-                    unstashFiles script: script, stage: stageName
+                    Utils utils = new Utils()
+                    utils.unstashStageFiles(script, stageName)
 
                     DeploymentType deploymentType
                     if (enableZeroDowntimeDeployment) {
@@ -137,7 +140,7 @@ def call(Map parameters = [:]) {
                         neo: target
                     )
 
-                    stashFiles script: script, stage: stageName
+                    utils.stashStageFiles(script, stageName)
                 }
                 deployments["Deployment ${index > 1 ? index : ''}"] = {
                     if (env.POD_NAME) {

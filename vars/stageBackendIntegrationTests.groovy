@@ -21,7 +21,7 @@ def call(Map parameters = [:]) {
     ]
     Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         // The HDI container is cleaned up at the end of the execution
         createHdiContainer([script: script].plus(configuration)) {
             if (configuration.sidecarImage) {

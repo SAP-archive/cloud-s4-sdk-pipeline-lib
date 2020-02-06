@@ -15,7 +15,7 @@ def call(Map parameters = [:]) {
         commonPipelineEnvironment.setValue('unstableSteps', unstableSteps)
     }
 
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         final def tmsStepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'tmsUpload')

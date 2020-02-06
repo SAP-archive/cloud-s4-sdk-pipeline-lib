@@ -44,13 +44,6 @@ def call(Map parameters) {
     ReportAggregator.instance.reportProjectIdentifier(generalConfiguration.projectName)
     DebugReport.instance.projectIdentifier = generalConfiguration.projectName
 
-    if (env.JOB_URL) {
-        Analytics.instance.hashBuildUrl(env.JOB_URL)
-    } else {
-        Analytics.instance.hashBuildUrl(env.JOB_NAME)
-    }
-    Analytics.instance.buildNumber(env.BUILD_NUMBER)
-
     generalConfiguration.gitCommitId = getGitCommitId()
 
     String prefix = generalConfiguration.projectName

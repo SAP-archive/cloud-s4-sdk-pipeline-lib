@@ -5,7 +5,7 @@ def call(Map parameters = [:]) {
 
     def stageName = 'sonarQubeScan'
     def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
 
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         def pathList = []

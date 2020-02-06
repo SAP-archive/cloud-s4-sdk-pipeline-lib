@@ -20,7 +20,7 @@ class stageSonarQubeScanTest extends BaseCloudSdkTest {
         List expectedProperties = ['sonar.java.binaries=', 'sonar.coverage.exclusions=**.js,unit-tests/**,integration-tests/**,performance-tests/**,**.xml,**/target/**', 'sonar.example = test', 'sonar.prop = test', 'sonar.projectKey=testProject']
         List actualProperties
 
-        helper.registerAllowedMethod('runAsStage', [Map.class, Closure.class], { Map parameters, Closure closure ->
+        helper.registerAllowedMethod('piperStageWrapper', [Map.class, Closure.class], { Map parameters, Closure closure ->
             closure.call()
         })
 
@@ -51,7 +51,7 @@ class stageSonarQubeScanTest extends BaseCloudSdkTest {
 
         String actualInstance
 
-        helper.registerAllowedMethod('runAsStage', [Map.class, Closure.class], { Map parameters, Closure closure ->
+        helper.registerAllowedMethod('piperStageWrapper', [Map.class, Closure.class], { Map parameters, Closure closure ->
             closure.call()
         })
 
@@ -88,7 +88,7 @@ class stageSonarQubeScanTest extends BaseCloudSdkTest {
         List expectedProperties = ['sonar.java.binaries=', 'sonar.coverage.exclusions=**.js,unit-tests/**,integration-tests/**,performance-tests/**,**.xml,**/target/**', 'sonar.example = test', 'sonar.prop = test', 'sonar.projectKey=unnamed']
         List actualProperties
 
-        helper.registerAllowedMethod('runAsStage', [Map.class, Closure.class], { Map parameters, Closure closure ->
+        helper.registerAllowedMethod('piperStageWrapper', [Map.class, Closure.class], { Map parameters, Closure closure ->
             closure.call()
         })
 

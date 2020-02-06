@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
     def stageName = 'fortifyScan'
     def script = parameters.script
     def stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         runOverModules(script: script, moduleType: 'java') { String basePath ->
             executeFortifyScan(script: script,
                 fortifyCredentialId: stageConfiguration.fortifyCredentialId,

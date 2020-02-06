@@ -7,7 +7,7 @@ import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assert
 def call(Map parameters = [:]) {
     def stageName = 's4SdkQualityChecks'
     def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         List disabledChecks = stageConfiguration.disabledChecks

@@ -14,7 +14,7 @@ def call(Map parameters = [:]) {
         error("Stage ${stageName} is not configured.")
     }
 
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
 
         if (BuildToolEnvironment.instance.isMta() || BuildToolEnvironment.instance.isMaven()) {
 

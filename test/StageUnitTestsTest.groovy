@@ -11,7 +11,7 @@ class StageUnitTestsTest extends BaseCloudSdkTest {
     @Before
     void prepareTests() throws Exception {
         setUp()
-        helper.registerAllowedMethod("runAsStage", [Map.class, Closure.class], null)
+        helper.registerAllowedMethod("piperStageWrapper", [Map.class, Closure.class], null)
         helper.registerAllowedMethod("injectQualityListenerDependencies", [Map.class], null)
         helper.registerAllowedMethod("mavenExecute", [Map.class], null)
         helper.registerAllowedMethod("executeNpm", [Map.class, Closure.class], null)

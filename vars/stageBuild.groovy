@@ -14,7 +14,7 @@ def call(Map parameters = [:]) {
 
 private build(Script script) {
     def stageName = 'build'
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         if (BuildToolEnvironment.instance.isMta()) {
             runOverModules(script: this, moduleType: "java") { String basePath ->
 
@@ -80,7 +80,7 @@ private packageJsApp(script) {
     String stageName = 'package'
     def dockerOptions = []
     DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         executeNpm(script: script, dockerOptions: dockerOptions) {
             sh "npm run ci-package"
         }

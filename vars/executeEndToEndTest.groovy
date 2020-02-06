@@ -1,6 +1,7 @@
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 import com.sap.cloud.sdk.s4hana.pipeline.E2ETestCommandHelper
 import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
+import com.sap.piper.Utils
 import com.sap.piper.k8s.ContainerMap
 
 def call(Map parameters = [:]) {
@@ -37,7 +38,8 @@ def call(Map parameters = [:]) {
                 error("Each appUrl in the configuration must be either a String or a Map containing a property url and a property credentialId. For more information, please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#endtoendtests")
             }
             Closure e2eTest = {
-                unstashFiles script: script, stage: parameters.stage
+                Utils utils = new Utils()
+                utils.unstashStageFiles(script, parameters.stage)
                 try {
                     withCredentials(credentials) {
                         executeNpm(script: script, dockerOptions: dockerOptions) {
@@ -67,7 +69,7 @@ def call(Map parameters = [:]) {
                     } else {
                         error("No JUnit or cucumber report files found in ${s4SdkGlobals.endToEndReports}")
                     }
-                    stashFiles script: script, stage: parameters.stage
+                    utils.stashStageFiles(script, parameters.stage)
                 }
             }
             parallelE2ETests["E2E Tests ${index > 1 ? index : ''}"] = {

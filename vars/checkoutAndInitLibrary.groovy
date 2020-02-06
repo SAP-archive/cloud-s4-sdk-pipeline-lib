@@ -1,4 +1,3 @@
-import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
@@ -27,7 +26,7 @@ def call(Map parameters) {
 
     DebugReport.instance.setGitRepoInfo(scmCheckoutResult)
 
-    Analytics.instance.initAnalytics(script)
+    initAnalytics(script: script)
 
     loadGlobalExtension script: script
 
@@ -91,5 +90,5 @@ def call(Map parameters) {
     }
 
     stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
-    script.commonPipelineEnvironment.configuration.s4SdkStashConfiguration = [ initS4sdkPipeline: [ unstash : ["INIT"]]]
+    script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]
 }
