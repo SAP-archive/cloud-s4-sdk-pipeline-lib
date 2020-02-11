@@ -9,5 +9,5 @@ class s4SdkGlobals implements Serializable {
     final String frontendReports = 's4hana_pipeline/reports/frontend-unit/coverage/report-html/ut'
     final String toolsDirectory = 's4hana_pipeline/tools'
     final String repositoryExtensionsDirectory = 's4hana_pipeline/extensions'
-    final String projectExtensionsDirectory = 'pipeline/extensions'
+    final String projectExtensionsDirectory = '.pipeline/extensions/'
 }

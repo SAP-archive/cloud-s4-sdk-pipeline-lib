@@ -22,7 +22,6 @@ general:
 #Steps Specific Configuration
 steps:
   piperStageWrapper:
-    projectExtensionsDirectory: 'pipeline/extensions/'
     globalExtensionsDirectory: 's4hana_pipeline/extensions/'
     stageLocking: false
     stashContent: []

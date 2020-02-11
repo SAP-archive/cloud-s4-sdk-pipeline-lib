@@ -60,8 +60,6 @@ def call(Map parameters) {
         DebugReport.instance.sharedConfigFilePath = script.commonPipelineEnvironment.configuration.general.sharedConfiguration
     }
 
-    convertLegacyExtensions(script: script)
-
     if (Boolean.valueOf(env.ON_K8S)) {
         initContainersMap script: script
     }
@@ -88,6 +86,11 @@ def call(Map parameters) {
         artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
         ReportAggregator.instance.reportAutomaticVersioning()
     }
+
+    // Convert/move legacy extensions. This needs to happen after the artifactSetVersion step, which requires a
+    // clean state of the repository.
+    moveLegacyExtensions(script: script)
+    convertLegacyExtensions(script: script)
 
     stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
     script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]
