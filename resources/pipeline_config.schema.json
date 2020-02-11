@@ -804,6 +804,17 @@
                             "default": "ppiper/cf-cli:v2"
                         }
                     }
+                },
+                "debugReportArchive": {
+                    "description": "The debugReportArchive configuration can be used to create confidential (instead of redacted) debug reports. The difference between the redacted and the confidential debug report is that potentially confidential information, such as the GitHub repository and branch, global extension repository and shared libraries, are included in the confidential debug report. It is the user's responsibility to make sure that the debug report does not contain any confidential information.",
+                    "type": "object",
+                    "properties": {
+                        "shareConfidentialInformation": {
+                            "description": "If set to true, a confidential debug report is being generated with each build.",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
                 }
             }
         }
@@ -837,17 +848,6 @@
                     }
                 }
             },
-            "archiveDebugLog": {
-                "description": "The archiveDebugLog post-build action can be used to create confidential (instead of redacted) debug logs. The difference between the redacted and the confidential debug log is, that potentially confidential information, such as the GitHub repository and branch, global extension repository and shared libraries, are included in the confidential debug log. It is the user's responsibility to make sure that the debug log does not contain any confidential information.",
-                "type": "object",
-                "properties": {
-                    "shareConfidentialInformation": {
-                        "description": "If set to true, a confidential debug log is being generated with each build.",
-                        "type": "boolean",
-                        "default": false
-                    }
-                }
-            }
         }
     },
     "definitions": {
