@@ -22,19 +22,18 @@ class MavenUtils implements Serializable {
             if (classesJars.size() != 1) {
                 script.error "Expected exactly one *-classes.jar file in $pathToTargetDirectory, but found ${classesJars?.join(', ')}"
             }
-            installFile(script, pathToPom, classesJars[0].getPath(), [ "-Dpackaging=jar", "-Dclassifier=classes"])
+            installFile(script, pathToPom, classesJars[0].getPath(), ["-Dpackaging=jar", "-Dclassifier=classes"])
         }
 
-        if(pom.packaging == "pom"){
+        if (pom.packaging == "pom") {
             installFile(script, pathToPom, PathUtils.normalize(pathToApplication, 'pom.xml'))
-        }
-        else {
+        } else {
             List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
             packagingFiles.each { file -> installFile(script, pathToPom, file.getPath()) }
         }
     }
 
-    static void installFile(Script script, String pathToPom, String file, List additionalDefines=[]){
+    static void installFile(Script script, String pathToPom, String file, List additionalDefines = []) {
         script.mavenExecute(
             script: script,
             goals: 'install:install-file',
@@ -54,5 +53,16 @@ class MavenUtils implements Serializable {
             goals: "dependency:tree")
 
         return script.readFile(PathUtils.normalize(basePath, 'mvnDependencyTree.txt'))
+    }
+
+    static List getTestModulesExcludeFlags(Script script) {
+        List moduleExcludes = []
+        if (script.fileExists('integration-tests/pom.xml')) {
+            moduleExcludes << '-pl !integration-tests'
+        }
+        if (script.fileExists('unit-tests/pom.xml')) {
+            moduleExcludes << '-pl !unit-tests'
+        }
+        return moduleExcludes
     }
 }

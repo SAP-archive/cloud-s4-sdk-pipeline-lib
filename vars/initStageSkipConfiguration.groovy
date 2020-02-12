@@ -41,8 +41,11 @@ def call(Map parameters) {
         if (BuildToolEnvironment.instance.isMtaWithIntegrationTests(script) || BuildToolEnvironment.instance.isMaven()) {
             script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
         }
-        script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
+    }
+
+    if(fileExists('pom.xml')){
+        script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
     }
 
     if (BuildToolEnvironment.instance.getNpmModules()) {

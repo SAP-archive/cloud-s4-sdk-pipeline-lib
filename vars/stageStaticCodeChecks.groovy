@@ -8,12 +8,10 @@ def call(Map parameters = [:]) {
     piperStageWrapper(stageName: stageName, script: script) {
         Map configuration = ConfigurationLoader.stageConfiguration(script, stageName)
 
-        runOverModules(script: script, moduleType: "java") { basePath ->
-            checkPmd script: script, excludes: configuration.pmdExcludes, basePath: basePath
-            ReportAggregator.instance.reportStaticCodeExecution(QualityCheck.PmdCheck)
+        checkPmd script: script, excludes: configuration.pmdExcludes
+        ReportAggregator.instance.reportStaticCodeExecution(QualityCheck.PmdCheck)
 
-            checkFindbugs script: script, excludeFilterFile: configuration.findbugsExcludesFile, basePath: basePath
-            ReportAggregator.instance.reportStaticCodeExecution(QualityCheck.FindbugsCheck)
-        }
+        checkFindbugs script: script, excludeFilterFile: configuration.findbugsExcludesFile
+        ReportAggregator.instance.reportStaticCodeExecution(QualityCheck.FindbugsCheck)
     }
 }
