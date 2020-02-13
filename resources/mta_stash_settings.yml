@@ -26,7 +26,7 @@ build:
     - name: "PACKAGE_LOCK"
       includes: "**/package-lock.json, **/npm-shrinkwrap.json"
     - name: "GENERATED_CAP_FILES"
-      includes: "**/src/main/resources/edmx/**, db/src/gen/**"
+      includes: "**/src/main/resources/edmx/**, db/src/gen/**, gen/**"
 
 unitTests:
   unstash: ["SOURCE", "M2", "TARGET", "NODE_MODULES"]

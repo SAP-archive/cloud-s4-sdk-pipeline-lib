@@ -25,23 +25,25 @@ build:
       includes: "**/node_modules/**"
     - name: "PACKAGE_LOCK"
       includes: "**/package-lock.json, **/npm-shrinkwrap.json"
+    - name: "GENERATED_CAP_FILES"
+      includes: "**/src/main/resources/edmx/**, db/src/gen/**, gen/**"
 
 unitTests:
-  unstash: ["SOURCE", "M2", "TARGET"]
+  unstash: ["SOURCE", "M2", "TARGET", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
 backendIntegrationTests:
-  unstash: ["SOURCE", "M2", "TARGET"]
+  unstash: ["SOURCE", "M2", "TARGET", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
 frontendIntegrationTests:
-  unstash: ["SOURCE", "NODE_MODULES"]
+  unstash: ["SOURCE", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
@@ -70,7 +72,7 @@ sourceClearScan:
   stashes: []
 
 additionalTools:
-  unstash: ["SOURCE", "M2", "NODE_MODULES"]
+  unstash: ["SOURCE", "M2", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
 
 sonarQubeScan:
@@ -86,18 +88,18 @@ npmAudit:
   stashes: []
 
 frontendUnitTests:
-  unstash: ["SOURCE", "NODE_MODULES"]
+  unstash: ["SOURCE", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
 endToEndTests:
-  unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
+  unstash: ["SOURCE", "TARGET", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
 
 performanceTests:
-  unstash: ["SOURCE", "TARGET"]
+  unstash: ["SOURCE", "TARGET", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
@@ -110,11 +112,11 @@ s4SdkQualityChecks:
       includes: "s4hana_pipeline/reports/**"
 
 artifactDeployment:
-  unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
+  unstash: ["SOURCE", "TARGET", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
 
 productionDeployment:
-  unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
+  unstash: ["SOURCE", "TARGET", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
 
 postPipelineHook:

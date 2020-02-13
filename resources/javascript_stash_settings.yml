@@ -21,37 +21,39 @@ build:
       includes: "**/node_modules/**"
     - name: "PACKAGE_LOCK"
       includes: "**/package-lock.json, **/npm-shrinkwrap.json"
+    - name: "GENERATED_CAP_FILES"
+      includes: "db/src/gen/**, gen/**"
 
 unitTests:
-  unstash: ["SOURCE", "DIST", "NODE_MODULES"]
+  unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
 frontendUnitTests:
-  unstash: ["SOURCE", "DIST", "NODE_MODULES"]
+  unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
 backendIntegrationTests:
-  unstash: ["SOURCE", "DIST", "NODE_MODULES"]
+  unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
 frontendIntegrationTests:
-  unstash: ["SOURCE", "DIST", "NODE_MODULES"]
+  unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
 package:
-  unstash: ["SOURCE", "DIST", "NODE_MODULES"]
+  unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "DEPLOYMENTARTIFACT"
       includes: "deployment/**"
@@ -79,15 +81,15 @@ checkmarxScan:
   stashes: []
 
 endToEndTests:
-  unstash: ["SOURCE", "DEPLOYMENTARTIFACT", "NODE_MODULES"]
+  unstash: ["SOURCE", "DEPLOYMENTARTIFACT", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
 
 artifactDeployment:
-  unstash: ["SOURCE", "DEPLOYMENTARTIFACT"]
+  unstash: ["SOURCE", "DEPLOYMENTARTIFACT", "GENERATED_CAP_FILES"]
   stashes: []
 
 productionDeployment:
-  unstash: ["DEPLOYMENTARTIFACT", "SOURCE", "NODE_MODULES"]
+  unstash: ["DEPLOYMENTARTIFACT", "SOURCE", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
 
 postPipelineHook:
