@@ -3,7 +3,7 @@ package com.sap.cloud.sdk.s4hana.pipeline
 class MavenUtils implements Serializable {
     static final long serialVersionUID = 1L
 
-    static void generateEffectivePom(script, pomFile, effectivePomFile) {
+    static void generateEffectivePom(Script script, String pomFile, String effectivePomFile) {
         script.mavenExecute(script: script,
             flags: '--batch-mode',
             pomPath: pomFile,
@@ -12,8 +12,9 @@ class MavenUtils implements Serializable {
             defines: "-Doutput=${effectivePomFile}")
     }
 
-    static void installMavenArtifacts(Script script, pom, String basePath, String pathToPom) {
+    static void installMavenArtifacts(Script script, def pom, String basePath, String pathToPom) {
 
+        // ToDo: remove dependency to BuildToolEnv
         String pathToApplication = BuildToolEnvironment.instance.getApplicationPath(basePath)
         String pathToTargetDirectory = PathUtils.normalize(pathToApplication, '/target')
 
@@ -29,7 +30,7 @@ class MavenUtils implements Serializable {
             installFile(script, pathToPom, PathUtils.normalize(pathToApplication, 'pom.xml'))
         } else {
             List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
-            packagingFiles.each { file -> installFile(script, pathToPom, file.getPath()) }
+            packagingFiles.each { def file -> installFile(script, pathToPom, file.getPath()) }
         }
     }
 
@@ -45,7 +46,7 @@ class MavenUtils implements Serializable {
         )
     }
 
-    static String getMavenDependencyTree(def script, String basePath) {
+    static String getMavenDependencyTree(Script script, String basePath) {
         script.mavenExecute(script: script,
             flags: "--batch-mode -DoutputFile=mvnDependencyTree.txt",
             m2Path: script.s4SdkGlobals.m2Directory,
@@ -64,5 +65,17 @@ class MavenUtils implements Serializable {
             moduleExcludes << '-pl !unit-tests'
         }
         return moduleExcludes
+    }
+
+    static void installRootPom(Script script) {
+        String pathToPom = 'pom.xml'
+        def pom = script.readMavenPom file: pathToPom
+
+        installFile(script, pathToPom, pathToPom,
+            ["-DgroupId=${pom.groupId}",
+             "-DartifactId=${pom.artifactId}",
+             "-Dversion=${pom.version}",
+             "-Dpackaging=pom"]
+        )
     }
 }

@@ -117,7 +117,7 @@ private assertJacocoCodeCoverage(Script script, List jacocoExcludes, Map thresho
             "For more information please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/doc/pipeline/cloud-qualities.md#code-coverage"
     ) {
 
-        jacoco execPattern: "${s4SdkGlobals.coverageReports}/**/*.exec",
+        jacoco execPattern: "**/target/**/*.exec",
             exclusionPattern: "${jacocoExclusionPattern}",
             changeBuildStatus: true,
             maximumLineCoverage: successCodeCoverage.toString(),

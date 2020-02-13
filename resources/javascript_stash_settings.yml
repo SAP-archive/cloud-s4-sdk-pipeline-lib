@@ -24,13 +24,6 @@ build:
     - name: "GENERATED_CAP_FILES"
       includes: "db/src/gen/**, gen/**"
 
-unitTests:
-  unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
-  stashes:
-    - name: "REPORTS"
-      merge: true
-      includes: "s4hana_pipeline/reports/**"
-
 frontendUnitTests:
   unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:

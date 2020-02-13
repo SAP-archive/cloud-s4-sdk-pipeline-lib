@@ -91,16 +91,6 @@
                     },
                     "additionalProperties": false
                 },
-                "unitTests": {
-                    "type": "object",
-                    "properties": {
-                        "dockerImage": {
-                            "$ref": "#/definitions/dockerImage",
-                            "default": "maven:3.6.1-jdk-8-alpine"
-                        }
-                    },
-                    "additionalProperties": false
-                },
                 "backendIntegrationTests": {
                     "type": "object",
                     "properties": {

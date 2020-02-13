@@ -138,12 +138,6 @@ private void javaIntegrationTests(def script, Map configuration) {
         ReportAggregator.instance.reportTestExecution(QualityCheck.BackendIntegrationTests)
     }
 
-    copyExecFile execFiles: [
-        "integration-tests/target/jacoco.exec",
-        "integration-tests/target/coverage-reports/jacoco.exec",
-        "integration-tests/target/coverage-reports/jacoco-ut.exec"
-    ], targetFile: 'integration-tests.exec'
-
     if (BuildToolEnvironment.instance.isMta()) {
         sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")
     }

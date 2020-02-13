@@ -27,13 +27,8 @@ build:
       includes: "**/package-lock.json, **/npm-shrinkwrap.json"
     - name: "GENERATED_CAP_FILES"
       includes: "**/src/main/resources/edmx/**, db/src/gen/**, gen/**"
-
-unitTests:
-  unstash: ["SOURCE", "M2", "TARGET", "NODE_MODULES"]
-  stashes:
-    - name: "REPORTS"
-      merge: true
-      includes: "s4hana_pipeline/reports/**"
+    - name: "EXEC_FILES"
+      includes: "**/target/**/*.exec"
 
 backendIntegrationTests:
   unstash: ["SOURCE", "M2", "TARGET", "NODE_MODULES", "GENERATED_CAP_FILES"]
@@ -41,6 +36,9 @@ backendIntegrationTests:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
+    - name: "EXEC_FILES"
+      merge: true
+      includes: "**/target/**/*.exec"
 
 frontendIntegrationTests:
   unstash: ["SOURCE", "NODE_MODULES", "GENERATED_CAP_FILES"]
@@ -106,7 +104,7 @@ performanceTests:
       includes: "s4hana_pipeline/reports/**"
 
 s4SdkQualityChecks:
-  unstash: ["SOURCE", "M2", "TARGET", "REPORTS"]
+  unstash: ["SOURCE", "M2", "TARGET", "REPORTS", "EXEC_FILES"]
   stashes:
     - name: "REPORTS"
       includes: "s4hana_pipeline/reports/**"

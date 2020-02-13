@@ -1,7 +1,7 @@
 package com.sap.cloud.sdk.s4hana.pipeline
 
-class NpmUtils {
-    def static renameNpmScript(Script script, String packageJsonPath, String oldName, String newName) {
+class NpmUtils implements Serializable {
+    static void renameNpmScript(Script script, String packageJsonPath, String oldName, String newName) {
         Map packageJson = script.readJSON file: packageJsonPath
         if (packageJson?.scripts && packageJson.scripts[oldName]) {
             packageJson.scripts[newName] = packageJson.scripts[oldName]
