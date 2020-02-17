@@ -110,7 +110,7 @@ s4SdkQualityChecks:
       includes: "s4hana_pipeline/reports/**"
 
 artifactDeployment:
-  unstash: ["SOURCE", "TARGET", "NODE_MODULES"]
+  unstash: ["SOURCE", "TARGET", "NODE_MODULES", "EXEC_FILES"]
   stashes: []
 
 productionDeployment:
