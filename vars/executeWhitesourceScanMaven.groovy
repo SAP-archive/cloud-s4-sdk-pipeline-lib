@@ -1,11 +1,14 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
+import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
+import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
+import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 
 import java.nio.file.Paths
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeWhitesourceScanMaven', stepParameters: parameters) {
-        final script = parameters.script
-        String pomPath = parameters.pomPath ?: 'pom.xml'
+        final Script script = parameters.script
+        String pomPath = 'pom.xml'
 
         try {
             withCredentials([string(credentialsId: parameters.credentialsId, variable: 'orgToken')]) {
@@ -30,6 +33,9 @@ def call(Map parameters = [:]) {
                         String productVersion = (parameters.productVersion == true) ? 'current' : parameters.productVersion
                         defines.add("-Dorg.whitesource.productVersion=$productVersion")
                     }
+
+                    defines.addAll(MavenUtils.getTestModulesExcludeFlags(script))
+
                     mavenExecute(
                         script: script,
                         m2Path: s4SdkGlobals.m2Directory,

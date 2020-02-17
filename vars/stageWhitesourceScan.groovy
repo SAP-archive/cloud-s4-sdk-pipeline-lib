@@ -16,27 +16,15 @@ def call(Map parameters = [:]) {
 
     piperStageWrapper(stageName: stageName, script: script) {
 
-        if (BuildToolEnvironment.instance.isMta() || BuildToolEnvironment.instance.isMaven()) {
-
-            runOverModules(script: script, moduleType: "java") { basePath ->
-                executeForMaven(script, basePath, whitesourceConfiguration)
-            }
+        if (fileExists('pom.xml')) {
+            Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
+            executeWhitesourceScanMaven(argumentMap)
         }
-        runOverNpmModules(script: script) { basePath ->
+        runOverNpmModules(script: script) { String basePath ->
             executeForNpm(script, basePath, whitesourceConfiguration)
         }
+        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
     }
-}
-
-private void executeForMaven(def script, String basePath, Map whitesourceConfiguration) {
-    println("Executing WhiteSource scan for Maven module '${basePath}'")
-
-    Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
-    argumentMap['pomPath'] = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
-
-    executeWhitesourceScanMaven(argumentMap)
-
-    ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
 }
 
 private void executeForNpm(def script, String basePath, Map whitesourceConfiguration) {
@@ -58,8 +46,6 @@ private void executeForNpm(def script, String basePath, Map whitesourceConfigura
         Map argumentMap = getWhiteSourceArgumentMap(script, whitesourceConfiguration)
 
         executeWhitesourceScanNpm(argumentMap)
-
-        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.WhiteSourceScan)
     }
 }
 
