@@ -685,6 +685,33 @@
                         }
                     }
                 },
+                "sonarQubeScan": {
+                    "type": "object",
+                    "properties": {
+                        "dockerImage": {
+                            "$ref": "#/definitions/dockerImage"
+                        },
+                        "projectKey": {
+                            "description": "The project is used to refer your project.",
+                            "type": "string"
+                        },
+                        "instance": {
+                            "description": "This property refers to a sonarqube instance, which needs to be defined in the Jenkins.",
+                            "type": "string"
+                        },
+                        "sonarProperties": {
+                            "description": "The properties are used to configure sonar. Please refer to the example below.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": [
+                        "projectKey",
+                        "instance"
+                    ]
+                },
                 "executeFortifyScan": {
                     "type": "object",
                     "properties": {

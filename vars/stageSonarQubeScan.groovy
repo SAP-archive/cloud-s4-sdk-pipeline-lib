@@ -10,7 +10,7 @@ def call(Map parameters = [:]) {
     piperStageWrapper(stageName: stageName, script: script) {
 
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-        List jacocoReportPaths = getJacocoReportPaths().collect({it.path})
+        List jacocoReportPaths = getJacocoReportPaths().collect({ it.path })
 
         List sonarProperties = [
             "sonar.java.binaries=${getPathToBinaries().join(',')}".toString(),
@@ -35,26 +35,26 @@ def call(Map parameters = [:]) {
 
         sonarExecuteScan([
             script     : script,
-            dockerImage: 'ppiper/node-browsers:v3',
+            dockerImage: stageConfiguration.dockerImage ?: 'ppiper/node-browsers:v3',
             instance   : stageConfiguration.instance,
             options    : sonarProperties
         ])
     }
 }
 
-private List getJacocoReportPaths(){
+private List getJacocoReportPaths() {
     return findFiles(glob: "**/target/**/*.exec")
 }
 
-private List getPathToBinaries(){
+private List getPathToBinaries() {
     def pomFiles = findFiles(glob: "**/pom.xml")
     List binaries = []
 
-    for(def pomFile: pomFiles) {
+    for (def pomFile : pomFiles) {
         String mavenModule = getParentFolder(pomFile.path)
         String classesPath = "$mavenModule/target/classes/"
 
-        if(fileExists(classesPath)){
+        if (fileExists(classesPath)) {
             binaries.push(classesPath)
         }
     }
@@ -62,6 +62,6 @@ private List getPathToBinaries(){
 }
 
 @NonCPS
-String getParentFolder(String filePath){
+String getParentFolder(String filePath) {
     return Paths.get(filePath).getParent().toString()
 }
