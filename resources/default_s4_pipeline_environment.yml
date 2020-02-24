@@ -78,6 +78,9 @@ steps:
     keepOldInstance: true
     stashContent: []
 
+  cloudFoundryCreateService:
+    stashContent: []
+
   neoDeploy:
     dockerImage: ppiper/neo-cli:v2
     deployMode: "warParams"

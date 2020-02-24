@@ -6,11 +6,31 @@ import com.sap.piper.k8s.ContainerMap
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'deployToCloudPlatform', stepParameters: parameters) {
-        def index = 1
         def deployments = [:]
         def stageName = parameters.stage
         def script = parameters.script
         def enableZeroDowntimeDeployment = parameters.enableZeroDowntimeDeployment
+
+        if(parameters.cfCreateServices){
+            def createServices = [:]
+            for (int i = 0; i < parameters.cfCreateServices.size(); i++) {
+                Map createServicesConfig = parameters.cfCreateServices[i]
+                createServices["Service Creation ${i+1 > 1 ? i+1 : ''}"] = {
+                    cloudFoundryCreateService(
+                        script: script,
+                        cloudFoundry: [
+                            apiEndpoint: createServicesConfig.apiEndpoint,
+                            credentialsId: createServicesConfig.credentialsId,
+                            serviceManifest: createServicesConfig.serviceManifest,
+                            manifestVariablesFiles: createServicesConfig.manifestVariablesFiles,
+                            org: createServicesConfig.org,
+                            space: createServicesConfig.space
+                        ]
+                    )
+                }
+            }
+            runClosures createServices, script
+        }
 
         if (parameters.cfTargets) {
 
@@ -44,10 +64,12 @@ def call(Map parameters = [:]) {
                         ).toString()
                     }
 
-                    Map cloudFoundryDeploymentParameters = [script      : parameters.script,
-                                                            deployType  : deploymentType,
-                                                            cloudFoundry: target,
-                                                            mtaPath     : script.commonPipelineEnvironment.mtarFilePath]
+                    Map cloudFoundryDeploymentParameters = [script              : parameters.script,
+                                                            deployType          : deploymentType,
+                                                            cloudFoundry        : target,
+                                                            smokeTestScript     : target.smokeTestScript,
+                                                            smokeTestStatusCode : target.smokeTestStatusCode,
+                                                            mtaPath             : script.commonPipelineEnvironment.mtarFilePath]
 
                     if (BuildToolEnvironment.instance.isMta()) {
                         cloudFoundryDeploymentParameters.deployTool = 'mtaDeployPlugin'
@@ -97,7 +119,7 @@ def call(Map parameters = [:]) {
 
                     utils.stashStageFiles(script, stageName)
                 }
-                deployments["Deployment ${index > 1 ? index : ''}"] = {
+                deployments["Deployment ${i+1 > 1 ? i+1 : ''}"] = {
                     if (env.POD_NAME) {
                         dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(stageName) ?: [:]) {
                             deployment.call()
@@ -108,7 +130,6 @@ def call(Map parameters = [:]) {
                         }
                     }
                 }
-                index++
             }
             runClosures deployments, script
         } else if (parameters.neoTargets) {
@@ -142,7 +163,7 @@ def call(Map parameters = [:]) {
 
                     utils.stashStageFiles(script, stageName)
                 }
-                deployments["Deployment ${index > 1 ? index : ''}"] = {
+                deployments["Deployment ${i+1 > 1 ? i+1 : ''}"] = {
                     if (env.POD_NAME) {
                         dockerExecuteOnKubernetes(script: script, containerMap: ContainerMap.instance.getMap().get(stageName) ?: [:]) {
                             deployment.call()
@@ -153,7 +174,6 @@ def call(Map parameters = [:]) {
                         }
                     }
                 }
-                index++
             }
             runClosures deployments, script
         } else {

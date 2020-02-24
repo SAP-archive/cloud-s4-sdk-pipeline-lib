@@ -17,7 +17,14 @@ def call(Map parameters = [:]) {
         }
 
         lock(script.commonPipelineEnvironment.configuration.endToEndTestLock) {
-            deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, enableZeroDowntimeDeployment: stageConfiguration.enableZeroDowntimeDeployment, stage: stageName
+            deployToCloudPlatform(
+                script: script,
+                cfTargets: stageConfiguration.cfTargets,
+                neoTargets: stageConfiguration.neoTargets,
+                cfCreateServices: stageConfiguration.cfCreateServices,
+                enableZeroDowntimeDeployment: stageConfiguration.enableZeroDowntimeDeployment,
+                stage: stageName
+            )
             executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.END_TO_END_TEST, stage: stageName
             ReportAggregator.instance.reportTestExecution(QualityCheck.EndToEndTests)
         }

@@ -41,6 +41,7 @@ def call(Map parameters = [:]) {
                             script: script,
                             cfTargets: stageConfiguration.cfTargets,
                             neoTargets: stageConfiguration.neoTargets,
+                            cfCreateServices: stageConfiguration.cfCreateServices,
                             isProduction: true,
                             stage: stageName
                         )
@@ -54,7 +55,14 @@ def call(Map parameters = [:]) {
                         )
                     }
                 } else {
-                    deployToCloudPlatform script: script, cfTargets: stageConfiguration.cfTargets, neoTargets: stageConfiguration.neoTargets, isProduction: true, stage: stageName
+                    deployToCloudPlatform(
+                        script: script,
+                        cfTargets: stageConfiguration.cfTargets,
+                        neoTargets: stageConfiguration.neoTargets,
+                        cfCreateServices: stageConfiguration.cfCreateServices,
+                        isProduction: true,
+                        stage: stageName
+                    )
                     echo "Smoke tests skipped, because package.json does not exist or stage configuration option appUrls is not defined."
                 }
                 ReportAggregator.instance.reportDeployment()
