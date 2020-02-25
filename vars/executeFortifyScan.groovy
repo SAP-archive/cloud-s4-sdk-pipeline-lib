@@ -5,6 +5,7 @@ import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+import hudson.AbortException
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeFortifyScan', stepParameters: parameters) {
@@ -106,7 +107,8 @@ def call(Map parameters = [:]) {
         try {
             updateFortifyProjectVersion(configuration, artifactVersion)
         } catch (Exception e) {
-            error("Exception while updating project version in Fortify Software Security Center. \n Please ensure that the fortifyProjectName in the pipeline_config.yml matches the project name in the fortify server. This value is case sensitive. \n The projectVersionId is an integer id of the project that can be obtained by navigating to https://your-fortify-server/ssc/api/v1/projectVersions/ under currentState -> id.  ${Arrays.toString(e.getStackTrace())}")
+            echo "[Error] failed with exception: ${e.getMessage()}"
+            error("Exception while updating project version in Fortify Software Security Center. \n Please ensure that the fortifyProjectName in the pipeline_config.yml matches the project name in the fortify server. This value is case sensitive. \n The projectVersionId is an integer id of the project that can be obtained by navigating to https://your-fortify-server/ssc/api/v1/projectVersions/ under currentState -> id")
         }
 
         try {
