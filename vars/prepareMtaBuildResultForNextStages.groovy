@@ -7,6 +7,7 @@ def call(Map parameters) {
     // The MTA builder executes the maven command only inside the java module directories and not on the root directory.
     // Hence we need install root pom to local repository after the project is built using the mta builder
     if (fileExists('pom.xml')) {
+        MavenUtils.flattenPomXmls(script)
         MavenUtils.installRootPom(script)
     }
 
