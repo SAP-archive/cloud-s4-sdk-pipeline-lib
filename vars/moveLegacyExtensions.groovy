@@ -1,31 +1,34 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
-
-import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
+import com.sap.cloud.sdk.s4hana.pipeline.WarningsUtils
 
 void call(Map parameters) {
     handleStepErrors(stepName: 'moveLegacyExtensions', stepParameters: parameters) {
-        moveRepositoryExtensions()
-        moveProjectExtensions()
+        moveRepositoryExtensions(parameters.script)
+        moveProjectExtensions(parameters.script)
     }
 }
 
-private void moveRepositoryExtensions() {
+private void moveRepositoryExtensions(Script script) {
     String oldPath = 's4hana_pipeline/extensions'
     String newPath = s4SdkGlobals.repositoryExtensionsDirectory
     if (moveExtensions(oldPath, newPath, 'repository')) {
-        addPipelineWarning("The global repository extensions need to be moved from the deprecated " +
+        String heading = "Deprecated extension location"
+        String message = "The global repository extensions need to be moved from the deprecated " +
             "location at '$oldPath' into the new location at '$newPath'. Please bring this to the " +
-            "attention of the pipeline maintainer.")
+            "attention of the pipeline maintainer."
+        WarningsUtils.addPipelineWarning(script, heading, message)
     }
 }
 
-private void moveProjectExtensions(Script script ) {
+private void moveProjectExtensions(Script script) {
     String oldPath = 'pipeline/extensions'
     String newPath = s4SdkGlobals.projectExtensionsDirectory
     if (moveExtensions(oldPath, newPath, 'project')) {
-        addPipelineWarning("Please move your project extensions from the deprecated location at " +
+        String heading = "Deprecated extension location"
+        String message = "Please move your project extensions from the deprecated location at " +
             "'$oldPath' into the new location at '$newPath'. (Just rename the folder/path in your " +
-            "project accordingly.)")
+            "project accordingly.)"
+        WarningsUtils.addPipelineWarning(script, heading, message)
     }
 }
 
@@ -51,18 +54,4 @@ private boolean moveExtensions(String oldPath, String newPath, String extensions
     sh "mv ${oldPath}/* ${newPath}"
 
     return true
-}
-
-private void addPipelineWarning(String message) {
-    echo '[WARNING]: ' + message
-    assertPluginIsActive('badge')
-    addBadge(icon: "warning.gif", text: message)
-
-    String html =
-        """
-<h2>Deprecated extension location</h2>
-<p>$message</p>
-"""
-
-    createSummary(icon: "warning.gif", text: html)
 }

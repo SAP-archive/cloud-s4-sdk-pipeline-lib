@@ -5,7 +5,7 @@ def call(Map parameters) {
         def script = parameters.script
 
         if (!parameters.configFile) {
-            parameters.configFile = 'pipeline_config.yml'
+            parameters.configFile = getConfigLocation(script: script)
         }
 
         parameters.customDefaults = parameters.customDefaults ?: ['default_s4_pipeline_environment.yml']
