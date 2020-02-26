@@ -114,14 +114,14 @@ private Map filterUserAuditedAdvisories(Map configuration, Map advisories) {
         if (!matchedUserAuditedAdvisories.empty) {
             addBadge(icon: "warning.gif", text: "Ignoring audited npm advisories:\n ${matchedUserAuditedAdvisories.join("\n")}")
             htmlSummary += "<h3>Ignoring audited npm advisories</h3> \n" +
-                "<p>This is a list of advisories which are marked as <em>audited</em> in your <code>pipeline_config.yml</code> file. \n" +
+                "<p>This is a list of advisories which are marked as <em>audited</em> in your <code>.pipeline/config.yml</code> file. \n" +
                 htmlListOfUserAuditedAdvisories(matchedUserAuditedAdvisories)
         }
 
         if (!unmatchedUserAuditedAdvisories.empty) {
             addBadge(icon: "warning.gif", text: "Discovered audited npm advisories which don't apply to this project:\n ${unmatchedUserAuditedAdvisories.join("\n")}")
             htmlSummary += "<h3>Discovered audited npm advisories which don't apply to this project</h3> \n" +
-                "<p>Please review the following advisories in your <code>pipeline_config.yml</code> file and consider removing them.</p>\n" +
+                "<p>Please review the following advisories in your <code>.pipeline/config.yml</code> file and consider removing them.</p>\n" +
                 htmlListOfUserAuditedAdvisories(unmatchedUserAuditedAdvisories)
         }
 

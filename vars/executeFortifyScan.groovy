@@ -108,7 +108,7 @@ def call(Map parameters = [:]) {
             updateFortifyProjectVersion(configuration, artifactVersion)
         } catch (Exception e) {
             echo "[Error] failed with exception: ${e.getMessage()}"
-            error("Exception while updating project version in Fortify Software Security Center. \n Please ensure that the fortifyProjectName in the pipeline_config.yml matches the project name in the fortify server. This value is case sensitive. \n The projectVersionId is an integer id of the project that can be obtained by navigating to https://your-fortify-server/ssc/api/v1/projectVersions/ under currentState -> id")
+            error("Exception while updating project version in Fortify Software Security Center. \n Please ensure that the fortifyProjectName in the .pipeline/config.yml matches the project name in the fortify server. This value is case sensitive. \n The projectVersionId is an integer id of the project that can be obtained by navigating to https://your-fortify-server/ssc/api/v1/projectVersions/ under currentState -> id")
         }
 
         try {

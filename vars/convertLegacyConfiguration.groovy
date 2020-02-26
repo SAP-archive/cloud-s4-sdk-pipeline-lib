@@ -24,7 +24,7 @@ def offerMigratedConfigurationAsArtifact(script){
     writeYaml file: 'pipeline_config_new.yml', data: script.commonPipelineEnvironment.configuration
     archiveArtifacts artifacts:'pipeline_config_new.yml'
     echo "[WARNING]: You are using a legacy configuration parameter which might not be supported in the future. "
-        "Please change the configuration in your pipeline_config.yml using the content of the file pipeline_config_new.yml " +
+        "Please change the configuration in your .pipeline/config.yml using the content of the file pipeline_config_new.yml " +
         "in the artifacts of this build as inspiration."
 }
 
