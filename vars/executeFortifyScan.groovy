@@ -1,16 +1,15 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
-import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.PathUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
-import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
-import hudson.AbortException
+import com.sap.piper.Utils
 
 def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'executeFortifyScan', stepParameters: parameters) {
         final script = parameters.script
-        final String basePath = parameters.basePath
+        final String basePath = parameters.basePath ?: '.'
         final Set parameterKeys = [
             'fortifyCredentialId',
             'fortifyProjectName',
@@ -46,35 +45,26 @@ def call(Map parameters = [:]) {
             error("Fortify stage expected a pom.xml file at \"${pathToPom}\", but no such file was found.")
         }
 
-        String effectivePomFileLocation = basePath
-        String effectivePomFileName = 'effectivePomFile.xml'
-        String effectivePomFile = PathUtils.normalize(effectivePomFileLocation, effectivePomFileName)
-        String artifactVersion = ''
-        String artifactId = ''
+        String artifactVersion
+        String artifactId
 
         if (BuildToolEnvironment.instance.isMta()) {
             def mta = readYaml file: 'mta.yaml'
-            artifactVersion = mta.version
-            artifactId = script.commonPipelineEnvironment.configuration.artifactId
-        } else {
-            MavenUtils.generateEffectivePom(script, pathToPom, effectivePomFileName)
-
-            if (!fileExists(effectivePomFile)) {
-                error("Fortify stage expected an effective pom file, but no such file was generated.")
+            if(!mta.version || !mta.ID){
+                error("ID (${mta.ID}) or version (${mta.version}) are not configured in mta.yaml. Please specify these values.")
             }
-            def effectivePom = readMavenPom file: effectivePomFile
-            artifactId = effectivePom.artifactId
-            artifactVersion = effectivePom.version
+            artifactVersion = mta.version
+            artifactId = mta.ID
+        } else {
+            artifactVersion = Utils.evaluateFromMavenPom(script, pathToPom, 'project.version')
+            artifactId = Utils.evaluateFromMavenPom(script, pathToPom, 'project.artifactId')
         }
 
-        if(artifactVersion.isEmpty() || artifactId.isEmpty()){
-            String errorMessage = "Invalid artifactId or artifactVersion value. Please ensure that" + (BuildToolEnvironment.instance.isMta() == true ) ? " the mta.yaml contains a valid artifactId and a version" : " the pom.xml contains a valid artifactId and a version"
-            error(errorMessage)
-        }
         def fortifyMavenScanOptions = [:]
         fortifyMavenScanOptions.script = script
         fortifyMavenScanOptions.pomPath = pathToPom
         fortifyMavenScanOptions.dockerImage = configuration.dockerImage
+        fortifyMavenScanOptions.m2Path = s4SdkGlobals.m2Directory
         fortifyMavenScanOptions.goals = [
             'fortify:translate',
             'fortify:scan'
