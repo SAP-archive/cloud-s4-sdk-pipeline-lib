@@ -90,7 +90,7 @@ def call(Map parameters = [:]) {
         if (currentBuild.resultIsWorseOrEqualTo('UNSTABLE')) {
             // Execute on master - only here the log is accessible
             node('master') {
-                String successString = "-Checkmarx Scan Results(CxSAST):-"
+                String successString = "Checkmarx Scan Results(CxSAST)"
                 String logFilePath = currentBuild.rawBuild.logFile.absolutePath
                 boolean checkmarxExecuted =
                     (0 == sh(script: "grep --max-count 1 --fixed-strings -- '${successString}' ${logFilePath}", returnStatus: true))

@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
@@ -7,12 +8,11 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'checkFindbugs', stepParameters: parameters) {
         assertPluginIsActive('warnings-ng')
 
-        def script = parameters.script
-        String basePath = parameters.basePath
+        Script script = parameters.script
 
-        final def stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'checkFindbugs')
+        Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'checkFindbugs')
 
-        final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkFindbugs')
+        Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, 'checkFindbugs')
 
         Set parameterKeys = [
             'scanModules',
@@ -24,19 +24,28 @@ def call(Map parameters = [:]) {
 
         Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
 
-        def filterOptions = ''
+        List filterOptions = []
 
-        def excludeFilterFile = configuration.excludeFilterFile
+        String excludeFilterFile = configuration.excludeFilterFile
         if (excludeFilterFile?.trim() && fileExists(excludeFilterFile)) {
-            filterOptions += "-Dspotbugs.excludeFilterFile=${excludeFilterFile} "
+            filterOptions.add("-Dspotbugs.excludeFilterFile=${excludeFilterFile}")
         }
 
-        def includeFilterFile = configuration.includeFilterFile
-        def localIncludeFilerPath = "s4hana_pipeline/${includeFilterFile}"
+        String includeFilterFile = configuration.includeFilterFile
+        String localIncludeFilerPath = "s4hana_pipeline/${includeFilterFile}"
         writeFile file: localIncludeFilerPath, text: libraryResource(includeFilterFile)
-        filterOptions += "-Dspotbugs.includeFilterFile=${localIncludeFilerPath}"
+        filterOptions.add("-Dspotbugs.includeFilterFile=${localIncludeFilerPath}")
 
-        executeMavenSpotBugsForConfiguredModules(script, filterOptions, configuration, basePath)
+        filterOptions.addAll(MavenUtils.getTestModulesExcludeFlags(script))
+
+        mavenExecute(
+            script: script,
+            flags: '--batch-mode',
+            m2Path: s4SdkGlobals.m2Directory,
+            goals: 'com.github.spotbugs:spotbugs-maven-plugin:3.1.9:spotbugs',
+            defines: filterOptions.join(' '),
+            dockerImage: configuration.dockerImage
+        )
 
         executeWithLockedCurrentBuildResult(
             script: script,
@@ -45,35 +54,12 @@ def call(Map parameters = [:]) {
             errorHandlerParameter: 'Findbugs',
             errorMessage: "Please examine the FindBugs/SpotBugs reports. For more information, please visit https://blogs.sap.com/2017/09/20/static-code-checks/"
         ) {
-                recordIssues failedTotalHigh: 1,
-                    failedTotalNormal: 10,
-                    blameDisabled: true,
-                    enabledForFailure: true,
-                    aggregatingResults: false,
-                    tool: spotBugs(pattern: '**/target/spotbugsXml.xml')
+            recordIssues failedTotalHigh: 1,
+                failedTotalNormal: 10,
+                blameDisabled: true,
+                enabledForFailure: true,
+                aggregatingResults: false,
+                tool: spotBugs(pattern: '**/target/spotbugsXml.xml')
         }
     }
-}
-
-def executeMavenSpotBugsForConfiguredModules(script, filterOptions, Map configuration, String basePath = './') {
-    if (configuration.scanModules && !BuildToolEnvironment.instance.isMta()) {
-        for (int i = 0; i < configuration.scanModules.size(); i++) {
-            def scanModule = configuration.scanModules[i]
-            executeMavenSpotBugs(script, filterOptions, configuration, "$basePath/$scanModule/pom.xml")
-        }
-    } else {
-        executeMavenSpotBugs(script, filterOptions, configuration, BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath))
-    }
-}
-
-def executeMavenSpotBugs(script, filterOptions, Map configuration, String pomPath) {
-    mavenExecute(
-        script: script,
-        flags: '--batch-mode',
-        pomPath: pomPath,
-        m2Path: s4SdkGlobals.m2Directory,
-        goals: 'com.github.spotbugs:spotbugs-maven-plugin:3.1.9:spotbugs',
-        defines: filterOptions,
-        dockerImage: configuration.dockerImage
-    )
 }

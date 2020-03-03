@@ -1,7 +1,7 @@
 def call(Map parameters = [:]) {
-    def stageName = 'additionalTools'
+    def stageName = 'postPipelineHook'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        echo "No additional tools specified."
+        // Stage does intentionally nothing as its purpose is to be overridden if required
     }
 }

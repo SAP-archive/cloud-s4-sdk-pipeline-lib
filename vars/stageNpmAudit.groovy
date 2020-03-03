@@ -5,7 +5,7 @@ import com.sap.piper.ConfigurationMerger
 def call(Map parameters = [:]) {
     def stageName = 'npmAudit'
     def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
         Set stageConfigurationKeys = [

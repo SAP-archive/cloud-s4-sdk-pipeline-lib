@@ -5,7 +5,7 @@ import com.sap.piper.ConfigurationLoader
 def call(Map parameters = [:]) {
     def stageName = 'sourceClearScan'
     def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         def stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
         def credentialsId = stageConfiguration.credentialsId
         def projectDefinedConfig = stageConfiguration.config

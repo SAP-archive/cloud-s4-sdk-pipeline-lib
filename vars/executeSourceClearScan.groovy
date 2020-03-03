@@ -42,7 +42,7 @@ def call(Map parameters = [:]) {
                 if (fileExists('srcclr.yml')) {
                     error("'srcclr.yml' file found in the project.\n" +
                         "This is not allowed, because the pipeline needs to write its own configuration file.\n" +
-                        "Instead, you can specify your configuration in 'pipeline_config.yml' as described in " +
+                        "Instead, you can specify your configuration in '.pipeline/config.yml' as described in " +
                         "https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#sourceclearscan.")
                 }
                 writeYaml file: 'srcclr.yml', data: sourceClearConfig

@@ -12,6 +12,8 @@ def call(Map parameters){
             sh "npm ci"
             executeCustomNpmScripts(customScripts)
         }
+    } else if (fileExists('yarn.lock')) {
+        sh 'yarn install'
     } else {
         executeNpm(script: script, dockerOptions: dockerOptions) {
             warnAboutMissingPackageLock()

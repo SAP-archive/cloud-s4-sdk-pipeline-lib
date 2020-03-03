@@ -45,7 +45,7 @@ class CheckCodeCoverageTest extends BaseCloudSdkTest {
         int defaultSuccessCoverage = 70
         int defaultUnstableCoverage = 65
 
-        Script script = loadScript("vars/checkCodeCoverage.groovy")
+        Script script = loadScript("vars/checkBackendCodeCoverage.groovy")
 
         helper.registerAllowedMethod('jacoco', [Map.class], { Map parameters ->
             successCoverage = Integer.parseInt(parameters.maximumLineCoverage)
@@ -68,7 +68,7 @@ class CheckCodeCoverageTest extends BaseCloudSdkTest {
         int successCoverage, unstableCoverage
         int userProvidedUnstableCoverage = 69, userProvidedSuccessCoverage = 80
 
-        Script script = loadScript("vars/checkCodeCoverage.groovy")
+        Script script = loadScript("vars/checkBackendCodeCoverage.groovy")
 
         helper.registerAllowedMethod('jacoco', [Map.class], { Map parameters ->
             successCoverage = Integer.parseInt(parameters.maximumLineCoverage)

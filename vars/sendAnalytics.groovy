@@ -5,7 +5,7 @@ import hudson.model.Result
 def call(Map parameters = [:]) {
     try {
         def script = parameters.script
-        if (analyticsEnabled(script)) {
+        if (Analytics.instance.analyticsEnabled) {
             def telemetryData = parameters.telemetryData
             if (!telemetryData) {
                 telemetryData = [:]
@@ -48,9 +48,4 @@ def call(Map parameters = [:]) {
         }
     } catch (ignore) {
     }
-}
-
-boolean analyticsEnabled(script) {
-    Map configWithDefault = loadEffectiveGeneralConfiguration script: script
-    return configWithDefault['collectTelemetryData']
 }

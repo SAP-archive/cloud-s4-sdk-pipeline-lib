@@ -11,6 +11,9 @@ import org.junit.Test
 class MavenUtilsTest extends BaseCloudSdkTest {
 
     List mavenExecuteCalls = []
+    List existingFiles = []
+    Map pomFiles = [:]
+
     @Before
     void prepareTests() throws Exception {
         setUp()
@@ -19,33 +22,73 @@ class MavenUtilsTest extends BaseCloudSdkTest {
         helper.registerAllowedMethod("mavenExecute", [Map.class], { parameters ->
             mavenExecuteCalls.push(parameters)
         })
+
+        helper.registerAllowedMethod("fileExists", [String.class], { filePath ->
+            return existingFiles.contains(filePath)
+        })
+
+        helper.registerAllowedMethod("readMavenPom", [Map.class], { parameters ->
+            String file = parameters.file
+
+            if(!pomFiles[file]) {
+                throw new FileNotFoundException(file, "File not found")
+            }
+
+            return pomFiles[file]
+        })
+    }
+
+    private void registerPomFile(String fileName, Map content){
+        existingFiles.push(fileName)
+        pomFiles[fileName] = content
     }
 
     @Test
     void 'Install artifacts for packaging type pom'() {
-        Map pom = [
+        registerPomFile('srv/pom.xml', [
             artifactId: 'service',
             packaging: 'pom'
-        ]
+        ])
 
         BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
 
-        MavenUtils.installMavenArtifacts(dummyScript, pom, 'srv', 'srv/pom.xml')
+        MavenUtils.installMavenArtifacts(dummyScript, 'srv')
 
         assertEquals(mavenExecuteCalls.size(), 1)
 
-
-        String normalizedFilePath = PathUtils.normalize('srv', 'pom.xml')
-        assertThat(mavenExecuteCalls[0].defines, containsString("-Dfile=${normalizedFilePath}"));
+        assertThat(mavenExecuteCalls[0].defines, containsString("-Dfile=srv/pom.xml"));
         assertThat(mavenExecuteCalls[0].defines, containsString("-DpomFile=srv/pom.xml"));
     }
 
     @Test
+    void 'Install artifacts for packaging type pom with flattened pom'() {
+        registerPomFile('srv/pom.xml', [
+            artifactId: 'service',
+            packaging: 'pom'
+        ])
+
+        registerPomFile('srv/.flattened-pom.xml', [
+            artifactId: 'service',
+            packaging: 'pom'
+        ])
+
+        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
+
+        MavenUtils.installMavenArtifacts(dummyScript, 'srv')
+
+        assertEquals(mavenExecuteCalls.size(), 1)
+
+        assertThat(mavenExecuteCalls[0].defines, containsString("-Dfile=srv/.flattened-pom.xml"));
+        assertThat(mavenExecuteCalls[0].defines, containsString("-DpomFile=srv/.flattened-pom.xml"));
+    }
+
+    @Test
     void 'Install artifacts for packaging type war'() {
-        Map pom = [
+
+        registerPomFile('srv/pom.xml', [
             artifactId: 'service',
             packaging: 'war'
-        ]
+        ])
 
         BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
 
@@ -56,27 +99,59 @@ class MavenUtilsTest extends BaseCloudSdkTest {
             else if(parameters.glob.endsWith("target/service*.war")){
                 return [new FileWrapperMock("srv/target/service.war")]
             }
-            else {
-                throw new RuntimeException("Glob '${parameters.glob}' not expected!")
-            }
+            throw new RuntimeException("Glob '${parameters.glob}' not expected!")
         })
 
-        MavenUtils.installMavenArtifacts(dummyScript, pom, 'srv', 'srv/pom.xml')
+        MavenUtils.installMavenArtifacts(dummyScript, 'srv')
 
         assertEquals(mavenExecuteCalls.size(), 2)
-        assertThat(mavenExecuteCalls[0].defines, containsString('-Dfile=srv/target/service-classes.jar'));
+
+        assertThat(mavenExecuteCalls[0].defines, containsString('-Dfile=srv/target/service.war'));
         assertThat(mavenExecuteCalls[0].defines, containsString('-DpomFile=srv/pom.xml'));
 
-        assertThat(mavenExecuteCalls[1].defines, containsString('-Dfile=srv/target/service.war'));
+        assertThat(mavenExecuteCalls[1].defines, containsString('-Dfile=srv/target/service-classes.jar'));
         assertThat(mavenExecuteCalls[1].defines, containsString('-DpomFile=srv/pom.xml'));
     }
 
     @Test
-    void 'Install artifacts for packaging type jar'() {
-        Map pom = [
+    void 'Install artifacts for packaging type war with flattened pom'() {
+
+        registerPomFile('srv/pom.xml', [
+            artifactId: 'service',
+            packaging: 'war'
+        ])
+
+        registerPomFile('srv/.flattened-pom.xml', [
+            artifactId: 'service',
+            packaging: 'war'
+        ])
+
+        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
+
+        helper.registerAllowedMethod("findFiles", [Map.class], { parameters ->
+            if(parameters.glob.endsWith("target/service*-classes.jar")){
+                return [new FileWrapperMock("srv/target/service-classes.jar")]
+            }
+            else if(parameters.glob.endsWith("target/service*.war")){
+                return [new FileWrapperMock("srv/target/service.war")]
+            }
+            throw new RuntimeException("Glob '${parameters.glob}' not expected!")
+        })
+
+        MavenUtils.installMavenArtifacts(dummyScript, 'srv')
+
+        assertEquals(mavenExecuteCalls.size(), 2)
+
+        assertThat(mavenExecuteCalls[0].defines, containsString('-DpomFile=srv/.flattened-pom.xml'));
+        assertThat(mavenExecuteCalls[1].defines, containsString('-DpomFile=srv/.flattened-pom.xml'));
+    }
+
+    @Test
+    void 'Install artifacts for packaging type jar including classes'() {
+        registerPomFile('srv/pom.xml', [
             artifactId: 'service',
             packaging: 'jar'
-        ]
+        ])
 
         BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
 
@@ -84,16 +159,20 @@ class MavenUtilsTest extends BaseCloudSdkTest {
             if(parameters.glob.endsWith("target/service*.jar")){
                 return [new FileWrapperMock("srv/target/service.jar")]
             }
-            else {
-                throw new RuntimeException("Glob '${parameters.glob}' not expected!")
+            if (parameters.glob.endsWith("target/service*-classes.jar")) {
+                return [new FileWrapperMock("srv/target/service-classes.jar")]
             }
+            throw new RuntimeException("Glob '${parameters.glob}' not expected!")
         })
 
-        MavenUtils.installMavenArtifacts(dummyScript, pom, 'srv', 'srv/pom.xml')
+        MavenUtils.installMavenArtifacts(dummyScript, 'srv')
 
-        assertEquals(mavenExecuteCalls.size(), 1)
+        assertEquals(mavenExecuteCalls.size(), 2)
         assertThat(mavenExecuteCalls[0].defines, containsString('-Dfile=srv/target/service.jar'));
         assertThat(mavenExecuteCalls[0].defines, containsString('-DpomFile=srv/pom.xml'));
+
+        assertThat(mavenExecuteCalls[1].defines, containsString('-Dfile=srv/target/service-classes.jar'));
+        assertThat(mavenExecuteCalls[1].defines, containsString('-DpomFile=srv/pom.xml'));
     }
 }
 

@@ -36,7 +36,7 @@ def call(Map parameters = [:], Closure body) {
             .mixin(parameters, PARAMETER_KEYS)
             .use()
 
-        if (BuildToolEnvironment.instance.isMta() && configuration.createHdiContainer) {
+        if (fileExists('integration-tests/pom.xml') && configuration.createHdiContainer) {
             assertPreconditions(configuration)
             String projectName = configuration.projectName
             String hdiContainerName = generateHdiContainerName(projectName)
@@ -170,7 +170,7 @@ private deleteContainer(Script script, Map configuration, String hdiContainerNam
     }
 }
 
-private generateHdiContainerName(String projectName){
+private generateHdiContainerName(String projectName) {
     //Shortening the projectName to a maximum of 13 characters as the HDI container name may only have a length of 50
     //and the UUID contains 36 characters plus separator.
     String shortName = projectName.substring(0, Math.min(13, projectName.length()))

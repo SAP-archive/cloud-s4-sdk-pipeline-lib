@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
     def stageName = 'frontendUnitTests'
     def script = parameters.script
 
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
 
         runOverModules(script: script, moduleType: 'html5') { basePath ->

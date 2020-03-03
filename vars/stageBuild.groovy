@@ -1,78 +1,54 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
-import static com.sap.cloud.sdk.s4hana.pipeline.MavenUtils.installMavenArtifacts
-
 def call(Map parameters = [:]) {
     Script script = parameters.script
-    build(script)
+    String stageName = 'build'
+
+    piperStageWrapper(stageName: stageName, script: script) {
+        if (BuildToolEnvironment.instance.isMta()) {
+            buildAndTestMta(script)
+        } else if (BuildToolEnvironment.instance.isNpm()) {
+            buildAndTestNpm(script)
+        } else {
+            buildAndTestMaven(script)
+        }
+    }
 
     if (BuildToolEnvironment.instance.isNpm()) {
         packageJsApp(script)
     }
 }
 
-private build(Script script) {
-    def stageName = 'build'
-    runAsStage(stageName: stageName, script: script) {
-        if (BuildToolEnvironment.instance.isMta()) {
-            runOverModules(script: this, moduleType: "java") { String basePath ->
+private void buildAndTestMta(Script script) {
+    collectJavaUnitTestResults(script: script) {
+        mtaBuild(script: script)
+    }
+    prepareMtaBuildResultForNextStages(script: script)
+    executeJavascriptUnitTests(script: script)
+}
 
-                String pathToPom = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
+private void buildAndTestNpm(Script script) {
+    installAndBuildNpm script: script, customScripts: ['ci-build']
+    executeJavascriptUnitTests(script: script)
+}
 
-                if (!fileExists(pathToPom)) {
-                    error("File ${pathToPom} was expected, but does not exist.")
-                }
-                injectQualityListenerDependencies(script: script, basePath: basePath)
-            }
-
-            withEnv(['MAVEN_OPTS=-Dmaven.repo.local=../s4hana_pipeline/maven_local_repo']) {
-                mtaBuild(script: script)
-            }
-
-            runOverModules(script: this, moduleType: "java") { String basePath ->
-
-                String pathToPom = BuildToolEnvironment.instance.getApplicationPomXmlPath(basePath)
-                def pom
-
-                if (fileExists(pathToPom)) {
-                    pom = readMavenPom file: pathToPom
-                } else {
-                    error("File ${pathToPom} was expected, but does not exist.")
-                }
-                installMavenArtifacts(script, pom, basePath, pathToPom)
-            }
-
-            // mta-builder executes 'npm install --production', therefore we need 'npm ci/install' to install the dev-dependencies
-            runOverModules(script: script, moduleType: 'html5') { basePath ->
-                dir(basePath) {
-                    installAndBuildNpm(script: script)
-                }
-            }
-            // The MTA builder executes the maven command only inside the java module directories and not on the root directory.
-            // Hence we need install root pom to local repository after the project is built using the mta builder
-            def pomFile = "pom.xml"
-            if (fileExists(pomFile)) {
-                def pom = readMavenPom file: pomFile
-                mavenExecute(script: script,
-                    goals: 'install:install-file',
-                    m2Path: 's4hana_pipeline/maven_local_repo',
-                    defines: ["-Dfile=${pomFile}",
-                              "-DpomFile=${pomFile}",
-                              "-DgroupId=${pom.groupId}",
-                              "-DartifactId=${pom.artifactId}",
-                              "-Dversion=${pom.version}",
-                              "-Dpackaging=pom"].join(" "))
-            }
-
-        } else if (BuildToolEnvironment.instance.isNpm()) {
-            installAndBuildNpm script: script, customScripts: ['ci-build']
-        } else {
-            mavenCleanInstall script: script
-            if (fileExists('package.json')) {
-                installAndBuildNpm script: script
-            }
-        }
+private void buildAndTestMaven(Script script) {
+    collectJavaUnitTestResults(script: script) {
+        mavenExecute(
+            script: script,
+            flags: '--update-snapshots --batch-mode' + (fileExists('integration-tests/pom.xml') ? ' -pl !integration-tests' : ''),
+            m2Path: s4SdkGlobals.m2Directory,
+            goals: 'clean org.jacoco:jacoco-maven-plugin:prepare-agent flatten:flatten install',
+            defines: [
+                '-Dflatten.mode=resolveCiFriendliesOnly',
+                '-DupdatePomFile=true'
+            ].join(" ")
+        )
+    }
+    // in case node_modules exists we assume npm install was executed by maven clean install
+    if (fileExists('package.json') && !fileExists('node_modules')) {
+        installAndBuildNpm script: script
     }
 }
 
@@ -80,10 +56,9 @@ private packageJsApp(script) {
     String stageName = 'package'
     def dockerOptions = []
     DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         executeNpm(script: script, dockerOptions: dockerOptions) {
             sh "npm run ci-package"
         }
     }
 }
-

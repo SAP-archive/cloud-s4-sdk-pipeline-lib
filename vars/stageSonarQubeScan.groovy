@@ -1,44 +1,67 @@
-import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
+import com.cloudbees.groovy.cps.NonCPS
 import com.sap.piper.ConfigurationLoader
+
+import java.nio.file.Paths
 
 def call(Map parameters = [:]) {
 
-    def stageName = 'sonarQubeScan'
-    def script = parameters.script
-    runAsStage(stageName: stageName, script: script) {
+    String stageName = 'sonarQubeScan'
+    Script script = parameters.script
+    piperStageWrapper(stageName: stageName, script: script) {
 
         Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-        def pathList = []
-        runOverModules(script: script, moduleType: "java") { String basePath ->
-            String path = BuildToolEnvironment.instance.getApplicationPath(basePath)
-            pathList.add(path + '/target/classes')
+        List jacocoReportPaths = getJacocoReportPaths().collect({ it.path })
+
+        List sonarProperties = [
+            "sonar.java.binaries=${getPathToBinaries().join(',')}".toString(),
+            "sonar.coverage.exclusions=**.js,unit-tests/**,integration-tests/**,performance-tests/**,**.xml,**/target/**",
+            "sonar.jacoco.reportPaths=${jacocoReportPaths.join(',')}".toString(),
+            'sonar.java.libraries=./s4hana_pipeline/maven_local_repo/**'
+        ]
+
+        if (stageConfiguration?.sonarProperties) {
+            sonarProperties.addAll(stageConfiguration.sonarProperties)
         }
-        executeSonarQubeChecks(script, pathList, stageConfiguration)
+
+        if (!stageConfiguration?.projectKey) {
+            error("Configure the option 'projectKey' in your stage configuration for 'sonarQubeScan'")
+        }
+
+        sonarProperties.add("sonar.projectKey=${stageConfiguration.projectKey}".toString())
+
+        if (!stageConfiguration?.instance) {
+            error("Configure the option 'instance' in your stage configuration for 'sonarQubeScan'")
+        }
+
+        sonarExecuteScan([
+            script     : script,
+            dockerImage: stageConfiguration.dockerImage ?: 'ppiper/node-browsers:v3',
+            instance   : stageConfiguration.instance,
+            options    : sonarProperties
+        ])
     }
 }
 
-private void executeSonarQubeChecks(def script, List pathList, Map configuration) {
+private List getJacocoReportPaths() {
+    return findFiles(glob: "**/target/**/*.exec")
+}
 
-    String path = pathList.join(',')
-    String coverageExclusion = '**.js,unit-tests/**,integration-tests/**,performance-tests/**,**.xml,**/target/**'
-    List sonarProperties = ['sonar.java.binaries=' + path, 'sonar.coverage.exclusions=' + coverageExclusion]
-    String projectKey = 'sonar.projectKey=unnamed'
+private List getPathToBinaries() {
+    def pomFiles = findFiles(glob: "**/pom.xml")
+    List binaries = []
 
-    if (configuration?.projectKey != null && !configuration?.projectKey.toString().isEmpty()) {
-        projectKey = "sonar.projectKey=${configuration.projectKey}"
-    } else {
-        echo "Please provide projectKey in configuration for SonarQube"
+    for (def pomFile : pomFiles) {
+        String mavenModule = getParentFolder(pomFile.path)
+        String classesPath = "$mavenModule/target/classes/"
+
+        if (fileExists(classesPath)) {
+            binaries.push(classesPath)
+        }
     }
-    if (configuration?.sonarProperties != null) {
-        sonarProperties += configuration.sonarProperties
-    }
-    sonarProperties.add(projectKey)
-    sonarExecuteScan([
-        script     : script,
-        dockerImage: 'ppiper/node-browsers',
-        instance   : configuration.instance,
-        options    : sonarProperties
-    ])
+    return binaries
+}
 
-
+@NonCPS
+String getParentFolder(String filePath) {
+    return Paths.get(filePath).getParent().toString()
 }

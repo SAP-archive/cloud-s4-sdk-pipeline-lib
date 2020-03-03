@@ -41,8 +41,11 @@ def call(Map parameters) {
         if (BuildToolEnvironment.instance.isMtaWithIntegrationTests(script) || BuildToolEnvironment.instance.isMaven()) {
             script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
         }
-        script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
         script.commonPipelineEnvironment.configuration.runStage.ARCHIVE_REPORT = true
+    }
+
+    if(fileExists('pom.xml')){
+        script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS = true
     }
 
     if (BuildToolEnvironment.instance.getNpmModules()) {
@@ -121,6 +124,10 @@ def call(Map parameters) {
     def sendNotification = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
     if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.runStage.SEND_NOTIFICATION = true
+    }
+
+    if (ConfigurationLoader.stageConfiguration(script, 'postPipelineHook')) {
+        script.commonPipelineEnvironment.configuration.runStage.POST_PIPELINE_HOOK = true
     }
 }
 

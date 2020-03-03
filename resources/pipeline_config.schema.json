@@ -91,16 +91,6 @@
                     },
                     "additionalProperties": false
                 },
-                "unitTests": {
-                    "type": "object",
-                    "properties": {
-                        "dockerImage": {
-                            "$ref": "#/definitions/dockerImage",
-                            "default": "maven:3.6.1-jdk-8-alpine"
-                        }
-                    },
-                    "additionalProperties": false
-                },
                 "backendIntegrationTests": {
                     "type": "object",
                     "properties": {
@@ -276,6 +266,15 @@
                                 "successCoverage",
                                 "unstableCoverage"
                             ]
+                        },
+                        "disabledChecks": {
+                            "description": "A list of checks which should not be executed. Possible values are: checkDeploymentDescriptors (Check for insecure options, such as ALLOW_MOCKED_AUTH_HEADER in deployment descriptors), checkResilience(Check that application is resilient to faults in the network), checkServices (Check that only official APIs are used), checkFrontendCodeCoverage (Ensures high frontend code coverage), checkBackendCodeCoverage (Ensures high backend code coverage)",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["checkDeploymentDescriptors", "checkResilience", "checkServices", "checkFrontendCodeCoverage", "checkBackendCodeCoverage"]
+                            },
+                            "default": []
                         }
                     },
                     "additionalProperties": false
@@ -549,7 +548,7 @@
                         "sapNpmRegistry": {
                             "description": "The default npm registry url to be used as the remote mirror for the SAP npm packages. Bypasses the local download cache if specified.",
                             "type": "string",
-                            "default": "sap.npm.com"
+                            "default": "npm.sap.com"
                         }
                     }
                 },
@@ -558,7 +557,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/mta-archive-builder"
+                            "default": "ppiper/mta-archive-builder:v1"
                         }
                     }
                 },
@@ -568,7 +567,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/cf-cli"
+                            "default": "ppiper/cf-cli:v2"
                         },
                         "smokeTestStatusCode": {
                             "description": "Expected return code for smoke test success.",
@@ -590,7 +589,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/neo-cli"
+                            "default": "ppiper/neo-cli:v2"
                         },
                         "neo": {
                             "description": "The map for neo.",
@@ -685,6 +684,33 @@
                             "default": 90
                         }
                     }
+                },
+                "sonarQubeScan": {
+                    "type": "object",
+                    "properties": {
+                        "dockerImage": {
+                            "$ref": "#/definitions/dockerImage"
+                        },
+                        "projectKey": {
+                            "description": "The project is used to refer your project.",
+                            "type": "string"
+                        },
+                        "instance": {
+                            "description": "This property refers to a sonarqube instance, which needs to be defined in the Jenkins.",
+                            "type": "string"
+                        },
+                        "sonarProperties": {
+                            "description": "The properties are used to configure sonar. Please refer to the example below.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": [
+                        "projectKey",
+                        "instance"
+                    ]
                 },
                 "executeFortifyScan": {
                     "type": "object",
@@ -792,7 +818,18 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "ppiper/cf-cli"
+                            "default": "ppiper/cf-cli:v2"
+                        }
+                    }
+                },
+                "debugReportArchive": {
+                    "description": "The debugReportArchive configuration can be used to create confidential (instead of redacted) debug reports. The difference between the redacted and the confidential debug report is that potentially confidential information, such as the GitHub repository and branch, global extension repository and shared libraries, are included in the confidential debug report. It is the user's responsibility to make sure that the debug report does not contain any confidential information.",
+                    "type": "object",
+                    "properties": {
+                        "shareConfidentialInformation": {
+                            "description": "If set to true, a confidential debug report is being generated with each build.",
+                            "type": "boolean",
+                            "default": false
                         }
                     }
                 }
@@ -825,17 +862,6 @@
                         "items": {
                             "type": "string"
                         }
-                    }
-                }
-            },
-            "archiveDebugLog": {
-                "description": "The archiveDebugLog post-build action can be used to create confidential (instead of redacted) debug logs. The difference between the redacted and the confidential debug log is, that potentially confidential information, such as the GitHub repository and branch, global extension repository and shared libraries, are included in the confidential debug log. It is the user's responsibility to make sure that the debug log does not contain any confidential information.",
-                "type": "object",
-                "properties": {
-                    "shareConfidentialInformation": {
-                        "description": "If set to true, a confidential debug log is being generated with each build.",
-                        "type": "boolean",
-                        "default": false
                     }
                 }
             }

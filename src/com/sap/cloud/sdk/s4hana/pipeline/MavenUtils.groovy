@@ -3,7 +3,15 @@ package com.sap.cloud.sdk.s4hana.pipeline
 class MavenUtils implements Serializable {
     static final long serialVersionUID = 1L
 
-    static void generateEffectivePom(script, pomFile, effectivePomFile) {
+    static void flattenPomXmls(Script script){
+        script.mavenExecute(
+            script: script,
+            goals: 'flatten:flatten',
+            m2Path: 's4hana_pipeline/maven_local_repo',
+            defines: "-Dflatten.mode=resolveCiFriendliesOnly"
+        )
+    }
+    static void generateEffectivePom(Script script, String pomFile, String effectivePomFile) {
         script.mavenExecute(script: script,
             flags: '--batch-mode',
             pomPath: pomFile,
@@ -12,8 +20,41 @@ class MavenUtils implements Serializable {
             defines: "-Doutput=${effectivePomFile}")
     }
 
-    static void installMavenArtifacts(Script script, pom, String basePath, String pathToPom) {
+    static void installMavenArtifacts(Script script, String pathToMavenModule) {
 
+        String pathToPom = "$pathToMavenModule/pom.xml"
+
+        if (!script.fileExists(pathToPom)) {
+            script.error("To install the the maven artifacts to the local maven repository a pom.xml file at \"${pathToPom}\" is expected, but no such file was found." +
+                "If there is a pom.xml in that location then please do not hesitate to open an issue at https://github.com/SAP/cloud-s4-sdk-pipeline/issues")
+        }
+
+        String pathToFlattenedPom = "$pathToMavenModule/.flattened-pom.xml"
+        if (script.fileExists(pathToFlattenedPom)) {
+            pathToPom = pathToFlattenedPom
+        }
+
+        def pom = script.readMavenPom file: pathToPom
+
+
+        if (pom.packaging == "pom") {
+            installFile(script, pathToPom, pathToPom)
+        } else {
+            String pathToTargetDirectory = PathUtils.normalize(pathToMavenModule, '/target')
+
+            List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
+            packagingFiles.each { def file -> installFile(script, pathToPom, file.getPath()) }
+
+            List<String> classesJars = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*-classes.jar")
+            if (classesJars) {
+                installFile(script, pathToPom, classesJars[0].getPath(), ["-Dpackaging=jar", "-Dclassifier=classes"])
+            }
+        }
+    }
+
+    //TODO Deprecated. Remove once not used in extensions.
+    static void installMavenArtifacts(Script script, def pom, String basePath, String pathToPom) {
+        // ToDo: remove dependency to BuildToolEnv
         String pathToApplication = BuildToolEnvironment.instance.getApplicationPath(basePath)
         String pathToTargetDirectory = PathUtils.normalize(pathToApplication, '/target')
 
@@ -22,19 +63,18 @@ class MavenUtils implements Serializable {
             if (classesJars.size() != 1) {
                 script.error "Expected exactly one *-classes.jar file in $pathToTargetDirectory, but found ${classesJars?.join(', ')}"
             }
-            installFile(script, pathToPom, classesJars[0].getPath(), [ "-Dpackaging=jar", "-Dclassifier=classes"])
+            installFile(script, pathToPom, classesJars[0].getPath(), ["-Dpackaging=jar", "-Dclassifier=classes"])
         }
 
-        if(pom.packaging == "pom"){
+        if (pom.packaging == "pom") {
             installFile(script, pathToPom, PathUtils.normalize(pathToApplication, 'pom.xml'))
-        }
-        else {
+        } else {
             List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
-            packagingFiles.each { file -> installFile(script, pathToPom, file.getPath()) }
+            packagingFiles.each { def file -> installFile(script, pathToPom, file.getPath()) }
         }
     }
 
-    static void installFile(Script script, String pathToPom, String file, List additionalDefines=[]){
+    static void installFile(Script script, String pathToPom, String file, List additionalDefines = []) {
         script.mavenExecute(
             script: script,
             goals: 'install:install-file',
@@ -46,7 +86,7 @@ class MavenUtils implements Serializable {
         )
     }
 
-    static String getMavenDependencyTree(def script, String basePath) {
+    static String getMavenDependencyTree(Script script, String basePath) {
         script.mavenExecute(script: script,
             flags: "--batch-mode -DoutputFile=mvnDependencyTree.txt",
             m2Path: script.s4SdkGlobals.m2Directory,
@@ -54,5 +94,20 @@ class MavenUtils implements Serializable {
             goals: "dependency:tree")
 
         return script.readFile(PathUtils.normalize(basePath, 'mvnDependencyTree.txt'))
+    }
+
+    static List getTestModulesExcludeFlags(Script script) {
+        List moduleExcludes = []
+        if (script.fileExists('integration-tests/pom.xml')) {
+            moduleExcludes << '-pl !integration-tests'
+        }
+        if (script.fileExists('unit-tests/pom.xml')) {
+            moduleExcludes << '-pl !unit-tests'
+        }
+        return moduleExcludes
+    }
+
+    static void installRootPom(Script script) {
+        installMavenArtifacts(script, './')
     }
 }

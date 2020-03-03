@@ -22,3 +22,4 @@ resources/check-ui5-best-practices/package-lock.json
 out/
 .vscode/
 bin
+vars/pipeline.gdsl

@@ -21,6 +21,11 @@ general:
 
 #Steps Specific Configuration
 steps:
+  piperStageWrapper:
+    globalExtensionsDirectory: 's4hana_pipeline/extensions/'
+    stageLocking: false
+    stashContent: []
+
   artifactSetVersion:
     gitCredentialsId: ""
     commitVersion: false
@@ -32,14 +37,14 @@ steps:
     dockerOptions: ""
 
   executeNpm:
-    dockerImage: ppiper/node-browsers:v2
+    dockerImage: ppiper/node-browsers:v3
     sapNpmRegistry: "https://npm.sap.com"
 
   executeGradle:
     dockerImage: gradle:6.0.0-jdk8
 
   executeSourceClearScan:
-    dockerImage: ppiper/mta-archive-builder
+    dockerImage: ppiper/mta-archive-builder:v1
 
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
@@ -47,7 +52,7 @@ steps:
       - "application"
 
   createHdiContainer:
-    dockerImage: ppiper/cf-cli
+    dockerImage: ppiper/cf-cli:v2
 
   executeFortifyScan:
     verbose: false
@@ -69,12 +74,15 @@ steps:
     unstableThreshold: 90
 
   cloudFoundryDeploy:
-    dockerImage: ppiper/cf-cli
+    dockerImage: ppiper/cf-cli:v2
     keepOldInstance: true
     stashContent: []
 
+  cloudFoundryCreateService:
+    stashContent: []
+
   neoDeploy:
-    dockerImage: ppiper/neo-cli
+    dockerImage: ppiper/neo-cli:v2
     deployMode: "warParams"
     neoHome: "/sdk"
 
@@ -82,13 +90,16 @@ steps:
     buildTarget: "CF"
     mtaBuildTool: "cloudMbt"
 
-  checkCodeCoverage:
+  checkFrontendCodeCoverage:
     codeCoverageFrontend:
       unstable: 0
       failing: 0
 
   tmsUpload:
     namedUser: "CLOUD SDK PIPELINE"
+
+  sonarExecuteScan:
+    dockerImage: 'ppiper/node-browsers:v3'
 
 #Stage Specific Configurations
 stages:
@@ -112,3 +123,6 @@ stages:
   artifactDeployment:
     nexus:
       version: nexus3
+
+  s4SdkQualityChecks:
+    disabledChecks: []

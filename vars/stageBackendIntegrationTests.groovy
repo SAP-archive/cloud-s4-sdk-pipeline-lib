@@ -21,7 +21,7 @@ def call(Map parameters = [:]) {
     ]
     Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
 
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
         // The HDI container is cleaned up at the end of the execution
         createHdiContainer([script: script].plus(configuration)) {
             if (configuration.sidecarImage) {
@@ -137,12 +137,6 @@ private void javaIntegrationTests(def script, Map configuration) {
 
         ReportAggregator.instance.reportTestExecution(QualityCheck.BackendIntegrationTests)
     }
-
-    copyExecFile execFiles: [
-        "integration-tests/target/jacoco.exec",
-        "integration-tests/target/coverage-reports/jacoco.exec",
-        "integration-tests/target/coverage-reports/jacoco-ut.exec"
-    ], targetFile: 'integration-tests.exec'
 
     if (BuildToolEnvironment.instance.isMta()) {
         sh("mkdir -p ${s4SdkGlobals.reportsDirectory}/service_audits/; cp s4hana_pipeline/reports/service_audits/*.log ${s4SdkGlobals.reportsDirectory}/service_audits/ || echo 'Warning: No audit logs found'")

@@ -1,8 +1,7 @@
 import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
-import com.sap.cloud.sdk.s4hana.pipeline.BuildTool
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
-import com.sap.cloud.sdk.s4hana.pipeline.Debuglogger
+import com.sap.piper.DebugReport
 
 def call(Map parameters = [:]) {
     Script script = parameters.script
@@ -31,7 +30,7 @@ def call(Map parameters = [:]) {
     // TODO Need salt
     Analytics.instance.hashProject(mta.ID)
     assertCorrectIntegrationTestStructure(script)
-    Debuglogger.instance.modulesMap = BuildToolEnvironment.instance.modulesMap
+    DebugReport.instance.modulesMap = BuildToolEnvironment.instance.modulesMap
 }
 
 // Example:

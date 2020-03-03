@@ -9,9 +9,11 @@ class Analytics implements Serializable {
     Map systemInfo = [:]
     Map jobConfiguration = [:]
     String salt = null
+    boolean analyticsEnabled = true
 
-    void initAnalytics(Script script) {
+    void init(Script script) {
         Map generalConfig = script.loadEffectiveGeneralConfiguration script: script
+        analyticsEnabled = generalConfig?.collectTelemetryData
         initTelemetryData(generalConfig.idSite)
         initSystemInfo()
         initJobConfiguration(script.isProductiveBranch(script: script))

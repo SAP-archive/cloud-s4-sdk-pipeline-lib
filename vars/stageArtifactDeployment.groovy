@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
     def stageName = 'artifactDeployment'
     def script = parameters.script
 
-    runAsStage(stageName: stageName, script: script) {
+    piperStageWrapper(stageName: stageName, script: script) {
 
         Map defaultConfig = ConfigurationLoader.defaultStageConfiguration(script, stageName)
         Map stageConfig = ConfigurationLoader.stageConfiguration(script, stageName)
