@@ -35,7 +35,7 @@ def call(Map parameters = [:]) {
 
             def cfTargets = stageConfiguration.cfTargets
             if (cfTargets) {
-                Set stageLevelManifestFiles = computeStageLevelManifestFiles(cfTargets, stepConfiguration?.cloudFoundry?.manifest)
+                Set stageLevelManifestFiles = computeStageLevelManifestFiles(cfTargets, stepConfiguration?.cloudFoundry?.manifest, projectGeneralConfiguration?.cloudFoundry?.manifest)
 
                 for (int i = 0; i < stageLevelManifestFiles.size(); i++) {
                     def manifest = readYaml file: stageLevelManifestFiles[i]
@@ -79,13 +79,15 @@ private Set extractForbiddenEnvironmentVariablesNeo(neoTargets) {
 }
 
 @NonCPS
-private Set computeStageLevelManifestFiles(cfTargets, defaultManifest) {
+private Set computeStageLevelManifestFiles(cfTargets, stepManifest, generalManifest) {
     Set stageLevelManifestFiles = []
     for (int i = 0; i < cfTargets.size(); i++) {
         if (cfTargets[i].manifest) {
             stageLevelManifestFiles.add(cfTargets[i].manifest)
-        } else if (defaultManifest) {
-            stageLevelManifestFiles.add(defaultManifest)
+        } else if (stepManifest) {
+            stageLevelManifestFiles.add(stepManifest)
+        } else if (generalManifest) {
+            stageLevelManifestFiles.add(generalManifest)
         }
     }
     return stageLevelManifestFiles
