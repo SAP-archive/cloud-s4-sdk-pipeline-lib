@@ -2,6 +2,7 @@
 containerMaps:
   initS4sdkPipeline:
     - mavenExecute
+    - executeNpm
   build:
     - mavenExecute
     - executeNpm
