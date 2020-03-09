@@ -486,8 +486,9 @@
                         "ui5BestPractices": {
                             "type": "object",
                             "properties": {
-                                "enableES6": {
-                                    "type": "boolean"
+                                "esLanguageLevel": {
+                                    "type": "string",
+                                    "pattern": "es6|es2017|es2020"
                                 },
                                 "failThreshold": {
                                     "type": "object",

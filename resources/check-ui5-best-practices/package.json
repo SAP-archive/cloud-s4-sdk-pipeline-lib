@@ -4,7 +4,7 @@
     "private": true,
     "dependencies": {
         "@sap/di.code-validation.core": "1.0.12",
-        "@sap/di.code-validation.js": "1.1.6",
-        "@sap/di.code-validation.xml": "1.1.16"
+        "@sap/di.code-validation.js": "1.1.7",
+        "@sap/di.code-validation.xml": "1.1.18"
     }
 }

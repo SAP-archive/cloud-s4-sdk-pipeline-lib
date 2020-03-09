@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
+import com.sap.cloud.sdk.s4hana.pipeline.WarningsUtils
 import com.sap.piper.BashUtils
 
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
@@ -40,14 +41,25 @@ def call(Map parameters = [:]) {
                 sh 'npm config set @sap:registry https://npm.sap.com'
                 sh 'npm install'
 
+                // deprecated property to enable es6 -> Use esLanguageLevel instead
                 boolean es6Enabled = configuration?.ui5BestPractices?.enableES6
-                if (es6Enabled) {
+                String esLanguageLevel = configuration?.ui5BestPractices?.esLanguageLevel
+
+                if (!esLanguageLevel) {
+                    if (es6Enabled) {
+                        WarningsUtils.addPipelineWarning(script, "Deprecated option es6Enabled used", "Please use the esLanguageLevel setting for ui5BestPractices which supports multiple language levels.")
+                        esLanguageLevel = 'es6'
+                    }
+                }
+
+                if (esLanguageLevel) {
+                    echo "[INFO] Setting ES language level to $esLanguageLevel."
                     Map basicDefaultConfig = readJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/basicDefaultConfig/.eslintrc.json'
-                    basicDefaultConfig['env'].es6 = true
+                    basicDefaultConfig['env'][esLanguageLevel] = true
                     writeJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/basicDefaultConfig/.eslintrc.json', json: basicDefaultConfig
 
                     Map fioriCustomRules = readJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/fioriCustomRules/.eslintrc.json'
-                    fioriCustomRules['env'].es6 = true
+                    fioriCustomRules['env'][esLanguageLevel] = true
                     writeJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/fioriCustomRules/.eslintrc.json', json: fioriCustomRules
                 }
 
