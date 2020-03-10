@@ -10,6 +10,8 @@ def call(Map parameters) {
 
     DebugReport.instance.initFromEnvironment(env)
 
+    validateConfigSchema script: script
+
     Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
     if (!generalConfiguration) {
         generalConfiguration = [:]
