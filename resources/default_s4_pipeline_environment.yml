@@ -96,7 +96,7 @@ steps:
       failing: 0
 
   tmsUpload:
-    namedUser: "CLOUD SDK PIPELINE"
+    namedUser: "CLOUD_SDK_PIPELINE"
 
   sonarExecuteScan:
     dockerImage: 'ppiper/node-browsers:v3'
