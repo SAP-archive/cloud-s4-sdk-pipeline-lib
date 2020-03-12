@@ -23,8 +23,14 @@ def call(Map parameters = [:]) {
         ]
 
         def configuration = ConfigurationMerger.merge(parameters, parameterKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
-        def defaultOptions = "-n -t ${configuration.testPlan} -l JMeter-report.jtl -e -o ${configuration.reportDirectory}"
-        def command = "jmeter ${configuration.options?.trim() ?: ''} ${defaultOptions}"
+
+        if (!configuration.testPlan) {
+            error "JMeter is enabled, but parameter testPlan (path to JMeter tests) is not set. \n" +
+                "Please set testPlan in checkJMeter step of your project's .pipeline/config.yml or disable JMeter."
+        }
+
+        String defaultOptions = "-n -t ${configuration.testPlan} -l JMeter-report.jtl -e -o ${configuration.reportDirectory}"
+        String command = "jmeter ${configuration.options?.trim() ?: ''} ${defaultOptions}"
 
         dockerExecute(script: script, dockerImage: configuration.dockerImage) {
             sh "mkdir -p ${configuration.reportDirectory}"
