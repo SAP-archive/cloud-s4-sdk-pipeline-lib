@@ -52,19 +52,12 @@ def call(Map parameters = [:]) {
                     }
                 }
 
-                if (esLanguageLevel) {
-                    echo "[INFO] Setting ES language level to $esLanguageLevel."
-                    Map basicDefaultConfig = readJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/basicDefaultConfig/.eslintrc.json'
-                    basicDefaultConfig['env'][esLanguageLevel] = true
-                    writeJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/basicDefaultConfig/.eslintrc.json', json: basicDefaultConfig
-
-                    Map fioriCustomRules = readJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/fioriCustomRules/.eslintrc.json'
-                    fioriCustomRules['env'][esLanguageLevel] = true
-                    writeJSON file: 'node_modules/@sap/di.code-validation.js/src/defaultConfig/fioriCustomRules/.eslintrc.json', json: fioriCustomRules
-                }
-
                 ui5Components.each { componentJsFile ->
-                    sh "node run-ui5-lint.js ${BashUtils.quoteAndEscape(componentJsFile)} "
+                    if (esLanguageLevel) {
+                        sh "node run-ui5-lint.js ${BashUtils.quoteAndEscape(componentJsFile)} ${esLanguageLevel} "
+                    } else {
+                        sh "node run-ui5-lint.js ${BashUtils.quoteAndEscape(componentJsFile)} "
+                    }
                 }
             }
 

@@ -6,8 +6,26 @@ const xmlValidator = require("@sap/di.code-validation.xml")
 const coreValidator = require("@sap/di.code-validation.core")
 const ValidationMetadata = coreValidator.validationMetadata
 
-if (process.argv.length != 3) {
-    throw "Expected one argument with path to Component.js file.\nUsage: node check-ui5-best-practices.js my/path/to/Component.js\n"
+if (process.argv.length < 3) {
+    throw "Expected argument with path to Component.js file. Optional argument may set the ES language level (es6, es2017, es2020).\nUsage: node check-ui5-best-practices.js my/path/to/Component.js [(es6, es2017, es2020)]\n"
+}
+
+if (process.argv.length === 4) {
+    const esLanguageLevel = process.argv[3]
+
+    console.log(`[INFO] Setting ES language level to ${esLanguageLevel}.`)
+
+    const basicDefaultConfig = require('./node_modules/@sap/di.code-validation.js/src/defaultConfig/basicDefaultConfig/.eslintrc.json')
+    if (!basicDefaultConfig['env'][esLanguageLevel]) {
+        basicDefaultConfig['env'][esLanguageLevel] = true
+        fs.writeFileSync('./node_modules/@sap/di.code-validation.js/src/defaultConfig/basicDefaultConfig/.eslintrc.json', JSON.stringify(basicDefaultConfig))
+    }
+
+    const fioriCustomRules = require('./node_modules/@sap/di.code-validation.js/src/defaultConfig/fioriCustomRules/.eslintrc.json')
+    if (!fioriCustomRules['env'][esLanguageLevel]) {
+        fioriCustomRules['env'][esLanguageLevel] = true
+        fs.writeFileSync('./node_modules/@sap/di.code-validation.js/src/defaultConfig/fioriCustomRules/.eslintrc.json', JSON.stringify(fioriCustomRules))
+    }
 }
 
 const componentJs = process.argv[2]
