@@ -13,7 +13,8 @@ import net.sf.json.JSONObject
 ]
 
 @Field Set STEP_CONFIG_KEYS = GENERAL_CONFIG_KEYS.plus([
-    'dockerImage'
+    'dockerImage',
+    'broker'
 ])
 
 @Field Set PARAMETER_KEYS = STEP_CONFIG_KEYS.plus(['createHdiContainer'])
@@ -124,12 +125,17 @@ private createContainer(Script script, Map configuration, String hdiContainer) {
     insideCfDockerContainer(script, configuration) {
         login(configuration.cloudFoundry)
 
-        def containerStatus = sh(returnStatus: true, script: "cf service ${configuration.hdiContainerName}  > /dev/null 2>&1")
+        def containerStatus = sh(returnStatus: true, script: "cf service ${hdiContainer}  > /dev/null 2>&1")
         if (containerStatus == 0) {
-            error("The HDI Container ${configuration.hdiContainerName} already exists.")
+            error("The HDI Container ${hdiContainer} already exists.")
         }
 
-        sh "cf create-service hana hdi-shared ${hdiContainer}"
+        String command = "cf create-service hana hdi-shared ${hdiContainer}"
+        if (configuration.broker) {
+            command += " -b ${BashUtils.escape(configuration.broker)}"
+        }
+
+        sh command
         isKeyCreated = 1
         try {
             timeout(time: 180, unit: 'SECONDS') {

@@ -3,7 +3,6 @@ import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 
 import com.sap.piper.DebugReport
-import com.sap.piper.MapUtils
 
 def call(Map parameters) {
     def script = parameters.script
@@ -30,35 +29,13 @@ def call(Map parameters) {
 
     loadGlobalExtension script: script
 
-    if (script.commonPipelineEnvironment.configuration.general.sharedConfiguration) {
-        def response = httpRequest(
-            url: script.commonPipelineEnvironment.configuration.general.sharedConfiguration,
-            validResponseCodes: '100:399,404' // Allow a more specific error message for 404 case
-        )
-        if (response.status == 404) {
-            error "File path for shared configuration (${script.commonPipelineEnvironment.configuration.general.sharedConfiguration}) appears to be incorrect. " +
-                "Server returned HTTP status code 404. " +
-                "Please make sure that the path is correct and no authentication is required to retrieve the file."
-        }
+    loadSharedConfig script: script
 
-        Map sharedConfig
+    convertLegacyConfiguration script: script
 
-        try {
-            sharedConfig = readYaml text: response.content
-        } catch (Exception e) {
-            error "Failed to parse shared configuration as YAML file. " +
-                "Please make sure it is valid YAML, and that the response body only contains valid YAML. " +
-                "If you use a file from a GitHub repository, make sure you've used the 'raw' link, for example https://my.github.local/raw/someorg/shared-config/master/backend-service.yml\n" +
-                "File path: ${script.commonPipelineEnvironment.configuration.general.sharedConfiguration}\n" +
-                "Response content: ${response.content}\n" +
-                "Exeption message: ${e.getMessage()}\n" +
-                "Exception stacktrace: ${Arrays.toString(e.getStackTrace())}"
-        }
+    setupDownloadCache script: script
 
-        // The second parameter takes precedence, so shared config can be overridden by the project config
-        script.commonPipelineEnvironment.configuration = MapUtils.merge(sharedConfig, script.commonPipelineEnvironment.configuration)
-        DebugReport.instance.sharedConfigFilePath = script.commonPipelineEnvironment.configuration.general.sharedConfiguration
-    }
+    checkMultibranchPipeline script: script
 
     if (Boolean.valueOf(env.ON_K8S)) {
         initContainersMap script: script
@@ -91,6 +68,10 @@ def call(Map parameters) {
     // clean state of the repository.
     moveLegacyExtensions(script: script)
     convertLegacyExtensions(script: script)
+
+    if (!Boolean.valueOf(env.ON_K8S)) {
+        checkDiskSpace script: script
+    }
 
     stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
     script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]

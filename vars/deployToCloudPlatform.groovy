@@ -95,7 +95,7 @@ def call(Map parameters = [:]) {
 
                                 matExtensionCredentials.each { key, credentialsId ->
                                     withCredentials([string(credentialsId: credentialsId, variable: 'mtaExtensionCredential')]) {
-                                        fileContent = fileContent.replaceFirst('<%= ' + key.toString() + ' %>', mtaExtensionCredential.toString())
+                                        fileContent = fileContent.replace('<%= ' + key.toString() + ' %>', mtaExtensionCredential.toString())
                                     }
                                 }
 
