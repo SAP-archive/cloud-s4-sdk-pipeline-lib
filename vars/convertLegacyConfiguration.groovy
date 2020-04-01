@@ -2,7 +2,7 @@ import com.sap.piper.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 
 def call(Map parameters) {
-    def script = parameters.script
+    Script script = parameters.script
 
     checkNotUsingWhiteSourceOrgToken(script)
 
@@ -13,6 +13,7 @@ def call(Map parameters) {
     configurationConverted = convertNeoDeployment(script) || configurationConverted
     configurationConverted = renameBackendIntegrationTests(script) || configurationConverted
     configurationConverted = convertDebugReportConfig(script) || configurationConverted
+    checkStaticCodeChecksConfig(script)
 
     if (configurationConverted) {
         offerMigratedConfigurationAsArtifact(script)
@@ -20,15 +21,15 @@ def call(Map parameters) {
     }
 }
 
-def offerMigratedConfigurationAsArtifact(script){
+def offerMigratedConfigurationAsArtifact(Script script) {
     writeYaml file: 'pipeline_config_new.yml', data: script.commonPipelineEnvironment.configuration
-    archiveArtifacts artifacts:'pipeline_config_new.yml'
-    echo "[WARNING]: You are using a legacy configuration parameter which might not be supported in the future. "
+    archiveArtifacts artifacts: 'pipeline_config_new.yml'
+    echo "[WARNING]: You are using a legacy configuration parameter which might not be supported in the future. " +
         "Please change the configuration in your .pipeline/config.yml using the content of the file pipeline_config_new.yml " +
         "in the artifacts of this build as inspiration."
 }
 
-boolean renameBackendIntegrationTests(script) {
+boolean renameBackendIntegrationTests(Script script) {
     Map stageConfiguration = script.commonPipelineEnvironment.configuration.stages
     if (!stageConfiguration?.integrationTests)
         return false
@@ -47,7 +48,7 @@ boolean renameBackendIntegrationTests(script) {
     return true
 }
 
-boolean renameMavenStep(script) {
+boolean renameMavenStep(Script script) {
     Map stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
     if (!stepsConfiguration?.executeMaven)
         return false
@@ -66,7 +67,7 @@ boolean renameMavenStep(script) {
     return true
 }
 
-boolean removeMavenGlobalSettings(script) {
+boolean removeMavenGlobalSettings(Script script) {
     Map mavenConfiguration = ConfigurationLoader.stepConfiguration(script, 'mavenExecute')
     // Maven globalSettings obsolete since introduction of DL-Cache
     if (!mavenConfiguration.globalSettingsFile)
@@ -95,13 +96,13 @@ boolean removeMavenGlobalSettings(script) {
     return true
 }
 
-def checkNotUsingWhiteSourceOrgToken(script) {
+def checkNotUsingWhiteSourceOrgToken(Script script) {
     Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
     if (!stageConfig)
         return
 
     if (stageConfig?.orgToken) {
-        error("Your pipeline configuration may not use 'orgtoken' in whiteSourceScan stage. "+
+        error("Your pipeline configuration may not use 'orgtoken' in whiteSourceScan stage. " +
             "Store it as a 'Secret Text' in Jenkins and use the 'credentialsId' field.")
     }
     if (!stageConfig?.credentialsId) {
@@ -109,7 +110,7 @@ def checkNotUsingWhiteSourceOrgToken(script) {
     }
 }
 
-boolean convertCloudfoundryDeployment(script){
+boolean convertCloudfoundryDeployment(Script script) {
     Map stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
     if (!stepsConfiguration?.deployToCfWithCli)
         return false
@@ -137,7 +138,7 @@ boolean convertCloudfoundryDeployment(script){
     return true
 }
 
-boolean convertNeoDeployment(script) {
+boolean convertNeoDeployment(Script script) {
     Map stepsConfiguration = script.commonPipelineEnvironment.configuration.steps
     if (!stepsConfiguration?.deployToNeoWithCli)
         return false
@@ -152,7 +153,7 @@ boolean convertNeoDeployment(script) {
     return true
 }
 
-boolean convertDebugReportConfig(script) {
+boolean convertDebugReportConfig(Script script) {
     Map postActionConfiguration = script.commonPipelineEnvironment.configuration.postActions
     if (!postActionConfiguration?.archiveDebugLog)
         return false
@@ -170,4 +171,14 @@ boolean convertDebugReportConfig(script) {
     stepsConfiguration.debugReportArchive = postActionConfiguration.archiveDebugLog
     postActionConfiguration.remove('archiveDebugLog')
     return true
+}
+
+void checkStaticCodeChecksConfig(Script script) {
+    Map stageConfiguration = script.commonPipelineEnvironment.configuration.stages
+    Map stepConfiguration = script.commonPipelineEnvironment.configuration.steps
+
+    if (stageConfiguration.staticCodeChecks || stepConfiguration.staticCodeChecks || stepConfiguration.mavenExecuteStaticCodeCheck?.pmdExcludes) {
+        error("The configuration of the static code checks has been moved to the steps configuration." +
+            "The configuration options have also changed. Please visit https://sap.github.io/jenkins-library/steps/mavenExecuteStaticCodeChecks/ for more information.")
+    }
 }

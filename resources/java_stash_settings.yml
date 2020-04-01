@@ -47,7 +47,7 @@ frontendIntegrationTests:
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
-staticCodeChecks:
+mavenExecuteStaticCodeChecks:
   unstash: ["SOURCE", "TARGET", "REPORTS", "M2"]
   stashes:
     - name: "REPORTS"
