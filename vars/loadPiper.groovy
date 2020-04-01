@@ -10,14 +10,14 @@ def call(Map parameters = [:]) {
 
     String piperIdentifier = 'None'
 
-    if(isLibraryConfigured("piper-library-os")){
-        piperIdentifier = "piper-library-os"
-    }
-    else if(isLibraryConfigured("piper-lib-os")){
+    if(isLibraryConfigured("piper-lib-os")){
         piperIdentifier = "piper-lib-os"
     }
+    else if(isLibraryConfigured("piper-library-os")){
+        error("You are using the old global library identifier piper-library-os. Please change the name to piper-lib-os or make sure to setup Jenkins with the latest Docker image as described here: https://github.com/SAP/devops-docker-cx-server/blob/master/docs/operations/cx-server-operations-guide.md")
+    }
     else {
-        error("Configuration missing for required libraries. Please setup Jenkins as described here: https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/README.md")
+        error("Configuration missing for required libraries. Please setup Jenkins as described here: https://github.com/SAP/devops-docker-cx-server/blob/master/docs/operations/cx-server-operations-guide.md")
     }
 
     library "${piperIdentifier}@${piperOsVersion}"
