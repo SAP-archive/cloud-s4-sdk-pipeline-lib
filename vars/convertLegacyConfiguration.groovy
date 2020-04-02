@@ -177,7 +177,7 @@ void checkStaticCodeChecksConfig(Script script) {
     Map stageConfiguration = script.commonPipelineEnvironment.configuration.stages
     Map stepConfiguration = script.commonPipelineEnvironment.configuration.steps
 
-    if (stageConfiguration.staticCodeChecks || stepConfiguration.staticCodeChecks || stepConfiguration.mavenExecuteStaticCodeCheck?.pmdExcludes) {
+    if (stageConfiguration?.staticCodeChecks || stepConfiguration?.staticCodeChecks || stepConfiguration?.mavenExecuteStaticCodeCheck?.pmdExcludes) {
         error("The configuration of the static code checks has been moved to the steps configuration." +
             "The configuration options have also changed. Please visit https://sap.github.io/jenkins-library/steps/mavenExecuteStaticCodeChecks/ for more information.")
     }
