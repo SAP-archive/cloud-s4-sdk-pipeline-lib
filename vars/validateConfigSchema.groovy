@@ -51,8 +51,10 @@ private void generateWarnings(def results) {
     String resultsList = listOfSchemaViolations(results)
 
     addBadge(icon: "warning.gif", text: "Config schema validation warnings:\n${resultsList}")
-    htmlSummary += "<h3>Your pipeline configuration is not compliant with the configuration schema </h3> \n" +
-        "<p>This is a list of warnings, where your <code>.pipeline/config.yml</code> file violates the configuration schema. Note, it is possible that the results contain false positives.</p>\n" +
+    htmlSummary += "<h3>Your pipeline configuration may not be compliant with the configuration schema </h3> \n" +
+        "<p>This is a list of warnings, where your <code>.pipeline/config.yml</code> file may violate the configuration schema." +
+        "<br> Note, it is possible that the results contain false positives, e.g., if custom additional properties are defined." +
+        "<br> If you have found problems in the configuration schema, please <a href=\"https://github.com/SAP/cloud-s4-sdk-pipeline/issues/new/choose\">file a ticket</a></p>\n" +
         htmlList
 
     createSummary(icon: "warning.gif", text: htmlSummary)
