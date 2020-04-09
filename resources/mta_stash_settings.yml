@@ -55,7 +55,7 @@ mavenExecuteStaticCodeChecks:
       includes: "s4hana_pipeline/reports/**"
 
 lint:
-  unstash: ["SOURCE"]
+  unstash: ["SOURCE", "NODE_MODULES"]
 
 checkmarxScan:
   unstash: ["SOURCE", "TARGET"]
