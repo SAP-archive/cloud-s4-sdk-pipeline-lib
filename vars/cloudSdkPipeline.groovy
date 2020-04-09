@@ -27,7 +27,7 @@ void call(parameters) {
                 parallel {
                     stage("Static Code Checks") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS } }
-                        steps { stageStaticCodeChecks script: parameters.script }
+                        steps { piperPipelineStageMavenStaticCodeChecks script: parameters.script }
                     }
                     stage("Lint") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.LINT } }
@@ -108,7 +108,7 @@ void call(parameters) {
                 when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.ARTIFACT_DEPLOYMENT } }
                 steps {
                     milestone 70
-                    stageArtifactDeployment script: parameters.script
+                    piperPipelineStageArtifactDeployment script: parameters.script
                 }
             }
 
