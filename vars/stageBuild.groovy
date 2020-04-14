@@ -35,15 +35,9 @@ private void buildAndTestNpm(Script script) {
 
 private void buildAndTestMaven(Script script) {
     collectJavaUnitTestResults(script: script) {
-        mavenExecute(
+        mavenBuild(
             script: script,
-            flags: '--update-snapshots --batch-mode' + (fileExists('integration-tests/pom.xml') ? ' -pl !integration-tests' : ''),
             m2Path: s4SdkGlobals.m2Directory,
-            goals: 'clean org.jacoco:jacoco-maven-plugin:prepare-agent flatten:flatten install',
-            defines: [
-                '-Dflatten.mode=resolveCiFriendliesOnly',
-                '-DupdatePomFile=true'
-            ].join(" ")
         )
     }
     // in case node_modules exists we assume npm install was executed by maven clean install

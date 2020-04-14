@@ -28,12 +28,12 @@ def call(Map parameters = [:]) {
                 usedForbiddenEnvironmentVariables.addAll(extractForbiddenEnvironmentVariablesMta(mta))
             }
 
-            def neoTargets = stageConfiguration.neoTargets
+            List neoTargets = stageConfiguration.neoTargets
             if (neoTargets) {
                 usedForbiddenEnvironmentVariables.addAll(extractForbiddenEnvironmentVariablesNeo(neoTargets))
             }
 
-            def cfTargets = stageConfiguration.cfTargets
+            List cfTargets = stageConfiguration.cfTargets
             if (cfTargets) {
                 Set stageLevelManifestFiles = computeStageLevelManifestFiles(cfTargets, stepConfiguration?.cloudFoundry?.manifest, projectGeneralConfiguration?.cloudFoundry?.manifest)
 
@@ -67,7 +67,7 @@ private Set extractForbiddenEnvironmentVariablesMta(mtaDescriptor) {
 }
 
 @NonCPS
-private Set extractForbiddenEnvironmentVariablesNeo(neoTargets) {
+private Set extractForbiddenEnvironmentVariablesNeo(List neoTargets) {
     Set extractedEnvironmentVariables = []
     for (int i = 0; i < neoTargets.size(); i++) {
         def environment = neoTargets[i].environment
@@ -79,7 +79,7 @@ private Set extractForbiddenEnvironmentVariablesNeo(neoTargets) {
 }
 
 @NonCPS
-private Set computeStageLevelManifestFiles(cfTargets, stepManifest, generalManifest) {
+private Set computeStageLevelManifestFiles(List cfTargets, String stepManifest, String generalManifest) {
     Set stageLevelManifestFiles = []
     for (int i = 0; i < cfTargets.size(); i++) {
         if (cfTargets[i].manifest) {

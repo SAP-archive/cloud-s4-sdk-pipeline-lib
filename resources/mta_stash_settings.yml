@@ -47,7 +47,7 @@ frontendIntegrationTests:
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
-staticCodeChecks:
+mavenExecuteStaticCodeChecks:
   unstash: ["SOURCE", "TARGET", "REPORTS", "M2"]
   stashes:
     - name: "REPORTS"
@@ -55,7 +55,7 @@ staticCodeChecks:
       includes: "s4hana_pipeline/reports/**"
 
 lint:
-  unstash: ["SOURCE"]
+  unstash: ["SOURCE", "NODE_MODULES"]
 
 checkmarxScan:
   unstash: ["SOURCE", "TARGET"]
@@ -110,7 +110,7 @@ s4SdkQualityChecks:
       includes: "s4hana_pipeline/reports/**"
 
 artifactDeployment:
-  unstash: ["SOURCE", "TARGET", "NODE_MODULES", "EXEC_FILES"]
+  unstash: ["SOURCE", "M2", "TARGET", "NODE_MODULES", "EXEC_FILES"]
   stashes: []
 
 productionDeployment:
