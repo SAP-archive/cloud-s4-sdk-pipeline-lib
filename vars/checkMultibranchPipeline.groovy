@@ -1,3 +1,5 @@
+import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
+
 def call(Map parameters) {
     Script script = parameters.script
     if (!env.BRANCH_NAME) {
