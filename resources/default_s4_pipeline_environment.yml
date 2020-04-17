@@ -5,6 +5,7 @@ general:
   collectTelemetryData: true
   defaultNode: ""
   automaticVersioning: true
+  runStageInPod: true
   mandatoryStages:
     - "initS4sdkPipeline"
     - "build"
