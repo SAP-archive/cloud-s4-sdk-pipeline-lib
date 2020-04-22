@@ -1,10 +1,22 @@
 void call(Map parameters) {
-    def script = parameters.script
-    renameBackendIntegrationTests(script)
-    prohibitUnitTestsExtensions(script)
+    handleStepErrors(stepName: 'checkLegacyExtensions', stepParameters: parameters) {
+        prohibitOldExtensionsLocation()
+        prohibitIntegrationTestExtension()
+        prohibitUnitTestsExtension()
+    }
 }
 
-void renameBackendIntegrationTests(Script script) {
+void prohibitOldExtensionsLocation() {
+    String oldPath = 'pipeline/extensions'
+    if (fileExists(oldPath)) {
+        error "The old location for pipeline extensions at '${oldPath}' is no longer supported.\n" +
+            "To resolve this situation, move or merge all extensions located from the legacy location " +
+            "'${oldPath}' into the current location at '${s4SdkGlobals.projectExtensionsDirectory}' and " +
+            "delete the legacy folder."
+    }
+}
+
+void prohibitIntegrationTestExtension() {
     String oldStageName = "integrationTests"
     String newStageName = "backendIntegrationTests"
     String projectInterceptorFile = "${s4SdkGlobals.projectExtensionsDirectory}/${oldStageName}.groovy"
@@ -17,7 +29,7 @@ void renameBackendIntegrationTests(Script script) {
     }
 }
 
-void prohibitUnitTestsExtensions(Script script) {
+void prohibitUnitTestsExtension() {
     String oldStageName = "stageUnitTests"
     String projectInterceptorFile = "${s4SdkGlobals.projectExtensionsDirectory}/${oldStageName}.groovy"
     String repositoryInterceptorFile = "${s4SdkGlobals.repositoryExtensionsDirectory}/${oldStageName}.groovy"
