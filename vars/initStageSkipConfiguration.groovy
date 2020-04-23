@@ -61,10 +61,10 @@ def call(Map parameters) {
     List tsxFiles = []
 
     try {
-        jsFiles = findFiles(glob: '**/*.js', excludes: '**/node_modules/**')
-        jsxFiles = findFiles(glob: '**/*.jsx', excludes: '**/node_modules/**')
-        tsFiles = findFiles(glob: '**/*.ts', excludes: '**/node_modules/**')
-        tsxFiles = findFiles(glob: '**/*.tsx', excludes: '**/node_modules/**')
+        jsFiles = findFiles(glob: '**/*.js', excludes: '**/node_modules/**,**/.*.js')
+        jsxFiles = findFiles(glob: '**/*.jsx', excludes: '**/node_modules/**,**/.*.jsx')
+        tsFiles = findFiles(glob: '**/*.ts', excludes: '**/node_modules/**,**/.*.ts')
+        tsxFiles = findFiles(glob: '**/*.tsx', excludes: '**/node_modules/**,**/.*.tsx')
     } catch (IOException ioe) {
         echo "An error occurred when looking for js/ts files.\n" +
             "Exeption message: ${ioe.getMessage()}\n"
