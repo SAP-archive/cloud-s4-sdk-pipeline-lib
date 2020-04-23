@@ -73,6 +73,9 @@ def call(Map parameters) {
         checkDiskSpace script: script
     }
 
+    // Stash git folder to be used in sonar later
+    stash allowEmpty: true, excludes: '', includes: '**/.git/**', useDefaultExcludes: false, name: 'git'
+
     stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
     script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]
 }

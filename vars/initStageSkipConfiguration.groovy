@@ -96,7 +96,8 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'sonarQubeScan') && isProductiveBranch(script: script)) {
+    Map sonarStageConfig = ConfigurationLoader.stageConfiguration(script, 'sonarQubeScan')
+    if (sonarStageConfig && (isProductiveBranch(script: script) || sonarStageConfig?.runInAllBranches)) {
         script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN = true
     }
 
