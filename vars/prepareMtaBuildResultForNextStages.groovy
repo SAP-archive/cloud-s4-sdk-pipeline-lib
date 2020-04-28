@@ -11,14 +11,9 @@ def call(Map parameters) {
         MavenUtils.installRootPom(script)
     }
 
-    // same for root package.json as for maven root pom
-    if (fileExists('package.json')) {
-        installAndBuildNpm(script: script)
-    }
-
     // install maven artifacts in local maven repo because `mbt build` executes `mvn package -B`
     MtaUtils.installAllMavenModules(script)
 
     // mta-builder executes 'npm install --production', therefore we need 'npm ci/install' to install the dev-dependencies
-    MtaUtils.installAllNpmModules(script)
+    npmExecuteScripts(script: script, runScripts: [], install: true)
 }
