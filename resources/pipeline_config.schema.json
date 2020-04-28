@@ -525,7 +525,7 @@
                     "properties": {
                         "dockerImage": {
                             "$ref": "#/definitions/dockerImage",
-                            "default": "maven:3.6.1-jdk-8-alpine"
+                            "default": "maven:3.6.3-jdk-8-slim"
                         },
                         "projectSettingsFile": {
                             "description": "The project settings.xml to be used for maven builds. You can specify a relative path to your project root or a URL starting with http or https.",
