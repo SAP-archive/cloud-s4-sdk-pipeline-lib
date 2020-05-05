@@ -107,12 +107,11 @@ private void javaIntegrationTests(def script, Map configuration) {
 
         Map mavenExecuteParameters = [
             script     : script,
-            flags      : "--batch-mode",
             pomPath    : pomPath,
             m2Path     : s4SdkGlobals.m2Directory,
-            goals      : "org.jacoco:jacoco-maven-plugin:prepare-agent test",
+            goals      : ["org.jacoco:jacoco-maven-plugin:prepare-agent", "test"],
             dockerImage: configuration.dockerImage,
-            defines    : "-Dsurefire.rerunFailingTestsCount=$count -Dsurefire.forkCount=$forkCount"
+            defines    : ["-Dsurefire.rerunFailingTestsCount=$count", "-Dsurefire.forkCount=$forkCount"]
         ]
 
         // Disable the DL-cache in the integration-tests with sidecar with empty docker options and no global settings file for maven

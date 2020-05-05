@@ -6,18 +6,18 @@ class MavenUtils implements Serializable {
     static void flattenPomXmls(Script script){
         script.mavenExecute(
             script: script,
-            goals: 'flatten:flatten',
+            goals: ['flatten:flatten'],
             m2Path: 's4hana_pipeline/maven_local_repo',
-            defines: "-Dflatten.mode=resolveCiFriendliesOnly"
+            defines: ["-Dflatten.mode=resolveCiFriendliesOnly"]
         )
     }
     static void generateEffectivePom(Script script, String pomFile, String effectivePomFile) {
         script.mavenExecute(script: script,
-            flags: '--batch-mode',
+            flags: ['--batch-mode'],
             pomPath: pomFile,
             m2Path: script.s4SdkGlobals.m2Directory,
-            goals: 'help:effective-pom',
-            defines: "-Doutput=${effectivePomFile}")
+            goals: ['help:effective-pom'],
+            defines: ["-Doutput=${effectivePomFile}"])
     }
 
     static void installMavenArtifacts(Script script, String pathToMavenModule) {
@@ -77,21 +77,21 @@ class MavenUtils implements Serializable {
     static void installFile(Script script, String pathToPom, String file, List additionalDefines = []) {
         script.mavenExecute(
             script: script,
-            goals: 'install:install-file',
+            goals: ['install:install-file'],
             m2Path: 's4hana_pipeline/maven_local_repo',
             defines: [
                 "-Dfile=${file}",
                 "-DpomFile=$pathToPom"
-            ].plus(additionalDefines).join(" ")
+            ].plus(additionalDefines)
         )
     }
 
     static String getMavenDependencyTree(Script script, String basePath) {
         script.mavenExecute(script: script,
-            flags: "--batch-mode -DoutputFile=mvnDependencyTree.txt",
+            flags: ["--batch-mode", "-DoutputFile=mvnDependencyTree.txt"],
             m2Path: script.s4SdkGlobals.m2Directory,
             pomPath: PathUtils.normalize(basePath, 'pom.xml'),
-            goals: "dependency:tree")
+            goals: ["dependency:tree"])
 
         return script.readFile(PathUtils.normalize(basePath, 'mvnDependencyTree.txt'))
     }
@@ -99,10 +99,10 @@ class MavenUtils implements Serializable {
     static List getTestModulesExcludeFlags(Script script) {
         List moduleExcludes = []
         if (script.fileExists('integration-tests/pom.xml')) {
-            moduleExcludes << '-pl !integration-tests'
+            moduleExcludes << '-pl' << '!integration-tests'
         }
         if (script.fileExists('unit-tests/pom.xml')) {
-            moduleExcludes << '-pl !unit-tests'
+            moduleExcludes << '-pl' << '!unit-tests'
         }
         return moduleExcludes
     }

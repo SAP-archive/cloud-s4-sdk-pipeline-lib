@@ -68,11 +68,11 @@ def call(Map parameters = [:]) {
         fortifyMavenScanOptions.goals = [
             'fortify:translate',
             'fortify:scan'
-        ].join(' ')
+        ]
 
         String defaultBuildId = "${artifactId}-${artifactVersion}"
 
-        def fortifyDefines = [
+        fortifyMavenScanOptions.defines = [
             "-Dfortify.sca.verbose=${configuration.verbose}",
             "-Dfortify.sca.source.version=${configuration.sourceVersion}",
             "-Dfortify.sca.buildId=${configuration.buildId ?: defaultBuildId}",
@@ -83,10 +83,8 @@ def call(Map parameters = [:]) {
         ]
 
         if (configuration.additionalScanOptions) {
-            fortifyDefines.add(configuration.additionalScanOptions)
+            fortifyMavenScanOptions.defines.add(configuration.additionalScanOptions)
         }
-
-        fortifyMavenScanOptions.defines = fortifyDefines.join(' ')
 
         if (configuration.projectSettingsFile) {
             fortifyMavenScanOptions.projectSettingsFile = configuration.projectSettingsFile
