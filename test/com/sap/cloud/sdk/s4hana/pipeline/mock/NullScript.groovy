@@ -5,7 +5,6 @@ import com.lesfurets.jenkins.unit.PipelineTestHelper
 
 class NullScript extends Script {
     BasePipelineTest test
-    Map commonPipelineEnvironment = ['configuration': ['artifactId': 'irrelevant']]
 
     NullScript(BasePipelineTest test) {
         this.test = test

@@ -26,7 +26,6 @@ def call(Map parameters = [:]) {
 
     BuildToolEnvironment.instance.setModulesMap(moduleTypeToListOfModules)
 
-    script.commonPipelineEnvironment.configuration.artifactId = mta.ID
     // TODO Need salt
     Analytics.instance.hashProject(mta.ID)
     DebugReport.instance.modulesMap = BuildToolEnvironment.instance.modulesMap
