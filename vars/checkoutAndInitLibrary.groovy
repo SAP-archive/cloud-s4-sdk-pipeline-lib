@@ -31,7 +31,7 @@ def call(Map parameters) {
 
     loadSharedConfig script: script
 
-    convertLegacyConfiguration script: script
+    checkLegacyConfiguration script: script
 
     setupDownloadCache script: script
 
