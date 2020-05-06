@@ -13,7 +13,7 @@ def call(Map parameters = [:]) {
         def projectName = generalConfiguration.projectName
         def scmUri = scm.getUserRemoteConfigs()[0].getUrl()
         def scmBranch = env.BRANCH_NAME
-        def commitId = generalConfiguration.gitCommitId
+        def commitId = script.commonPipelineEnvironment.gitCommitId
 
         executeSourceClearScan script: script, credentialsId: credentialsId, projectDefinedConfig: projectDefinedConfig, projectName: projectName, scmUri: scmUri, scmBranch: scmBranch, commitId: commitId
 

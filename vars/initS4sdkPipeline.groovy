@@ -46,7 +46,7 @@ def call(Map parameters) {
     ReportAggregator.instance.reportProjectIdentifier(generalConfiguration.projectName)
     DebugReport.instance.projectIdentifier = generalConfiguration.projectName
 
-    generalConfiguration.gitCommitId = getGitCommitId()
+    script.commonPipelineEnvironment.gitCommitId = getGitCommitId()
 
     String prefix = generalConfiguration.projectName
 
