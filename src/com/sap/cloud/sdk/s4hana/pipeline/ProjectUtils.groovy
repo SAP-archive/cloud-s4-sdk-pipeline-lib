@@ -14,13 +14,13 @@ class ProjectUtils implements Serializable {
 
     private static String getProjectNameFromBuildDescriptor(Script script) {
         if (BuildToolEnvironment.instance.isMta()) {
-            Map mta = readYaml file: 'mta.yaml'
+            Map mta = script.readYaml file: 'mta.yaml'
             return mta.ID
         } else if (BuildToolEnvironment.instance.isMaven()) {
-            def pom = readMavenPom file: 'pom.xml'
+            def pom = script.readMavenPom file: 'pom.xml'
             return "${pom.groupId}-${pom.artifactId}"
         } else if (BuildToolEnvironment.instance.isNpm()) {
-            Map packageJson = readJSON file: 'package.json'
+            Map packageJson = script.readJSON file: 'package.json'
             return packageJson.name
         }
         script.error "Project build tool was none of the expected ones MTA, maven, npm."
