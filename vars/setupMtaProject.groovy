@@ -22,8 +22,6 @@ def call(Map parameters = [:]) {
         echo entry.getKey() + " has modules:  " + entry.getValue().join(" - ")
     }
 
-    generalConfiguration.projectName = mta.ID
-
     BuildToolEnvironment.instance.setModulesMap(moduleTypeToListOfModules)
 
     // TODO Need salt
