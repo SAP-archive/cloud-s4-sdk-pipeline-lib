@@ -27,9 +27,7 @@ def call(Map parameters) {
 
     initAnalytics(script: script)
 
-    loadGlobalExtension script: script
-
-    loadSharedConfig script: script
+    loadAdditionalLibraries script: script
 
     checkLegacyConfiguration script: script
 

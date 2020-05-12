@@ -12,6 +12,7 @@ def call(Map parameters) {
     checkRenamedBackendIntegrationTests(script)
     convertDebugReportConfig(script)
     checkStaticCodeChecksConfig(script)
+    checkSharedConfig(script)
 }
 
 void checkRenamedBackendIntegrationTests(Script script) {
@@ -55,7 +56,7 @@ boolean convertDebugReportConfig(Script script) {
         return
 
     failWithConfigError("The configuration key archiveDebugLog in the postAction configuration may not be used anymore. " +
-        "Please use thek step configuration for debugReportArchive instead.")
+        "Please use the step configuration for debugReportArchive instead.")
 }
 
 void checkStaticCodeChecksConfig(Script script) {
@@ -64,6 +65,17 @@ void checkStaticCodeChecksConfig(Script script) {
             "This configuration option was removed in version v32. " +
             "Please migrate the configuration into your pom.xml file or the configuration for the new step mavenExecuteStaticCodeChecks. " +
             "Details can be found in the release notes as well as in the step documentation: https://sap.github.io/jenkins-library/steps/mavenExecuteStaticCodeChecks/.")
+    }
+}
+
+void checkSharedConfig(Script script) {
+    if (script.commonPipelineEnvironment.configuration.general.sharedConfiguration) {
+        failWithConfigError("Your pipeline configuration contains an entry for the sharedConfiguration in the general section. " +
+            "This configuration option has been aligned with Project 'Piper' in version v33. " +
+            "Please rename the config key to 'customDefaults' and move it to the root level of the config file, i.e. before the 'general' section. " +
+            "The value of this key needs to be a list of strings. " +
+            "See also https://sap.github.io/jenkins-library/configuration/#custom-default-configuration for more information." +
+            "As an example for the necessary change, please consult the release notes of v33 at https://github.com/SAP/cloud-s4-sdk-pipeline/releases/tag/v33")
     }
 }
 
