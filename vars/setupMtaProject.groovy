@@ -22,11 +22,8 @@ def call(Map parameters = [:]) {
         echo entry.getKey() + " has modules:  " + entry.getValue().join(" - ")
     }
 
-    generalConfiguration.projectName = mta.ID
-
     BuildToolEnvironment.instance.setModulesMap(moduleTypeToListOfModules)
 
-    script.commonPipelineEnvironment.configuration.artifactId = mta.ID
     // TODO Need salt
     Analytics.instance.hashProject(mta.ID)
     DebugReport.instance.modulesMap = BuildToolEnvironment.instance.modulesMap

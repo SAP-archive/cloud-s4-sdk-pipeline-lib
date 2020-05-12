@@ -52,8 +52,30 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT = true
     }
 
-    // Always run by default, but allow disabling via extension
-    script.commonPipelineEnvironment.configuration.runStage.LINT = true
+    def projectStageLintExtensionFile = "${s4SdkGlobals.projectExtensionsDirectory}/lint.groovy"
+    def repositoryStageLintExtensionFile = "${s4SdkGlobals.repositoryExtensionsDirectory}/lint.groovy"
+
+    List jsFiles = []
+    List jsxFiles = []
+    List tsFiles = []
+    List tsxFiles = []
+
+    try {
+        jsFiles = findFiles(glob: '**/*.js', excludes: '**/node_modules/**,**/.*.js')
+        jsxFiles = findFiles(glob: '**/*.jsx', excludes: '**/node_modules/**,**/.*.jsx')
+        tsFiles = findFiles(glob: '**/*.ts', excludes: '**/node_modules/**,**/.*.ts')
+        tsxFiles = findFiles(glob: '**/*.tsx', excludes: '**/node_modules/**,**/.*.tsx')
+    } catch (IOException ioe) {
+        echo "An error occurred when looking for js/ts files.\n" +
+            "Exeption message: ${ioe.getMessage()}\n"
+    }
+
+    if (fileExists(projectStageLintExtensionFile) || fileExists(repositoryStageLintExtensionFile) || jsFiles.size() > 0 || jsxFiles.size() > 0 || tsFiles.size() > 0 || tsxFiles.size() > 0 ) {
+        script.commonPipelineEnvironment.configuration.runStage.LINT = true
+    } else {
+        script.commonPipelineEnvironment.configuration.runStage.LINT = false
+        echo "No Javascript/Typescript files or lint stage extensions found, skipping lint stage."
+    }
 
     if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-test', 'ci-frontend-unit-test'])) {
         script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS = true
@@ -74,7 +96,8 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'sonarQubeScan') && isProductiveBranch(script: script)) {
+    Map sonarStageConfig = ConfigurationLoader.stageConfiguration(script, 'sonarQubeScan')
+    if (sonarStageConfig && (isProductiveBranch(script: script) || sonarStageConfig?.runInAllBranches)) {
         script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN = true
     }
 

@@ -2,6 +2,7 @@ import com.cloudbees.groovy.cps.NonCPS
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.MavenUtils
+import com.sap.cloud.sdk.s4hana.pipeline.ProjectUtils
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.DebugReport
 
@@ -26,29 +27,20 @@ def call(Map parameters) {
         pom = readMavenPom file: pomFile
         readAndUpdateProjectSalt(script, pomFile)
         Analytics.instance.hashProject(pom.groupId + pom.artifactId)
-        if (!generalConfiguration.projectName?.trim()) {
-            generalConfiguration.projectName = "${pom.groupId}-${pom.artifactId}"
-        }
-
     } else if (BuildToolEnvironment.instance.isNpm()) {
         Map packageJson = readJSON file: 'package.json'
-        def projectName = packageJson.name
-        generalConfiguration.projectName = projectName ?: ''
-        Analytics.instance.hashProject(generalConfiguration.projectName)
-    }
-
-    if (!generalConfiguration.projectName) {
-        error "This should not happen: Project name was not specified in the configuration and could not be derived from the project."
+        Analytics.instance.hashProject(packageJson.name)
     }
 
     initStashConfiguration script: script
 
-    ReportAggregator.instance.reportProjectIdentifier(generalConfiguration.projectName)
-    DebugReport.instance.projectIdentifier = generalConfiguration.projectName
+    String projectName = ProjectUtils.getProjectName(script)
+    ReportAggregator.instance.reportProjectIdentifier(projectName)
+    DebugReport.instance.projectIdentifier = projectName
 
-    generalConfiguration.gitCommitId = getGitCommitId()
+    script.commonPipelineEnvironment.gitCommitId = getGitCommitId()
 
-    String prefix = generalConfiguration.projectName
+    String prefix = projectName
 
     script.commonPipelineEnvironment.configuration.currentBuildResultLock = "${prefix}/currentBuildResult"
     script.commonPipelineEnvironment.configuration.performanceTestLock = "${prefix}/performanceTest"

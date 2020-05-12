@@ -2,6 +2,8 @@ import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 
 import static com.sap.cloud.sdk.s4hana.pipeline.EnvironmentAssertionUtils.assertPluginIsActive
 
+// keep because it is used in extensions repo
+
 def call(Map parameters){
     Script script = parameters.script
     List customScripts = parameters.customScripts ?: []

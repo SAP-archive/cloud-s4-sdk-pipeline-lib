@@ -33,10 +33,13 @@ def getDockerImageNameForStep(script, stageName, stepName) {
 
     final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, stepName)
 
-    Set stageConfigurationKeys = ['dockerImage']
-    Set stepConfigurationKeys = ['dockerImage']
+    Map configuration = ConfigurationMerger.merge(stageConfiguration, null, stepConfiguration, null, stepDefaults)
 
-    Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stepConfiguration, stepConfigurationKeys, stepDefaults)
+    String dockerImage = configuration.dockerImage
 
-    return configuration.dockerImage ?: ''
+    if(!dockerImage && stepName == "mtaBuild"){
+        dockerImage = configuration[configuration.mtaBuildTool]?.dockerImage
+    }
+
+    return dockerImage ?: ''
 }

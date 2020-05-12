@@ -9,7 +9,9 @@ def call(Map parameters = [:]) {
         if (BuildToolEnvironment.instance.isMta()) {
             buildAndTestMta(script)
         } else if (BuildToolEnvironment.instance.isNpm()) {
-            buildAndTestNpm(script)
+            collectJUnitResults(script: script, testCategoryName: 'Backend Unit Tests', reportLocationPattern: 's4hana_pipeline/reports/backend-unit/**') {
+                npmExecuteScripts(script: script, runScripts: ['ci-build', 'ci-backend-unit-test'], install: true)
+            }
         } else {
             buildAndTestMaven(script)
         }
@@ -25,12 +27,6 @@ private void buildAndTestMta(Script script) {
         mtaBuild(script: script)
     }
     prepareMtaBuildResultForNextStages(script: script)
-    executeJavascriptUnitTests(script: script)
-}
-
-private void buildAndTestNpm(Script script) {
-    installAndBuildNpm script: script, customScripts: ['ci-build']
-    executeJavascriptUnitTests(script: script)
 }
 
 private void buildAndTestMaven(Script script) {
@@ -42,7 +38,7 @@ private void buildAndTestMaven(Script script) {
     }
     // in case node_modules exists we assume npm install was executed by maven clean install
     if (fileExists('package.json') && !fileExists('node_modules')) {
-        installAndBuildNpm script: script
+        npmExecuteScripts(script: script, runScripts: [], install: true)
     }
 }
 
@@ -51,8 +47,6 @@ private packageJsApp(script) {
     def dockerOptions = []
     DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
     piperStageWrapper(stageName: stageName, script: script) {
-        executeNpm(script: script, dockerOptions: dockerOptions) {
-            sh "npm run ci-package"
-        }
+        npmExecuteScripts(script: script, runScripts: ['ci-package'])
     }
 }

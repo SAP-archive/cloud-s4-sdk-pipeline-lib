@@ -18,7 +18,8 @@ void call(Map parameters = [:]) {
         try {
             eslintConfigs = findFiles(glob: '**/.eslintrc*', excludes: '**/node_modules/**')
         } catch (IOException ioe) {
-            error "An error occurred when looking for eslint config.\n"
+            error "An error occurred when looking for eslint config.\n" +
+                "Exeption message: ${ioe.getMessage()}\n"
         }
         int status
         executeNpm(script: script, dockerImage: configuration?.dockerImage, dockerOptions: dockerOptions) {

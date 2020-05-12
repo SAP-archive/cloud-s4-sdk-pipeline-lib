@@ -1,4 +1,5 @@
 import com.cloudbees.groovy.cps.NonCPS
+import com.sap.cloud.sdk.s4hana.pipeline.ProjectUtils
 import com.sap.piper.ConfigurationLoader
 import groovy.json.JsonSlurperClassic
 import hudson.util.Secret
@@ -13,7 +14,7 @@ def call(Map parameters = [:]) {
             throw new IllegalArgumentException("checkmarxGroupId value cannot be empty.")
         }
 
-        String projectName = ConfigurationLoader.generalConfiguration(script).projectName
+        String projectName = ProjectUtils.getProjectName(script)
 
         def checkmarxProject = parameters.checkMarxProjectName ?: projectName
         def checkmarxServerUrl = parameters.checkmarxServerUrl

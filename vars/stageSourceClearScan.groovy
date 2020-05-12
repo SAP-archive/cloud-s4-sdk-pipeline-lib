@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.ProjectUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
@@ -10,10 +11,10 @@ def call(Map parameters = [:]) {
         def credentialsId = stageConfiguration.credentialsId
         def projectDefinedConfig = stageConfiguration.config
         def generalConfiguration = ConfigurationLoader.generalConfiguration(script)
-        def projectName = generalConfiguration.projectName
+        def projectName = ProjectUtils.getProjectName(script)
         def scmUri = scm.getUserRemoteConfigs()[0].getUrl()
         def scmBranch = env.BRANCH_NAME
-        def commitId = generalConfiguration.gitCommitId
+        def commitId = script.commonPipelineEnvironment.gitCommitId
 
         executeSourceClearScan script: script, credentialsId: credentialsId, projectDefinedConfig: projectDefinedConfig, projectName: projectName, scmUri: scmUri, scmBranch: scmBranch, commitId: commitId
 

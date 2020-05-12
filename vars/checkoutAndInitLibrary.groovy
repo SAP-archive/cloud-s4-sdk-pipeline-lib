@@ -27,11 +27,9 @@ def call(Map parameters) {
 
     initAnalytics(script: script)
 
-    loadGlobalExtension script: script
+    loadAdditionalLibraries script: script
 
-    loadSharedConfig script: script
-
-    convertLegacyConfiguration script: script
+    checkLegacyConfiguration script: script
 
     setupDownloadCache script: script
 
@@ -41,7 +39,6 @@ def call(Map parameters) {
         initContainersMap script: script
     }
 
-    Map configWithDefault = loadEffectiveGeneralConfiguration script: script
     boolean isMtaProject = fileExists('mta.yaml')
     def isMaven = fileExists('pom.xml')
     def isNpm = fileExists('package.json')
@@ -58,21 +55,9 @@ def call(Map parameters) {
 
     DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool
 
-    //TODO activate automatic versioning for JS
-    if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
-        artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
-        ReportAggregator.instance.reportAutomaticVersioning()
-    }
-
-    // Convert/move legacy extensions. This needs to happen after the artifactSetVersion step, which requires a
-    // clean state of the repository.
-    moveLegacyExtensions(script: script)
-    convertLegacyExtensions(script: script)
+    checkLegacyExtensions(script: script)
 
     if (!Boolean.valueOf(env.ON_K8S)) {
         checkDiskSpace script: script
     }
-
-    stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
-    script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]
 }

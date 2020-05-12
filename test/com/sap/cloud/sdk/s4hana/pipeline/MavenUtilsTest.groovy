@@ -2,6 +2,7 @@ package com.sap.cloud.sdk.s4hana.pipeline
 
 import com.sap.cloud.sdk.s4hana.pipeline.mock.NullScript
 import com.sap.cloud.sdk.s4hana.pipeline.util.BaseCloudSdkTest
+
 import static org.junit.Assert.*
 import static org.hamcrest.CoreMatchers.*
 
@@ -56,8 +57,10 @@ class MavenUtilsTest extends BaseCloudSdkTest {
 
         assertEquals(mavenExecuteCalls.size(), 1)
 
-        assertThat(mavenExecuteCalls[0].defines, containsString("-Dfile=srv/pom.xml"));
-        assertThat(mavenExecuteCalls[0].defines, containsString("-DpomFile=srv/pom.xml"));
+        def wants1 = '-Dfile=srv/pom.xml'
+        assertThat(mavenExecuteCalls[0].defines, hasItem("${wants1}"))
+        def wants2 = "-DpomFile=srv/pom.xml"
+        assertThat(mavenExecuteCalls[0].defines, hasItem("${wants2}"))
     }
 
     @Test
@@ -78,8 +81,10 @@ class MavenUtilsTest extends BaseCloudSdkTest {
 
         assertEquals(mavenExecuteCalls.size(), 1)
 
-        assertThat(mavenExecuteCalls[0].defines, containsString("-Dfile=srv/.flattened-pom.xml"));
-        assertThat(mavenExecuteCalls[0].defines, containsString("-DpomFile=srv/.flattened-pom.xml"));
+        def wants1 = "-Dfile=srv/.flattened-pom.xml"
+        assertThat(mavenExecuteCalls[0].defines, hasItem("${wants1}"))
+        def wants2 = "-DpomFile=srv/.flattened-pom.xml"
+        assertThat(mavenExecuteCalls[0].defines, hasItem("${wants2}"))
     }
 
     @Test
@@ -106,11 +111,14 @@ class MavenUtilsTest extends BaseCloudSdkTest {
 
         assertEquals(mavenExecuteCalls.size(), 2)
 
-        assertThat(mavenExecuteCalls[0].defines, containsString('-Dfile=srv/target/service.war'));
-        assertThat(mavenExecuteCalls[0].defines, containsString('-DpomFile=srv/pom.xml'));
+        def wants1 = '-Dfile=srv/target/service.war'
+        assertThat(mavenExecuteCalls[0].defines, hasItem("${wants1}"))
+        def wants2 = '-DpomFile=srv/pom.xml'
+        assertThat(mavenExecuteCalls[0].defines, hasItem("${wants2}"))
 
-        assertThat(mavenExecuteCalls[1].defines, containsString('-Dfile=srv/target/service-classes.jar'));
-        assertThat(mavenExecuteCalls[1].defines, containsString('-DpomFile=srv/pom.xml'));
+        def wants3 = '-Dfile=srv/target/service-classes.jar'
+        assertThat(mavenExecuteCalls[1].defines, hasItem("${wants3}"))
+
     }
 
     @Test
@@ -142,8 +150,9 @@ class MavenUtilsTest extends BaseCloudSdkTest {
 
         assertEquals(mavenExecuteCalls.size(), 2)
 
-        assertThat(mavenExecuteCalls[0].defines, containsString('-DpomFile=srv/.flattened-pom.xml'));
-        assertThat(mavenExecuteCalls[1].defines, containsString('-DpomFile=srv/.flattened-pom.xml'));
+        def wants = '-DpomFile=srv/.flattened-pom.xml'
+        assertThat(mavenExecuteCalls[0].defines, hasItem("${wants}"))
+        assertThat(mavenExecuteCalls[1].defines, hasItem("${wants}"))
     }
 
     @Test
@@ -168,11 +177,9 @@ class MavenUtilsTest extends BaseCloudSdkTest {
         MavenUtils.installMavenArtifacts(dummyScript, 'srv')
 
         assertEquals(mavenExecuteCalls.size(), 2)
-        assertThat(mavenExecuteCalls[0].defines, containsString('-Dfile=srv/target/service.jar'));
-        assertThat(mavenExecuteCalls[0].defines, containsString('-DpomFile=srv/pom.xml'));
 
-        assertThat(mavenExecuteCalls[1].defines, containsString('-Dfile=srv/target/service-classes.jar'));
-        assertThat(mavenExecuteCalls[1].defines, containsString('-DpomFile=srv/pom.xml'));
+        assertArrayEquals(['-Dfile=srv/target/service.jar', '-DpomFile=srv/pom.xml'] as Object[], mavenExecuteCalls[0].defines  as Object[])
+        assertArrayEquals(['-Dfile=srv/target/service-classes.jar', '-DpomFile=srv/pom.xml', '-Dpackaging=jar', '-Dclassifier=classes'] as Object[], mavenExecuteCalls[1].defines  as Object[])
     }
 }
 

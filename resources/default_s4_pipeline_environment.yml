@@ -5,6 +5,7 @@ general:
   collectTelemetryData: true
   defaultNode: ""
   automaticVersioning: true
+  runStageInPod: true
   mandatoryStages:
     - "initS4sdkPipeline"
     - "build"
@@ -33,7 +34,7 @@ steps:
     timestampTemplate: "%Y-%m-%dT%H%M%S%Z"
 
   mavenExecute:
-    dockerImage: maven:3.6.1-jdk-8-alpine
+    dockerImage: maven:3.6.3-jdk-8-slim
     dockerOptions: ""
     m2Path: s4hana_pipeline/maven_local_repo
 

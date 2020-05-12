@@ -1,6 +1,7 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
+import com.sap.cloud.sdk.s4hana.pipeline.ProjectUtils
 import com.sap.piper.ConfigurationHelper
 import groovy.transform.Field
 import net.sf.json.JSONObject
@@ -39,7 +40,7 @@ def call(Map parameters = [:], Closure body) {
 
         if (fileExists('integration-tests/pom.xml') && configuration.createHdiContainer) {
             assertPreconditions(configuration)
-            String projectName = configuration.projectName
+            String projectName = ProjectUtils.getProjectName(script)
             String hdiContainerName = generateHdiContainerName(projectName)
 
             echo "Creating a new HDI container ${hdiContainerName}"
