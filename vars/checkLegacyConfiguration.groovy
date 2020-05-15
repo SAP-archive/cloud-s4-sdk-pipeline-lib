@@ -69,7 +69,7 @@ void checkStaticCodeChecksConfig(Script script) {
 }
 
 void checkSharedConfig(Script script) {
-    if (script.commonPipelineEnvironment.configuration.general.sharedConfiguration) {
+    if (script.commonPipelineEnvironment.configuration.general?.sharedConfiguration) {
         failWithConfigError("Your pipeline configuration contains an entry for the sharedConfiguration in the general section. " +
             "This configuration option has been aligned with Project 'Piper' in version v33. " +
             "Please rename the config key to 'customDefaults' and move it to the root level of the config file, i.e. before the 'general' section. " +
