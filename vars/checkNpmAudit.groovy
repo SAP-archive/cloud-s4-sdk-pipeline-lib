@@ -38,7 +38,7 @@ private void executeNpmAudit(def script, Map configuration, String basePath) {
             boolean hasSucceeded = false
             while (retryCount <= MAX_RETRIES && (!hasSucceeded)) {
 
-                sh script: "npm audit --json --registry=https://registry.npmjs.org > npm-audit.json", returnStatus: true
+                sh script: "npm audit --production --json --registry=https://registry.npmjs.org > npm-audit.json", returnStatus: true
                 Map npmAuditResult = readJSON file: "npm-audit.json"
 
                 if (npmAuditResult.containsKey("advisories")) {
