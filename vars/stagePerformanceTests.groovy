@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
 
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        final Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
 
         if (stageConfiguration) {
             lock(script.commonPipelineEnvironment.configuration.performanceTestLock) {

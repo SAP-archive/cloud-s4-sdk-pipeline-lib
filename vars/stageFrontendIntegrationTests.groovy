@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
     def stageName = 'frontendIntegrationTests'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
         executeFrontendIntegrationTest(script, stageConfiguration)
     }
 }

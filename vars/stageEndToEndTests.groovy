@@ -7,7 +7,8 @@ def call(Map parameters = [:]) {
     def stageName = 'endToEndTests'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        final Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
+
         if (!stageConfiguration.cfTargets && !stageConfiguration.neoTargets) {
             error "End to end tests could not be executed as no deployment targets are defined. For more information, please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md#endtoendtests"
         }

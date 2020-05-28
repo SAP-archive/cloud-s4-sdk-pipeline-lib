@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
     def stageName = 'sourceClearScan'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        def stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        def stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
         def credentialsId = stageConfiguration.credentialsId
         def projectDefinedConfig = stageConfiguration.config
         def generalConfiguration = ConfigurationLoader.generalConfiguration(script)

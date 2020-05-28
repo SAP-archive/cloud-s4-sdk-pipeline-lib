@@ -28,12 +28,10 @@ def getContainerForStage(script, stageName, List stepsList) {
 }
 
 def getDockerImageNameForStep(script, stageName, stepName) {
-    def stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-    final Map stepDefaults = ConfigurationLoader.defaultStepConfiguration(script, stepName)
+    final Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
+    final Map stepConfiguration = loadEffectiveStepConfiguration(script: script, stepName: stepName)
 
-    final Map stepConfiguration = ConfigurationLoader.stepConfiguration(script, stepName)
-
-    Map configuration = ConfigurationMerger.merge(stageConfiguration, null, stepConfiguration, null, stepDefaults)
+    Map configuration = ConfigurationMerger.merge(stageConfiguration, null, stepConfiguration)
 
     String dockerImage = configuration.dockerImage
 

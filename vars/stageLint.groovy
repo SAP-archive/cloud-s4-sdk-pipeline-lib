@@ -6,7 +6,7 @@ void call(Map parameters = [:]) {
     def stageName = 'lint'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        final Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
 
         // Might be written both upper and lowercase
         String[] ui5ComponentsUpperCase = []

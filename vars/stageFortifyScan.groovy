@@ -6,7 +6,7 @@ import com.sap.piper.ConfigurationLoader
 def call(Map parameters = [:]) {
     def stageName = 'fortifyScan'
     def script = parameters.script
-    def stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+    def stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
     piperStageWrapper(stageName: stageName, script: script) {
 
         executeFortifyScan(script: script,

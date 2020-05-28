@@ -9,6 +9,7 @@ class BaseCloudSdkTest extends BasePipelineTest {
 
     BaseCloudSdkTest() {
         scriptRoots += 'src/com/sap/cloud/sdk/s4hana/pipeline/'
+        scriptRoots += 'vars/'
         dummyScript = new NullScript(this)
     }
 

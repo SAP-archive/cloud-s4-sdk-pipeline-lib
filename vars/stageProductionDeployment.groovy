@@ -16,7 +16,7 @@ def call(Map parameters = [:]) {
     }
 
     piperStageWrapper(stageName: stageName, script: script) {
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
 
         final def tmsStepDefaults = ConfigurationLoader.defaultStepConfiguration(script, 'tmsUpload')
 

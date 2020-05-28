@@ -24,7 +24,7 @@ void checkRenamedMavenStep(Script script) {
 }
 
 void checkMavenGlobalSettings(Script script) {
-    Map mavenConfiguration = ConfigurationLoader.stepConfiguration(script, 'mavenExecute')
+    Map mavenConfiguration = loadEffectiveStepConfiguration(script: script, stepName: 'mavenExecute')
 
     // Maven globalSettings obsolete since introduction of DL-Cache
     if (mavenConfiguration?.globalSettingsFile) {
@@ -36,7 +36,7 @@ void checkMavenGlobalSettings(Script script) {
 }
 
 void checkNotUsingWhiteSourceOrgToken(Script script) {
-    Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
+    Map stageConfig = loadEffectiveStageConfiguration(script: script, stageName:'whitesourceScan')
     if (stageConfig?.orgToken) {
         failWithConfigError("Your pipeline configuration may not use 'orgtoken' in whiteSourceScan stage. " +
             "Store it as a 'Secret Text' in Jenkins and use the 'credentialsId' field instead.")
@@ -60,7 +60,7 @@ boolean convertDebugReportConfig(Script script) {
 }
 
 void checkStaticCodeChecksConfig(Script script) {
-    if (ConfigurationLoader.stageConfiguration(script, 'staticCodeChecks')) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'staticCodeChecks')) {
         failWithConfigError("You pipeline configuration contains an entry for the stage staticCodeChecks. " +
             "This configuration option was removed in version v32. " +
             "Please migrate the configuration into your pom.xml file or the configuration for the new step mavenExecuteStaticCodeChecks. " +
@@ -80,14 +80,14 @@ void checkSharedConfig(Script script) {
 }
 
 private checkRenamedStep(Script script, String oldName, String newName) {
-    if (ConfigurationLoader.stepConfiguration(script, oldName)) {
+    if (loadEffectiveStepConfiguration(script: script, stepName: oldName)) {
         failWithConfigError("The configuration key ${oldName} in the steps configuration may not be used anymore. " +
             "Please use ${newName} instead.")
     }
 }
 
 private checkRenamedStage(Script script, String oldName, String newName) {
-    if (ConfigurationLoader.stageConfiguration(script, oldName)){
+    if (loadEffectiveStageConfiguration(script: script, stageName: oldName)){
         failWithConfigError("The configuration key ${oldName} in the stages configuration may not be used anymore. " +
             "Please use ${newName} instead. " +
             "For more information please visit https://github.com/SAP/cloud-s4-sdk-pipeline/blob/master/configuration.md")
