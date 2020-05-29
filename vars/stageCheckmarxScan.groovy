@@ -27,10 +27,8 @@ private void executeCheckmarxScan( def script, String stageName) {
 
     Map configuration = loadEffectiveStageConfiguration(script: script, stageName: stageName, stageConfigurationKeys: stageConfigurationKeys)
 
-    // only applicable if customized config exists
-    if (stageConfiguration) {
-        configuration.script = script
-        executeCheckmarxScan configuration
-        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
-    }
+    configuration.script = script
+    executeCheckmarxScan configuration
+    ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
+
 }
