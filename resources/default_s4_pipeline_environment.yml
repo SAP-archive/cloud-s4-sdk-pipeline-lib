@@ -6,6 +6,8 @@ general:
   defaultNode: ""
   automaticVersioning: true
   runStageInPod: true
+  maven:
+    m2Path: s4hana_pipeline/maven_local_repo
   mandatoryStages:
     - "initS4sdkPipeline"
     - "build"
@@ -36,7 +38,6 @@ steps:
   mavenExecute:
     dockerImage: maven:3.6.3-jdk-8-slim
     dockerOptions: ""
-    m2Path: s4hana_pipeline/maven_local_repo
 
   executeNpm:
     dockerImage: ppiper/node-browsers:v3
@@ -55,14 +56,6 @@ steps:
 
   createHdiContainer:
     dockerImage: ppiper/cf-cli:v2
-
-  executeFortifyScan:
-    verbose: false
-    sourceVersion: 1.8
-    use64BitVersion: true
-    maximumMemoryUsage: 3000M
-    exclude: "**/resources/**/*,**/target/**/*,**/unit-tests/**/*,**/integration-tests/**/*"
-    skipNgComponents: true
 
   checkPmd:
     scanModules:

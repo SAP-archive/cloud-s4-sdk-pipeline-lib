@@ -121,7 +121,7 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'fortifyScan') && isProductiveBranch(script: script)) {
+    if (loadEffectiveStepConfiguration(script: script, stepName: 'fortifyExecuteScan')?.fortifyCredentialsId && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN = true
     }
 

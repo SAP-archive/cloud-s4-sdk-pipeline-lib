@@ -13,6 +13,7 @@ def call(Map parameters) {
     convertDebugReportConfig(script)
     checkStaticCodeChecksConfig(script)
     checkSharedConfig(script)
+    checkFortify(script)
 }
 
 void checkRenamedBackendIntegrationTests(Script script) {
@@ -61,7 +62,7 @@ boolean convertDebugReportConfig(Script script) {
 
 void checkStaticCodeChecksConfig(Script script) {
     if (loadEffectiveStageConfiguration(script: script, stageName: 'staticCodeChecks')) {
-        failWithConfigError("You pipeline configuration contains an entry for the stage staticCodeChecks. " +
+        failWithConfigError("Your pipeline configuration contains an entry for the stage staticCodeChecks. " +
             "This configuration option was removed in version v32. " +
             "Please migrate the configuration into your pom.xml file or the configuration for the new step mavenExecuteStaticCodeChecks. " +
             "Details can be found in the release notes as well as in the step documentation: https://sap.github.io/jenkins-library/steps/mavenExecuteStaticCodeChecks/.")
@@ -76,6 +77,15 @@ void checkSharedConfig(Script script) {
             "The value of this key needs to be a list of strings. " +
             "See also https://sap.github.io/jenkins-library/configuration/#custom-default-configuration for more information." +
             "As an example for the necessary change, please consult the release notes of v33 at https://github.com/SAP/cloud-s4-sdk-pipeline/releases/tag/v33")
+    }
+}
+
+void checkFortify(Script script){
+    checkRenamedStep(script, 'executeFortifyScan', 'fortifyExecuteScan')
+    if (ConfigurationLoader.stageConfiguration(script, 'fortifyScan')) {
+        failWithConfigError("Your pipeline configuration contains an entry for the stage fortifyScan. " +
+            "This configuration option was removed. To configure fortify please use the step configuration for fortifyExecuteScan. " +
+            "Details can be found in the documentation: https://sap.github.io/jenkins-library/steps/fortifyExecuteScan/")
     }
 }
 
