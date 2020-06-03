@@ -25,7 +25,7 @@ containerMaps:
   frontendUnitTests:
     - executeNpm
   fortifyScan:
-    - executeFortifyScan
+    - fortifyExecuteScan
   npmAudit:
     - executeNpm
   endToEndTests:
