@@ -30,6 +30,7 @@ def call(Map parameters) {
         defaultMtaBuildConfiguration.globalSettingsFile = s4SdkGlobals.mavenGlobalSettingsFile
         defaultMtaBuildConfiguration.defaultNpmRegistry = defaultNpmRegistry
 
+        //TODO Warning: We are still writing to the commonPipelineEnvironment but download cache is handled differently in go
         Map npmDefaultConfiguration = ConfigurationLoader.defaultStepConfiguration(script, 'executeNpm')
         npmDefaultConfiguration.defaultNpmRegistry = defaultNpmRegistry
 

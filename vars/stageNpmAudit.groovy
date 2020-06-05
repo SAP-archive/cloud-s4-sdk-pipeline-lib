@@ -6,12 +6,10 @@ def call(Map parameters = [:]) {
     def stageName = 'npmAudit'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-        final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
         Set stageConfigurationKeys = [
             'auditedAdvisories'
         ]
-        Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
+        Map configuration = loadEffectiveStageConfiguration(script: script, stageName: stageName, stageConfigurationKeys: stageConfigurationKeys)
 
         runOverNpmModules(script: script) { basePath ->
             checkNpmAudit(script: script, configuration: configuration, basePath: basePath)

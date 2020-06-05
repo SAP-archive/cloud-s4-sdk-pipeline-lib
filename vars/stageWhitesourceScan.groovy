@@ -8,7 +8,7 @@ def call(Map parameters = [:]) {
     def stageName = 'whitesourceScan'
     def script = parameters.script
 
-    Map whitesourceConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+    Map whitesourceConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
 
     if (!whitesourceConfiguration) {
         error("Stage ${stageName} is not configured.")

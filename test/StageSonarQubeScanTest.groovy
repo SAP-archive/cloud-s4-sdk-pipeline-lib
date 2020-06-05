@@ -1,4 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.util.BaseCloudSdkTest
+import com.sap.cloud.sdk.s4hana.pipeline.util.TestUtils
 import org.junit.Before
 import org.junit.Test
 
@@ -19,6 +20,8 @@ class StageSonarQubeScanTest extends BaseCloudSdkTest {
         helper.registerAllowedMethod('executeNpm', [Map.class, Closure.class], { Map parameters, Closure closure ->
             closure.call()
         })
+
+        TestUtils.registerStep(this, 'loadEffectiveStageConfiguration')
 
         helper.registerAllowedMethod('findFiles', [Map.class], { Map parameters ->
             switch (parameters.glob){

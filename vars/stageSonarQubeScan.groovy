@@ -9,7 +9,7 @@ def call(Map parameters = [:]) {
     Script script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
 
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
         List jacocoReportPaths = getJacocoReportPaths().collect({ it.path })
 
         List sonarProperties = [

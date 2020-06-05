@@ -9,8 +9,6 @@ def call(Map parameters = [:]) {
     def stageName = 'backendIntegrationTests'
     def script = parameters.script
 
-    final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-    final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
     Set stageConfigurationKeys = [
         'retry',
         'credentials',
@@ -19,7 +17,8 @@ def call(Map parameters = [:]) {
         'cloudFoundry',
         'createHdiContainer'
     ]
-    Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
+    
+    Map configuration = loadEffectiveStageConfiguration(script: script, stageName: stageName, stageConfigurationKeys: stageConfigurationKeys)
 
     piperStageWrapper(stageName: stageName, script: script) {
         // The HDI container is cleaned up at the end of the execution

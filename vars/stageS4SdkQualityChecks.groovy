@@ -8,7 +8,7 @@ def call(Map parameters = [:]) {
     def stageName = 's4SdkQualityChecks'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
+        Map stageConfiguration = loadEffectiveStageConfiguration(script: script, stageName: stageName)
 
         List disabledChecks = stageConfiguration.disabledChecks
 

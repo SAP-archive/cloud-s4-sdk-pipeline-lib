@@ -13,10 +13,6 @@ def call(Map parameters = [:]) {
 }
 
 private void executeCheckmarxScan( def script, String stageName) {
-
-    final Map stageConfiguration = ConfigurationLoader.stageConfiguration(script, stageName)
-    final Map stageDefaults = ConfigurationLoader.defaultStageConfiguration(script, stageName)
-
     Set stageConfigurationKeys = ['groupId',
                                   'vulnerabilityThresholdMedium',
                                   'checkMarxProjectName',
@@ -29,12 +25,10 @@ private void executeCheckmarxScan( def script, String stageName) {
                                   'checkmarxCredentialsId',
                                   'checkmarxServerUrl']
 
-    Map configuration = ConfigurationMerger.merge(stageConfiguration, stageConfigurationKeys, stageDefaults)
+    Map configuration = loadEffectiveStageConfiguration(script: script, stageName: stageName, stageConfigurationKeys: stageConfigurationKeys)
 
-    // only applicable if customized config exists
-    if (stageConfiguration) {
-        configuration.script = script
-        executeCheckmarxScan configuration
-        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
-    }
+    configuration.script = script
+    executeCheckmarxScan configuration
+    ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
+
 }

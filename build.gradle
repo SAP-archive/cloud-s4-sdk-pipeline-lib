@@ -1,5 +1,8 @@
 buildscript { repositories { mavenCentral() } }
 
+plugins {
+    id "de.undercouch.download" version "4.0.4"
+}
 
 apply plugin: 'groovy'
 
@@ -20,7 +23,7 @@ dependencies {
     implementation group: 'org.jenkins-ci.plugins', name: 'junit', version: '1.26', ext: 'jar'
     implementation group: 'org.jenkins-ci.plugins.workflow', name: 'workflow-cps-global-lib', version: '2.12'
     implementation group: 'org.jenkins-ci.plugins.workflow', name: 'workflow-cps-global-lib', version: '2.12', ext: 'jar'
-    implementation files('libs/jenkins-library.jar') //FIXME Only for running the tests, find better option to do this
+    implementation files('libs/jenkins-library.jar')
     ivy group:'org.apache.ivy', name:'ivy', version:'2.4.0'
     implementation group:'org.apache.ivy', name:'ivy', version:'2.4.0'
     testImplementation group:'junit', name:'junit', version:'4.12'
@@ -42,4 +45,12 @@ test {
     forkEvery=1
 }
 
+task downloadPiper(type: Download) {
+    src 'https://github.com/SAP/jenkins-library/releases/download/v1.39.0/jenkins-library.jar'
+    dest 'libs/jenkins-library.jar'
+    onlyIfModified true
+}
+
 tasks.withType(GroovyCompile) { groovyClasspath += configurations.ivy }
+
+compileGroovy.dependsOn 'downloadPiper'
