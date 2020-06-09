@@ -14,6 +14,8 @@ def call(Map parameters) {
     checkStaticCodeChecksConfig(script)
     checkSharedConfig(script)
     checkFortify(script)
+    checkArtifactSetVersion(script)
+    checkAutomaticVersioning(script)
 }
 
 void checkRenamedBackendIntegrationTests(Script script) {
@@ -86,6 +88,25 @@ void checkFortify(Script script){
         failWithConfigError("Your pipeline configuration contains an entry for the stage fortifyScan. " +
             "This configuration option was removed. To configure fortify please use the step configuration for fortifyExecuteScan. " +
             "Details can be found in the documentation: https://sap.github.io/jenkins-library/steps/fortifyExecuteScan/")
+    }
+}
+
+void checkArtifactSetVersion(Script script){
+    // NOTE: Not using the effective configuration here, since that includes defaults
+    // and the jenkins-library defaults include a configuration for "artifactSetVersion" which
+    // we want to ignore.
+    if (ConfigurationLoader.stepConfiguration(script, 'artifactSetVersion')) {
+        failWithConfigError("The configuration key artifactSetVersion in the steps configuration may not be used anymore. " +
+            "Please use artifactPrepareVersion instead. Details can be found in the release notes of v36 of the pipeline: " +
+            "https://github.com/SAP/cloud-s4-sdk-pipeline/releases/tag/v36")
+    }
+}
+
+void checkAutomaticVersioning(Script script){
+    if (ConfigurationLoader.generalConfiguration(script).containsKey('automaticVersioning')) {
+        failWithConfigError("The configuration key automaticVersioning in the general configuration may not be used anymore. " +
+            "Please configure the artifactPrepareVersion step instead. Details can be found in the release notes of v36 of the pipeline: " +
+            "https://github.com/SAP/cloud-s4-sdk-pipeline/releases/tag/v36")
     }
 }
 

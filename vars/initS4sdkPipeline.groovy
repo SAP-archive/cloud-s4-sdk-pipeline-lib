@@ -9,9 +9,15 @@ import com.sap.piper.DebugReport
 def call(Map parameters) {
     def script = parameters.script
 
+    checkoutAndInitLibrary(script: script, customDefaults: parameters.customDefaults)
+
     DebugReport.instance.initFromEnvironment(env)
 
     validateConfigSchema script: script
+
+    setArtifactVersion script: script
+    // Stash git folder to be used in sonar later
+    stash allowEmpty: true, excludes: '', includes: '**/.git/**', useDefaultExcludes: false, name: 'git'
 
     Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
     if (!generalConfiguration) {

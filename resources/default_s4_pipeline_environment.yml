@@ -4,7 +4,6 @@ general:
   productiveBranch: master
   collectTelemetryData: true
   defaultNode: ""
-  automaticVersioning: true
   runStageInPod: true
   maven:
     m2Path: s4hana_pipeline/maven_local_repo
@@ -29,11 +28,8 @@ steps:
     stageLocking: false
     stashContent: []
 
-  artifactSetVersion:
-    gitCredentialsId: ""
-    commitVersion: false
-    buildTool: "maven"
-    timestampTemplate: "%Y-%m-%dT%H%M%S%Z"
+  artifactPrepareVersion:
+    versioningType: cloud_noTag
 
   mavenExecute:
     dockerImage: maven:3.6.3-jdk-8-slim

@@ -5,11 +5,23 @@ import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 def call(Map parameters) {
     def script = parameters.script
 
-    //TODO activate automatic versioning for JS
-    Map configWithDefault = loadEffectiveGeneralConfiguration script: script
-    if (!BuildToolEnvironment.instance.isNpm() && isProductiveBranch(script: script) && configWithDefault.automaticVersioning) {
-        boolean isMtaProject = BuildToolEnvironment.instance.isMta()
-        artifactSetVersion script: script, buildTool: isMtaProject ? 'mta' : 'maven', filePath: isMtaProject ? 'mta.yaml' : 'pom.xml'
-        ReportAggregator.instance.reportAutomaticVersioning()
+    if (!isProductiveBranch(script: script)) {
+        echo "Automatic versioning not performed, because this is not the productive branch"
+        return
     }
+
+    String buildTool
+    if (BuildToolEnvironment.instance.isMta()) {
+        buildTool = 'mta'
+    } else if (BuildToolEnvironment.instance.isMaven()) {
+        buildTool = 'maven'
+    } else if (BuildToolEnvironment.instance.isNpm()) {
+        buildTool = 'npm'
+    } else {
+        echo "Automatic versioning is not supported for this project's build tool"
+        return
+    }
+
+    artifactPrepareVersion script: script, buildTool: buildTool
+    ReportAggregator.instance.reportAutomaticVersioning()
 }
