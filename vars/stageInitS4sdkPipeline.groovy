@@ -4,22 +4,20 @@ def call(Map parameters) {
     loadPiper(script: script)
 
     /*
-     Consumers can configure an environment variable 'CHECKOUT_NODE_LABEL' in Jenkins, to force the checkout
-     to happen on a node with a specific label. This may be necessary in order to avoid trust issues between
-     the build server and the git server in a distributed setup, if the SSK key or HTTPS certificates are
-     only installed on certain agents. The default behavior is not to enforce a specific node.
-     */
+    In order to avoid the trust issues between the build server and the git server in a distributed setup,
+    the init stage always executes on the master node. The underlying assumption here is that the Jenkins
+    server has an SSH key and it has been added to the git server. This is necessary if Jenkins has to push
+    code changes to the git server.
+    */
 
-    String checkoutNodeLabel = ''
-    if (env.CHECKOUT_NODE_LABEL in CharSequence) {
-        checkoutNodeLabel = env.CHECKOUT_NODE_LABEL
-    }
-
-    node(checkoutNodeLabel) {
+    node('master') {
         deleteDir()
-        // The checkout has to happen outside of initS4sdkPipeline, in order for it to be extensible.
-        // (An extension to "initS4sdkPipeline" has to exist in the workspace before entering piperStageWrapper.)
         checkoutAndInitLibrary(script: script, customDefaults: parameters.customDefaults)
+
+        setArtifactVersion(script: script)
+
+        // Stash git folder to be used in sonar later
+        stash allowEmpty: true, excludes: '', includes: '**/.git/**', useDefaultExcludes: false, name: 'git'
 
         stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
         script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]
