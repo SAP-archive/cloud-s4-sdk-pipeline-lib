@@ -9,8 +9,6 @@ import com.sap.piper.DebugReport
 def call(Map parameters) {
     def script = parameters.script
 
-    checkoutAndInitLibrary(script: script, customDefaults: parameters.customDefaults)
-
     DebugReport.instance.initFromEnvironment(env)
 
     validateConfigSchema script: script
