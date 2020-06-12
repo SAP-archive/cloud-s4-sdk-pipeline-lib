@@ -1,5 +1,4 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
-import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters) {
     def script = parameters.script
@@ -85,18 +84,18 @@ def call(Map parameters) {
 
     script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS = endToEndTestsShouldRun(script)
 
-    if (ConfigurationLoader.stageConfiguration(script, 'performanceTests')) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'performanceTests')) {
         script.commonPipelineEnvironment.configuration.runStage.PERFORMANCE_TESTS = true
     }
 
     if (script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS || script.commonPipelineEnvironment.configuration.runStage.PERFORMANCE_TESTS) {
         script.commonPipelineEnvironment.configuration.runStage.REMOTE_TESTS = true
     }
-    if (ConfigurationLoader.stageConfiguration(script, 'checkmarxScan') && isProductiveBranch(script: script)) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'checkmarxScan')?.groupId && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN = true
     }
 
-    Map sonarStageConfig = ConfigurationLoader.stageConfiguration(script, 'sonarQubeScan')
+    Map sonarStageConfig = loadEffectiveStageConfiguration(script: script, stageName: 'sonarQubeScan')
     if (sonarStageConfig && (isProductiveBranch(script: script) || sonarStageConfig?.runInAllBranches)) {
         script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN = true
     }
@@ -106,18 +105,18 @@ def call(Map parameters) {
 
     if ((fileExists(projectInterceptorFile) || fileExists(repositoryInterceptorFile))
         && isProductiveBranch(script: script)
-        && ConfigurationLoader.stageConfiguration(script, 'additionalTools')) {
+        && loadEffectiveStageConfiguration(script: script, stageName: 'additionalTools')) {
         script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS = true
     }
 
     boolean isWhitesourceConfigured =
-        ConfigurationLoader.stageConfiguration(script, 'whitesourceScan')
+        loadEffectiveStageConfiguration(script: script, stageName: 'whitesourceScan')
 
     if (isProductiveBranch(script: script) && isWhitesourceConfigured) {
         script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'sourceClearScan').credentialsId) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'sourceClearScan').credentialsId) {
         script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN = true
     }
 
@@ -134,28 +133,28 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.THIRD_PARTY_CHECKS = true
     }
 
-    Map productionDeploymentConfiguration = ConfigurationLoader.stageConfiguration(script, 'productionDeployment')
+    Map productionDeploymentConfiguration = loadEffectiveStageConfiguration(script: script, stageName: 'productionDeployment')
 
     if ((productionDeploymentConfiguration.cfTargets || productionDeploymentConfiguration.neoTargets || productionDeploymentConfiguration.tmsUpload) && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.PRODUCTION_DEPLOYMENT = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'artifactDeployment') && isProductiveBranch(script: script)) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'artifactDeployment') && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.ARTIFACT_DEPLOYMENT = true
     }
 
-    def sendNotification = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
+    def sendNotification = loadEffectivePostActionConfiguration(script: script, postAction: 'sendNotification')
     if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
         script.commonPipelineEnvironment.configuration.runStage.SEND_NOTIFICATION = true
     }
 
-    if (ConfigurationLoader.stageConfiguration(script, 'postPipelineHook')) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'postPipelineHook')) {
         script.commonPipelineEnvironment.configuration.runStage.POST_PIPELINE_HOOK = true
     }
 }
 
-private static boolean endToEndTestsShouldRun(script) {
-    Map stageConfig = ConfigurationLoader.stageConfiguration(script, 'endToEndTests')
+private boolean endToEndTestsShouldRun(script) {
+    Map stageConfig = loadEffectiveStageConfiguration(script: script, stageName: "endToEndTests")
 
     if (!script.isProductiveBranch(script: script) && stageConfig?.onlyRunInProductiveBranch) {
         return false

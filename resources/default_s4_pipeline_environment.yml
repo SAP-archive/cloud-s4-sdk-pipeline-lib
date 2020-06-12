@@ -107,10 +107,6 @@ stages:
     retry: 1
     forkCount: 1C
 
-  endToEndTests:
-    enableZeroDowntimeDeployment: false
-    onlyRunInProductiveBranch: false
-
   checkmarxScan:
     filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
     fullScansScheduled: true
@@ -119,10 +115,6 @@ stages:
     preset: "36"
     vulnerabilityThresholdLow: 99999
     vulnerabilityThresholdMedium: 0
-
-  artifactDeployment:
-    nexus:
-      version: nexus3
 
   s4SdkQualityChecks:
     disabledChecks: []
