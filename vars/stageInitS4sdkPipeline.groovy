@@ -10,7 +10,7 @@ def call(Map parameters) {
     code changes to the git server.
     */
 
-    node('master') {
+    node(parameters.nodeLabel?:'master') {
         deleteDir()
         checkoutAndInitLibrary(script: script, customDefaults: parameters.customDefaults)
 
