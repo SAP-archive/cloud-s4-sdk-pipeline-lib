@@ -85,10 +85,6 @@ void call(parameters) {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN } }
                         steps { stageWhitesourceScan script: parameters.script }
                     }
-                    stage("SourceClear Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN } }
-                        steps { stageSourceClearScan script: parameters.script }
-                    }
                     stage("Fortify Scan") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN } }
                         steps { stageFortifyScan script: parameters.script }

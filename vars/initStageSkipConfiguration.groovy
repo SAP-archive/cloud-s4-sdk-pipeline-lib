@@ -116,10 +116,6 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN = true
     }
 
-    if (loadEffectiveStageConfiguration(script: script, stageName: 'sourceClearScan').credentialsId) {
-        script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN = true
-    }
-
     if (loadEffectiveStepConfiguration(script: script, stepName: 'fortifyExecuteScan')?.fortifyCredentialsId && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN = true
     }

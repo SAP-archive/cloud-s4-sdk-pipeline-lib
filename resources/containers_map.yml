@@ -45,8 +45,6 @@ containerMaps:
   whitesourceScan:
     - mavenExecute
     - executeNpm
-  sourceClearScan:
-    - executeSourceClearScan
   productionDeployment:
     - mavenExecute
     - executeNpm

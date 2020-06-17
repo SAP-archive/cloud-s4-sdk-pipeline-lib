@@ -46,9 +46,6 @@ steps:
   executeGradle:
     dockerImage: gradle:6.0.0-jdk8
 
-  executeSourceClearScan:
-    dockerImage: ppiper/mta-archive-builder:v1
-
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
     scanModules:
