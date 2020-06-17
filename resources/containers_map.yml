@@ -1,6 +1,7 @@
 # Mapping of stages to the steps (and by extension Docker images) they use
 containerMaps:
   initS4sdkPipeline:
+    - artifactPrepareVersion
     - mavenExecute
     - executeNpm
   build:

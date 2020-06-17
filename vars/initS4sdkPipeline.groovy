@@ -13,6 +13,10 @@ def call(Map parameters) {
 
     validateConfigSchema script: script
 
+    setArtifactVersion(script: script)
+    // Stash git folder to be used in sonar later
+    stash allowEmpty: true, excludes: '', includes: '**/.git/**', useDefaultExcludes: false, name: 'git'
+
     Map generalConfiguration = script.commonPipelineEnvironment.configuration.general
     if (!generalConfiguration) {
         generalConfiguration = [:]

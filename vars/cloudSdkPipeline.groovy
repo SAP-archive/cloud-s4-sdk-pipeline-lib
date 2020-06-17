@@ -11,7 +11,7 @@ void call(parameters) {
             stage('Init') {
                 steps {
                     milestone 10
-                    stageInitS4sdkPipeline script: parameters.script
+                    stageInitS4sdkPipeline script: parameters.script, nodeLabel: parameters.initNodeLabel
                     abortOldBuilds script: parameters.script
                 }
             }
