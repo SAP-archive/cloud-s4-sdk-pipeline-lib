@@ -1,7 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 
-import com.sap.piper.ConfigurationLoader
-
 void call(Map parameters = [:]) {
     def stageName = 'lint'
     def script = parameters.script
@@ -21,12 +19,10 @@ void call(Map parameters = [:]) {
         }
         String[] ui5Components = ui5ComponentsUpperCase.plus(ui5ComponentsLowerCase)
 
-        if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-lint'])){
-            checkUserLint(script: script, configuration: stageConfiguration)
-        } else if (ui5Components.size() > 0) {
+        if (ui5Components.size() > 0 && !BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-lint'])){
             checkUi5BestPractices(script: script, configuration: stageConfiguration, ui5Components: ui5Components)
         } else {
-            checkDefaultLint(script: script, configuration: stageConfiguration)
+            npmExecuteLint(script: script)
         }
     }
 }
