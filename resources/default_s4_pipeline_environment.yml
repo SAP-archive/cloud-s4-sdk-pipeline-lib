@@ -52,7 +52,7 @@ steps:
   testsPublishResults:
     junit:
       active: true
-      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**'
+      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml'
     jacoco:
       active: false
     cobertura:
@@ -116,6 +116,10 @@ stages:
   backendIntegrationTests:
     retry: 1
     forkCount: 1C
+
+  frontendIntegrationTests:
+    runScripts: ['ci-it-frontend']
+    virtualFrameBuffer: true
 
   checkmarxScan:
     filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
