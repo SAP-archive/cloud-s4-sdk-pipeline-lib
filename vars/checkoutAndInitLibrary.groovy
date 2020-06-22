@@ -53,6 +53,8 @@ def call(Map parameters) {
         throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
 
+    script.commonPipelineEnvironment.setBuildTool(BuildToolEnvironment.instance.getBuildTool().getPiperBuildTool())
+
     DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool
 
     checkLegacyExtensions(script: script)

@@ -42,6 +42,22 @@ steps:
   executeGradle:
     dockerImage: gradle:6.0.0-jdk8
 
+  buildExecute:
+    npmInstall: true
+    npmRunScripts:
+      - 'ci-build'
+      - 'ci-backend-unit-test'
+      - 'ci-package'
+
+  testsPublishResults:
+    junit:
+      active: true
+      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**'
+    jacoco:
+      active: false
+    cobertura:
+      active: false
+
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
     scanModules:
@@ -82,6 +98,7 @@ steps:
       dockerImage: 'ppiper/mta-archive-builder:v1'
     cloudMbt:
       dockerImage: 'devxci/mbtci:1.0.14'
+    installArtifacts: true
 
   checkFrontendCodeCoverage:
     codeCoverageFrontend:

@@ -19,7 +19,7 @@ void call(parameters) {
             stage('Build and Test') {
                 steps {
                     milestone 20
-                    stageBuild script: parameters.script
+                    piperPipelineStageBuild script: parameters.script, stageName: 'build'
                 }
             }
 
