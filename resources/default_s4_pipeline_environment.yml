@@ -5,6 +5,8 @@ general:
   collectTelemetryData: true
   defaultNode: ""
   runStageInPod: true
+  globalExtensionsDirectory: 's4hana_pipeline/extensions/'
+
   maven:
     m2Path: s4hana_pipeline/maven_local_repo
   mandatoryStages:
@@ -24,7 +26,6 @@ general:
 #Steps Specific Configuration
 steps:
   piperStageWrapper:
-    globalExtensionsDirectory: 's4hana_pipeline/extensions/'
     stageLocking: false
     stashContent: []
 

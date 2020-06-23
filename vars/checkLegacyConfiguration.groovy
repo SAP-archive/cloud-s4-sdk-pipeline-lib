@@ -16,6 +16,19 @@ def call(Map parameters) {
     checkFortify(script)
     checkArtifactSetVersion(script)
     checkAutomaticVersioning(script)
+    checkGlobalExtensionConfiguration(script)
+}
+
+void checkGlobalExtensionConfiguration(Script script) {
+    Map generalConfiguration = loadEffectiveGeneralConfiguration(script: script)
+    if (generalConfiguration?.extensionRepository) {
+        failWithConfigError("Your pipeline configuration contains the obsolete configuration parameter " +
+            "'general.extensionRepository=${generalConfiguration.extensionRepository}'. " +
+            "The new configuration parameter in the 'general' section is called 'globalExtensionsRepository'. " +
+            "To configure a version please use globalExtensionsVersion. " +
+            "You can also configure globalExtensionsRepositoryCredentialsId in case the extension repository is secured. " +
+            "Please note that you can also configure these values as part of your custom defaults / shared configuration.")
+    }
 }
 
 void checkRenamedBackendIntegrationTests(Script script) {

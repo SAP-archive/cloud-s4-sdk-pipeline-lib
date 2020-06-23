@@ -27,8 +27,6 @@ def call(Map parameters) {
 
     initAnalytics(script: script)
 
-    loadAdditionalLibraries script: script
-
     checkLegacyConfiguration script: script
 
     setupDownloadCache script: script
