@@ -31,6 +31,8 @@ steps:
 
   artifactPrepareVersion:
     versioningType: cloud_noTag
+    maven:
+      dockerImage: 'maven:3.6-jdk-8'
 
   mavenExecute:
     dockerImage: maven:3.6.3-jdk-8-slim

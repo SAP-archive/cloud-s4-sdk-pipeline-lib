@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.piper.ConfigurationLoader
 import com.sap.piper.ConfigurationMerger
 import com.sap.piper.k8s.ContainerMap
@@ -37,6 +38,10 @@ def getDockerImageNameForStep(script, stageName, stepName) {
 
     if(!dockerImage && stepName == "mtaBuild"){
         dockerImage = configuration[configuration.mtaBuildTool]?.dockerImage
+    }
+
+    if(!dockerImage && stepName == "artifactPrepareVersion"){
+        dockerImage = configuration[BuildToolEnvironment.instance.getBuildTool().getPiperBuildTool()]?.dockerImage
     }
 
     return dockerImage ?: ''
