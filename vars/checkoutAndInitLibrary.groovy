@@ -33,10 +33,6 @@ def call(Map parameters) {
 
     checkMultibranchPipeline script: script
 
-    if (Boolean.valueOf(env.ON_K8S)) {
-        initContainersMap script: script
-    }
-
     boolean isMtaProject = fileExists('mta.yaml')
     def isMaven = fileExists('pom.xml')
     def isNpm = fileExists('package.json')
@@ -52,6 +48,10 @@ def call(Map parameters) {
     }
 
     script.commonPipelineEnvironment.setBuildTool(BuildToolEnvironment.instance.getBuildTool().getPiperBuildTool())
+
+    if (Boolean.valueOf(env.ON_K8S)) {
+        initContainersMap script: script
+    }
 
     DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool
 
