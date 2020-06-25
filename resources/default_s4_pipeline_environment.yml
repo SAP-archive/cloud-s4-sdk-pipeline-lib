@@ -114,6 +114,9 @@ steps:
   sonarExecuteScan:
     dockerImage: 'ppiper/node-browsers:v3'
 
+  fortifyExecuteScan:
+    buildTool: 'maven'
+
 #Stage Specific Configurations
 stages:
   backendIntegrationTests:
