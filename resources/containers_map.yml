@@ -1,27 +1,39 @@
+# Mapping of Go step names to their YAML metadata resource file
+stepMetadata:
+  artifactPrepareVersion: versioning.yaml
+  fortifyExecuteScan: fortify.yaml
+  mavenExecute: mavenExecute.yaml
+  mavenExecuteStaticCodeChecks: mavenStaticCodeChecks.yaml
+  mtaBuild: mtaBuild.yaml
+  nexusUpload: nexusUpload.yaml
+  npmExecuteScripts: npmExecuteScripts.yaml
+  npmExecuteLint: npmExecuteLint.yaml
+  sonarExecuteScan: sonar.yaml
+
 # Mapping of stages to the steps (and by extension Docker images) they use
 containerMaps:
   initS4sdkPipeline:
+    - artifactPrepareVersion
     - mavenExecute
     - executeNpm
   build:
+    - mavenBuild
+    - mtaBuild
+    - npmExecuteScripts
     - mavenExecute
     - executeNpm
     - mtaBuild
-  package:
-    - executeNpm
-  staticCodeChecks:
-    - mavenExecute
+  mavenExecuteStaticCodeChecks:
+    - mavenExecuteStaticCodeChecks
   lint:
-    - executeNpm
-  unitTests:
-    - mavenExecute
+    - npmExecuteLint
     - executeNpm
   backendIntegrationTests:
     - mavenExecute
     - executeNpm
     - createHdiContainer
   frontendIntegrationTests:
-    - executeNpm
+    - npmExecuteScripts
   frontendUnitTests:
     - executeNpm
   fortifyScan:
@@ -33,6 +45,7 @@ containerMaps:
     - executeNpm
     - cloudFoundryDeploy
     - neoDeploy
+    - cloudFoundryCreateService
   performanceTests:
     - mavenExecute
     - checkJMeter
@@ -41,14 +54,15 @@ containerMaps:
   s4SdkQualityChecks:
     - mavenExecute
   artifactDeployment:
-    - mavenExecute
+    - nexusUpload
   whitesourceScan:
     - mavenExecute
     - executeNpm
-  sourceClearScan:
-    - executeSourceClearScan
+  sonarQubeScan:
+    - sonarExecuteScan
   productionDeployment:
     - mavenExecute
     - executeNpm
     - cloudFoundryDeploy
     - neoDeploy
+    - cloudFoundryCreateService

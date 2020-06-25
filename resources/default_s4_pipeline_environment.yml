@@ -4,8 +4,9 @@ general:
   productiveBranch: master
   collectTelemetryData: true
   defaultNode: ""
-  automaticVersioning: true
   runStageInPod: true
+  globalExtensionsDirectory: 's4hana_pipeline/extensions/'
+
   maven:
     m2Path: s4hana_pipeline/maven_local_repo
   mandatoryStages:
@@ -25,15 +26,11 @@ general:
 #Steps Specific Configuration
 steps:
   piperStageWrapper:
-    globalExtensionsDirectory: 's4hana_pipeline/extensions/'
     stageLocking: false
     stashContent: []
 
-  artifactSetVersion:
-    gitCredentialsId: ""
-    commitVersion: false
-    buildTool: "maven"
-    timestampTemplate: "%Y-%m-%dT%H%M%S%Z"
+  artifactPrepareVersion:
+    versioningType: cloud_noTag
 
   mavenExecute:
     dockerImage: maven:3.6.3-jdk-8-slim
@@ -46,8 +43,21 @@ steps:
   executeGradle:
     dockerImage: gradle:6.0.0-jdk8
 
-  executeSourceClearScan:
-    dockerImage: ppiper/mta-archive-builder:v1
+  buildExecute:
+    npmInstall: true
+    npmRunScripts:
+      - 'ci-build'
+      - 'ci-backend-unit-test'
+      - 'ci-package'
+
+  testsPublishResults:
+    junit:
+      active: true
+      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml'
+    jacoco:
+      active: false
+    cobertura:
+      active: false
 
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
@@ -84,11 +94,7 @@ steps:
   mtaBuild:
     buildTarget: "CF"
     mtaBuildTool: "cloudMbt"
-    #TODO Workarround to build containers map. Can be removed after init of containers map is fixed for go.
-    classic:
-      dockerImage: 'ppiper/mta-archive-builder:v1'
-    cloudMbt:
-      dockerImage: 'devxci/mbtci:1.0.14'
+    installArtifacts: true
 
   checkFrontendCodeCoverage:
     codeCoverageFrontend:
@@ -101,15 +107,18 @@ steps:
   sonarExecuteScan:
     dockerImage: 'ppiper/node-browsers:v3'
 
+  fortifyExecuteScan:
+    buildTool: 'maven'
+
 #Stage Specific Configurations
 stages:
   backendIntegrationTests:
     retry: 1
     forkCount: 1C
 
-  endToEndTests:
-    enableZeroDowntimeDeployment: false
-    onlyRunInProductiveBranch: false
+  frontendIntegrationTests:
+    runScripts: ['ci-it-frontend']
+    virtualFrameBuffer: true
 
   checkmarxScan:
     filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
@@ -119,10 +128,6 @@ stages:
     preset: "36"
     vulnerabilityThresholdLow: 99999
     vulnerabilityThresholdMedium: 0
-
-  artifactDeployment:
-    nexus:
-      version: nexus3
 
   s4SdkQualityChecks:
     disabledChecks: []

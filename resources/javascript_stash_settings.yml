@@ -23,6 +23,8 @@ build:
       includes: "**/package-lock.json, **/npm-shrinkwrap.json"
     - name: "GENERATED_CAP_FILES"
       includes: "db/src/gen/**, gen/**"
+    - name: "DEPLOYMENTARTIFACT"
+      includes: "deployment/**"
 
 frontendUnitTests:
   unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
@@ -44,12 +46,6 @@ frontendIntegrationTests:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
-
-package:
-  unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
-  stashes:
-    - name: "DEPLOYMENTARTIFACT"
-      includes: "deployment/**"
 
 sonarQubeScan:
   unstash: ['SOURCE', 'NODE_MODULES', 'DIST']

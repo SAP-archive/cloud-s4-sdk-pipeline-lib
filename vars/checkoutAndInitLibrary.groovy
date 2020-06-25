@@ -3,13 +3,14 @@ import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 
 import com.sap.piper.DebugReport
+import com.sap.piper.k8s.ContainerMap
 
 def call(Map parameters) {
     def script = parameters.script
 
     Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
 
-    initS4SdkPipelineLibrary script: script, customDefaults: parameters.customDefaults
+    initS4SdkPipelineLibrary script: script, configFile: parameters.configFile, customDefaults: parameters.customDefaults
 
     if (scmCheckoutResult.GIT_COMMIT) {
         ReportAggregator.instance.reportVersionControlUsed('Git')
@@ -27,17 +28,11 @@ def call(Map parameters) {
 
     initAnalytics(script: script)
 
-    loadAdditionalLibraries script: script
-
     checkLegacyConfiguration script: script
 
     setupDownloadCache script: script
 
     checkMultibranchPipeline script: script
-
-    if (Boolean.valueOf(env.ON_K8S)) {
-        initContainersMap script: script
-    }
 
     boolean isMtaProject = fileExists('mta.yaml')
     def isMaven = fileExists('pom.xml')
@@ -51,6 +46,13 @@ def call(Map parameters) {
         BuildToolEnvironment.instance.setBuildTool(BuildTool.NPM)
     } else {
         throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
+    }
+
+    script.commonPipelineEnvironment.setBuildTool(BuildToolEnvironment.instance.getBuildTool().getPiperBuildTool())
+
+    if (Boolean.valueOf(env.ON_K8S)) {
+        String buildTool = BuildToolEnvironment.instance.getBuildTool().toString().toLowerCase()
+        ContainerMap.instance.initFromResource(script, 'containers_map.yml', buildTool)
     }
 
     DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool

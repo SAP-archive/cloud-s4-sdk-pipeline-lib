@@ -12,12 +12,9 @@ def call(Map parameters) {
 
     node(parameters.nodeLabel?:'master') {
         deleteDir()
-        checkoutAndInitLibrary(script: script, customDefaults: parameters.customDefaults)
-
-        setArtifactVersion(script: script)
-
-        // Stash git folder to be used in sonar later
-        stash allowEmpty: true, excludes: '', includes: '**/.git/**', useDefaultExcludes: false, name: 'git'
+        // The checkout has to happen outside of initS4sdkPipeline, in order for it to be extensible.
+        // (An extension to "initS4sdkPipeline" has to exist in the workspace before entering piperStageWrapper.)
+        checkoutAndInitLibrary(script: script, configFile: parameters.configFile, customDefaults: parameters.customDefaults)
 
         stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
         script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]

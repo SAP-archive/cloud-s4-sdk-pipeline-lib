@@ -11,7 +11,7 @@ void call(parameters) {
             stage('Init') {
                 steps {
                     milestone 10
-                    stageInitS4sdkPipeline script: parameters.script
+                    stageInitS4sdkPipeline script: parameters.script, nodeLabel: parameters.initNodeLabel
                     abortOldBuilds script: parameters.script
                 }
             }
@@ -19,7 +19,7 @@ void call(parameters) {
             stage('Build and Test') {
                 steps {
                     milestone 20
-                    stageBuild script: parameters.script
+                    piperPipelineStageBuild script: parameters.script, stageName: 'build'
                 }
             }
 
@@ -84,10 +84,6 @@ void call(parameters) {
                     stage("WhiteSource Scan") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN } }
                         steps { stageWhitesourceScan script: parameters.script }
-                    }
-                    stage("SourceClear Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN } }
-                        steps { stageSourceClearScan script: parameters.script }
                     }
                     stage("Fortify Scan") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN } }

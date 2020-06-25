@@ -15,7 +15,6 @@ enum QualityCheck {
     CheckmarxScan("Checkmarx Scan", QualityCheckCategory.SecurityScans),
     FortifyScan("Fortify Scan", QualityCheckCategory.SecurityScans),
     WhiteSourceScan("WhiteSource Scan", QualityCheckCategory.SecurityScans),
-    SourceClearScan("SourceClearScan Scan", QualityCheckCategory.SecurityScans),
     ResilienceCheck("Resilience Check", QualityCheckCategory.S4sdkQualityChecks),
     OnlyPublicAPIsCheck("Only Public APIs Check", QualityCheckCategory.S4sdkQualityChecks)
 

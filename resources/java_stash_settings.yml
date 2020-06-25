@@ -65,10 +65,6 @@ whitesourceScan:
   unstash: ["SOURCE", "M2", "NODE_MODULES", "PACKAGE_LOCK"]
   stashes: []
 
-sourceClearScan:
-  unstash: ["SOURCE", "M2", "NODE_MODULES"]
-  stashes: []
-
 additionalTools:
   unstash: ["SOURCE", "M2", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
