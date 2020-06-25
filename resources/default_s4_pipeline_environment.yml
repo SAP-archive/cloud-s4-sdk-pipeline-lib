@@ -31,8 +31,6 @@ steps:
 
   artifactPrepareVersion:
     versioningType: cloud_noTag
-    maven:
-      dockerImage: 'maven:3.6-jdk-8'
 
   mavenExecute:
     dockerImage: maven:3.6.3-jdk-8-slim
@@ -96,11 +94,6 @@ steps:
   mtaBuild:
     buildTarget: "CF"
     mtaBuildTool: "cloudMbt"
-    #TODO Workarround to build containers map. Can be removed after init of containers map is fixed for go.
-    classic:
-      dockerImage: 'ppiper/mta-archive-builder:v1'
-    cloudMbt:
-      dockerImage: 'devxci/mbtci:1.0.14'
     installArtifacts: true
 
   checkFrontendCodeCoverage:

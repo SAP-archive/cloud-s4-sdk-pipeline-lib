@@ -3,6 +3,7 @@ import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 
 import com.sap.piper.DebugReport
+import com.sap.piper.k8s.ContainerMap
 
 def call(Map parameters) {
     def script = parameters.script
@@ -50,7 +51,8 @@ def call(Map parameters) {
     script.commonPipelineEnvironment.setBuildTool(BuildToolEnvironment.instance.getBuildTool().getPiperBuildTool())
 
     if (Boolean.valueOf(env.ON_K8S)) {
-        initContainersMap script: script
+        String buildTool = BuildToolEnvironment.instance.getBuildTool().toString().toLowerCase()
+        ContainerMap.instance.initFromResource(script, 'containers_map.yml', buildTool)
     }
 
     DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool
