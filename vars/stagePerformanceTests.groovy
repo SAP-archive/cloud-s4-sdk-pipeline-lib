@@ -11,11 +11,8 @@ def call(Map parameters = [:]) {
 
         if (stageConfiguration) {
             lock(script.commonPipelineEnvironment.configuration.performanceTestLock) {
-                deployToCloudPlatform(
+                multicloudDeploy(
                     script: script,
-                    cfTargets: stageConfiguration.cfTargets,
-                    neoTargets: stageConfiguration.neoTargets,
-                    cfCreateServices: stageConfiguration.cfCreateServices,
                     stage: stageName
                 )
                 def jMeterConfig = ConfigurationLoader.stepConfiguration(script, 'checkJMeter')

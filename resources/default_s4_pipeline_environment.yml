@@ -90,6 +90,7 @@ steps:
     dockerImage: ppiper/neo-cli:v2
     deployMode: "warParams"
     neoHome: "/sdk"
+    mavenDeploymentModule: 'application'
 
   mtaBuild:
     buildTarget: "CF"
