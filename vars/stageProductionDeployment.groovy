@@ -37,12 +37,9 @@ def call(Map parameters = [:]) {
             if(stageConfiguration.cfTargets || stageConfiguration.neoTargets){
                 if (fileExists('package.json') && stageConfiguration.appUrls) {
                     try {
-                        deployToCloudPlatform(
+                        multicloudDeploy(
                             script: script,
-                            cfTargets: stageConfiguration.cfTargets,
-                            neoTargets: stageConfiguration.neoTargets,
-                            cfCreateServices: stageConfiguration.cfCreateServices,
-                            isProduction: true,
+                            enableZeroDowntimeDeployment: true,
                             stage: stageName
                         )
                     }
@@ -55,12 +52,9 @@ def call(Map parameters = [:]) {
                         )
                     }
                 } else {
-                    deployToCloudPlatform(
+                    multicloudDeploy(
                         script: script,
-                        cfTargets: stageConfiguration.cfTargets,
-                        neoTargets: stageConfiguration.neoTargets,
-                        cfCreateServices: stageConfiguration.cfCreateServices,
-                        isProduction: true,
+                        enableZeroDowntimeDeployment: true,
                         stage: stageName
                     )
                     echo "Smoke tests skipped, because package.json does not exist or stage configuration option appUrls is not defined."

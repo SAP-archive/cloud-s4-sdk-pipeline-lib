@@ -33,12 +33,22 @@ def call(Map parameters = [:]) {
             error("Configure the option 'instance' in your stage configuration for 'sonarQubeScan'")
         }
 
-        sonarExecuteScan([
-            script     : script,
-            dockerImage: stageConfiguration.dockerImage ?: 'ppiper/node-browsers:v3',
-            instance   : stageConfiguration.instance,
-            options    : sonarProperties
-        ])
+        if (stageConfiguration.runInAllBranches && !isProductiveBranch(script: script) && !isPullRequest()) {
+            sonarExecuteScan([
+                script     : script,
+                dockerImage: stageConfiguration.dockerImage ?: 'ppiper/node-browsers:v3',
+                instance   : stageConfiguration.instance,
+                options    : sonarProperties,
+                branchName : env.BRANCH_NAME
+            ])
+        } else {
+            sonarExecuteScan([
+                script     : script,
+                dockerImage: stageConfiguration.dockerImage ?: 'ppiper/node-browsers:v3',
+                instance   : stageConfiguration.instance,
+                options    : sonarProperties
+            ])
+        }
     }
 }
 
@@ -64,4 +74,8 @@ private List getPathToBinaries() {
 @NonCPS
 String getParentFolder(String filePath) {
     return Paths.get(filePath).getParent().toString()
+}
+
+private Boolean isPullRequest() {
+    return env.CHANGE_ID
 }
