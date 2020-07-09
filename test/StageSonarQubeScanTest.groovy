@@ -5,6 +5,7 @@ import org.junit.Test
 
 import static org.junit.Assert.assertArrayEquals
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertNull
 import static org.junit.Assert.assertThat
 
 class StageSonarQubeScanTest extends BaseCloudSdkTest {
@@ -88,5 +89,51 @@ class StageSonarQubeScanTest extends BaseCloudSdkTest {
 
         script.invokeMethod("call", [script: script])
         assertEquals("sonarInstance", actualInstance)
+    }
+
+    @Test
+    void 'Running in non productive, non pull request branch should set branch name'() {
+        String actualBranchName
+
+        helper.registerAllowedMethod('sonarExecuteScan', [Map.class], { Map parameters ->
+            actualBranchName = parameters.branchName
+        })
+
+        helper.registerAllowedMethod('isProductiveBranch', [Object.class], {return false})
+
+        Script script = loadScript("vars/stageSonarQubeScan.groovy")
+        script.env = [BRANCH_NAME: 'myBranch']
+
+        script.commonPipelineEnvironment = [configuration: [stages: [ sonarQubeScan : [
+            projectKey: 'testProject',
+            instance: 'sonarInstance',
+            runInAllBranches: true
+        ]]]]
+
+        script.invokeMethod("call", [script: script])
+        assertEquals("myBranch", actualBranchName)
+    }
+
+    @Test
+    void 'Running in productive, non pull request branch should not set branch name'() {
+        String actualBranchName
+
+        helper.registerAllowedMethod('sonarExecuteScan', [Map.class], { Map parameters ->
+            actualBranchName = parameters.branchName
+        })
+
+        helper.registerAllowedMethod('isProductiveBranch', [Object.class], {return true})
+
+        Script script = loadScript("vars/stageSonarQubeScan.groovy")
+        script.env = [BRANCH_NAME: 'myBranch']
+
+        script.commonPipelineEnvironment = [configuration: [stages: [ sonarQubeScan : [
+            projectKey: 'testProject',
+            instance: 'sonarInstance',
+            runInAllBranches: true
+        ]]]]
+
+        script.invokeMethod("call", [script: script])
+        assertNull(actualBranchName)
     }
 }
