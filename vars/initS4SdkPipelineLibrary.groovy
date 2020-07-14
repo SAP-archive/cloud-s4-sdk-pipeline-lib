@@ -7,6 +7,7 @@ def call(Map parameters) {
             parameters.configFile = getConfigLocation(script: script)
         }
         parameters.customDefaults = parameters.customDefaults ?: ['default_s4_pipeline_environment.yml']
+        parameters.customDefaultsFromFiles = parameters.customDefaultsFromFiles ?: ['default_s4_pipeline_environment.yml']
 
         setupCommonPipelineEnvironment(parameters)
     }

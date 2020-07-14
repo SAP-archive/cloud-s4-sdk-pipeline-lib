@@ -10,7 +10,7 @@ def call(Map parameters) {
 
     Map scmCheckoutResult = checkout(parameters.checkoutMap ?: scm)
 
-    initS4SdkPipelineLibrary script: script, configFile: parameters.configFile, customDefaults: parameters.customDefaults
+    initS4SdkPipelineLibrary script: script, configFile: parameters.configFile, customDefaults: parameters.customDefaults, customDefaultsFromFiles: parameters.customDefaultsFromFiles
 
     if (scmCheckoutResult.GIT_COMMIT) {
         ReportAggregator.instance.reportVersionControlUsed('Git')
