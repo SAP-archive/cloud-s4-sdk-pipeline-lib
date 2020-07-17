@@ -42,7 +42,7 @@ containerMaps:
     - executeNpm
   endToEndTests:
     - mavenExecute
-    - executeNpm
+    - npmExecuteScripts
     - cloudFoundryDeploy
     - neoDeploy
     - cloudFoundryCreateService
@@ -62,7 +62,7 @@ containerMaps:
     - sonarExecuteScan
   productionDeployment:
     - mavenExecute
-    - executeNpm
+    - npmExecuteScripts
     - cloudFoundryDeploy
     - neoDeploy
     - cloudFoundryCreateService
