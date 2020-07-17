@@ -17,6 +17,7 @@ def call(Map parameters) {
     checkArtifactSetVersion(script)
     checkAutomaticVersioning(script)
     checkGlobalExtensionConfiguration(script)
+    checkEndToEndTestsAppUrl(script)
 }
 
 void checkGlobalExtensionConfiguration(Script script) {
@@ -120,6 +121,47 @@ void checkAutomaticVersioning(Script script){
         failWithConfigError("The configuration key automaticVersioning in the general configuration may not be used anymore. " +
             "Please configure the artifactPrepareVersion step instead. Details can be found in the release notes of v37 of the pipeline: " +
             "https://github.com/SAP/cloud-s4-sdk-pipeline/releases/tag/v37")
+    }
+}
+
+void checkEndToEndTestsAppUrl(Script script) {
+    Map e2eStageConfig = loadEffectiveStageConfiguration(script: script, stageName: 'endToEndTests')
+    Map prodStageConfig = loadEffectiveStageConfiguration(script: script, stageName: 'productionDeployment')
+
+    if (e2eStageConfig?.appUrls instanceof String) {
+        failWithConfigError("The configuration key appUrls in the endToEndTests stage configuration must not be a string anymore. " +
+            "Please configure appUrls as a list of maps. For example:\n" +
+            "appUrls: \n" + "  - url: 'https://my-url.com'\n" + "    credentialId: myCreds\n" +
+            "More details can be found in the documentation: https://sap.github.io/jenkins-library/steps/npmExecuteEndToEndTests/#parameters")
+    }
+    if (prodStageConfig?.appUrls instanceof String) {
+        failWithConfigError("The configuration key appUrls in the productionDeployment stage configuration must not be a string anymore. " +
+            "Please configure appUrls as a list of maps. For example:\n" +
+            "appUrls: \n" + "  - url: 'https://my-url.com'\n" + "    credentialId: myCreds\n" +
+            "More details can be found in the documentation: https://sap.github.io/jenkins-library/steps/npmExecuteEndToEndTests/#parameters")
+    }
+
+    if (e2eStageConfig?.appUrls) {
+        for (int i = 0; i < e2eStageConfig.appUrls.size(); i++) {
+            Map appUrl = e2eStageConfig.appUrls[i]
+            if (appUrl.parameters instanceof String) {
+                failWithConfigError("The configuration key parameters in the endToEndTests stage configuration must not be a string anymore. " +
+                    "Please configure parameters as a list of strings. For example:\n" +
+                    "appUrls: \n" + "  - url: 'https://my-url.com'\n" + "    parameters: ['--tag', 'scenario1']\n" +
+                    "More details can be found in the documentation: https://sap.github.io/jenkins-library/steps/npmExecuteEndToEndTests/#parameters")
+            }
+        }
+    }
+    if (prodStageConfig?.appUrls) {
+        for (int i = 0; i < prodStageConfig.appUrls.size(); i++) {
+            Map appUrl = prodStageConfig.appUrls[i]
+            if (appUrl.parameters instanceof String) {
+                failWithConfigError("The configuration key parameters in the productionDeployment stage configuration must not be a string anymore. " +
+                    "Please configure parameters as a list of strings. For example:\n" +
+                    "appUrls: \n" + "  - url: 'https://my-url.com'\n" + "    parameters: ['--tag', 'scenario1']\n" +
+                    "More details can be found in the documentation: https://sap.github.io/jenkins-library/steps/npmExecuteEndToEndTests/#parameters")
+            }
+        }
     }
 }
 

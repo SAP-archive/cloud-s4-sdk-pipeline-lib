@@ -53,11 +53,14 @@ steps:
   testsPublishResults:
     junit:
       active: true
-      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml'
+      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml,s4hana_pipeline/reports/e2e/*.xml'
     jacoco:
       active: false
     cobertura:
       active: false
+    cucumber:
+      active: false
+      pattern: 's4hana_pipeline/reports/e2e/*.json'
 
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
