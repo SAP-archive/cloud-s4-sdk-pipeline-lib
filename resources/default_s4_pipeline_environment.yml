@@ -135,3 +135,12 @@ stages:
 
   s4SdkQualityChecks:
     disabledChecks: []
+
+  endToEndTests:
+    stageLocking: true
+    lockingResource: 'endToEndTest'
+
+  productionDeployment:
+    stageLocking: true
+    lockingResource: 'productionDeployment'
+    ordinal: 80

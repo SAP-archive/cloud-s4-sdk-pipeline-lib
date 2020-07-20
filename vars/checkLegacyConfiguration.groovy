@@ -17,6 +17,7 @@ def call(Map parameters) {
     checkArtifactSetVersion(script)
     checkAutomaticVersioning(script)
     checkGlobalExtensionConfiguration(script)
+    checkTmsUpload(script)
     checkEndToEndTestsAppUrl(script)
 }
 
@@ -82,6 +83,16 @@ void checkStaticCodeChecksConfig(Script script) {
             "This configuration option was removed in version v32. " +
             "Please migrate the configuration into your pom.xml file or the configuration for the new step mavenExecuteStaticCodeChecks. " +
             "Details can be found in the release notes as well as in the step documentation: https://sap.github.io/jenkins-library/steps/mavenExecuteStaticCodeChecks/.")
+    }
+}
+
+void checkTmsUpload(Script script) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'productionDeployment').tmsUpload) {
+        failWithConfigError("Your pipeline configuration contains an entry tmsUpload in the stage productionDeployment. " +
+            "This configuration option was removed in version v39. " +
+            "Please configure the step tmsUpload instead. " +
+            "Details can be found in the release notes at https://github.com/SAP/cloud-s4-sdk-pipeline/releases/tag/v39 as well as in the step documentation: https://sap.github.io/jenkins-library/steps/tmsUpload/."
+        )
     }
 }
 

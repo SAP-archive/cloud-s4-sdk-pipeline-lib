@@ -44,15 +44,17 @@ def call(Map parameters) {
 
     script.commonPipelineEnvironment.gitCommitId = getGitCommitId()
 
+    script.commonPipelineEnvironment.projectName = projectName
     String prefix = projectName
 
     script.commonPipelineEnvironment.configuration.currentBuildResultLock = "${prefix}/currentBuildResult"
     script.commonPipelineEnvironment.configuration.performanceTestLock = "${prefix}/performanceTest"
-    script.commonPipelineEnvironment.configuration.endToEndTestLock = "${prefix}/endToEndTest"
-    script.commonPipelineEnvironment.configuration.productionDeploymentLock = "${prefix}/productionDeployment"
     script.commonPipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles/${env.BUILD_TAG}"
 
     initNpmModules()
+
+    //todo load with customized default config for now until issue 8490 is resolved
+    piperInitRunStageConfiguration script: script, stageConfigResource: 'com.sap.piper/pipeline/cloudSdkStageDefaults.yml'
 
     initStageSkipConfiguration script: script
 }
