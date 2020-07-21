@@ -14,7 +14,7 @@ def call(Map parameters) {
         deleteDir()
         // The checkout has to happen outside of initS4sdkPipeline, in order for it to be extensible.
         // (An extension to "initS4sdkPipeline" has to exist in the workspace before entering piperStageWrapper.)
-        checkoutAndInitLibrary(script: script, configFile: parameters.configFile, customDefaults: parameters.customDefaults)
+        checkoutAndInitLibrary(script: script, configFile: parameters.configFile, customDefaults: parameters.customDefaults, customDefaultsFromFiles: parameters.customDefaultsFromFiles)
 
         stash allowEmpty: true, excludes: '', includes: '**', useDefaultExcludes: false, name: 'INIT'
         script.commonPipelineEnvironment.configuration.stageStashes = [ initS4sdkPipeline: [ unstash : ["INIT"]]]

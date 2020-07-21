@@ -57,7 +57,7 @@ void call(parameters) {
                 parallel {
                     stage("End to End Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS } }
-                        steps { stageEndToEndTests script: parameters.script }
+                        steps { piperPipelineStageAcceptance script: parameters.script, stageName: 'endToEndTests' }
                     }
                     stage("Performance Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.PERFORMANCE_TESTS } }
@@ -110,8 +110,8 @@ void call(parameters) {
 
             stage('Production Deployment') {
                 when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.PRODUCTION_DEPLOYMENT } }
-                //milestone 80 is set in stageProductionDeployment
-                steps { stageProductionDeployment script: parameters.script }
+                // "ordinal 80" is configured for stage "productionDeployment" in pipeline defaults
+                steps { piperPipelineStageRelease script: parameters.script, stageName: 'productionDeployment' }
             }
 
         }

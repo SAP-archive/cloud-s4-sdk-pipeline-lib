@@ -1,6 +1,5 @@
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 
 def call(Map parameters = [:]) {
@@ -44,12 +43,7 @@ def call(Map parameters = [:]) {
                         )
                     }
                     finally {
-                        executeEndToEndTest(
-                            script: script,
-                            appUrls: stageConfiguration.appUrls,
-                            endToEndTestType: EndToEndTestType.SMOKE_TEST,
-                            stage: stageName
-                        )
+                        npmExecuteEndToEndTests script: script, runScript: 'ci-smoke', stageName: stageName
                     }
                 } else {
                     multicloudDeploy(

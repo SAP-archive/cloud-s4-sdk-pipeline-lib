@@ -1,7 +1,6 @@
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
-import com.sap.cloud.sdk.s4hana.pipeline.EndToEndTestType
 
 def call(Map parameters = [:]) {
     def stageName = 'endToEndTests'
@@ -22,7 +21,7 @@ def call(Map parameters = [:]) {
                 script: script,
                 stage: stageName
             )
-            executeEndToEndTest script: script, appUrls: stageConfiguration.appUrls, endToEndTestType: EndToEndTestType.END_TO_END_TEST, stage: stageName
+            npmExecuteEndToEndTests script: script, runScript: 'ci-e2e', stageName: stageName
             ReportAggregator.instance.reportTestExecution(QualityCheck.EndToEndTests)
         }
     }

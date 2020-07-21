@@ -156,5 +156,5 @@ private boolean endToEndTestsShouldRun(script) {
         return false
     }
 
-    return stageConfig && script.fileExists('package.json')
+    return stageConfig.appUrls && script.fileExists('package.json')
 }
