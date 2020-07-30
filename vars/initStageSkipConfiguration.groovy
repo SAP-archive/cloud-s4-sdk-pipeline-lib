@@ -120,12 +120,17 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN = true
     }
 
+    if (loadEffectiveStepConfiguration(script: script, stepName: 'detectExecuteScan')?.detectTokenCredentialsId && isProductiveBranch(script: script)) {
+        script.commonPipelineEnvironment.configuration.runStage.DETECT_SCAN = true
+    }
+
     if (script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.SOURCE_CLEAR_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN
         || script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS
-        || script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN) {
+        || script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN
+        || script.commonPipelineEnvironment.configuration.runStage.DETECT_SCAN){
         script.commonPipelineEnvironment.configuration.runStage.THIRD_PARTY_CHECKS = true
     }
 
