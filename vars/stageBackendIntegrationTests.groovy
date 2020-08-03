@@ -3,7 +3,6 @@ import com.sap.cloud.sdk.s4hana.pipeline.NpmUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
-import com.sap.piper.ConfigurationMerger
 
 def call(Map parameters = [:]) {
     def stageName = 'backendIntegrationTests'
@@ -17,18 +16,16 @@ def call(Map parameters = [:]) {
         'cloudFoundry',
         'createHdiContainer'
     ]
-    
+
     Map configuration = loadEffectiveStageConfiguration(script: script, stageName: stageName, stageConfigurationKeys: stageConfigurationKeys)
 
     piperStageWrapper(stageName: stageName, script: script) {
         // The HDI container is cleaned up at the end of the execution
         createHdiContainer([script: script].plus(configuration)) {
-            if (configuration.sidecarImage) {
-                // Pass the env variable STAGE_NAME to dockerExecute to use the configuration of the stage
-                withEnv(["STAGE_NAME=$stageName"]) {
-                    executeIntegrationTest(script, stageName, configuration)
-                }
-            } else {
+            // Pass the env variable STAGE_NAME
+            // 1.) In case sideCar is configured, so dockerExecute uses the configuration of the stage
+            // 2.) So the piper binary pulls the correct stage configuration
+            withEnv(["STAGE_NAME=$stageName"]) {
                 executeIntegrationTest(script, stageName, configuration)
             }
         }
@@ -91,46 +88,16 @@ private void javaIntegrationTests(def script, Map configuration) {
 
     String credentialsFilePath = "integration-tests/src/test/resources"
     writeTemporaryCredentials(configuration.credentials, credentialsFilePath) {
-        int count = 0
-        try {
-            count = configuration.retry.toInteger()
-        }
-        catch (Exception e) {
-            error("retry: ${configuration.retry} must be an integer")
-        }
-        def forkCount = configuration.forkCount
-
-        String pomPath = "integration-tests/pom.xml"
 
         injectQualityListenerDependencies(script: script, basePath: 'integration-tests')
 
-        Map mavenExecuteParameters = [
-            script     : script,
-            pomPath    : pomPath,
-            m2Path     : s4SdkGlobals.m2Directory,
-            goals      : ["org.jacoco:jacoco-maven-plugin:prepare-agent", "test"],
-            dockerImage: configuration.dockerImage,
-            defines    : ["-Dsurefire.rerunFailingTestsCount=$count", "-Dsurefire.forkCount=$forkCount"]
-        ]
-
-        // Disable the DL-cache in the integration-tests with sidecar with empty docker options and no global settings file for maven
-        // This is necessary because it is currently not possible to not connect a container to multiple networks.
-        //  FIXME: Remove when docker plugin supports multiple networks and jenkins-library implemented that feature
-        if (configuration.sidecarImage) {
-            mavenExecuteParameters.dockerOptions = []
-            mavenExecuteParameters.globalSettingsFile = ''
-        }
-
         String name = 'Backend Integration Tests'
-        String testResultPattern = "integration-tests/target/surefire-reports/TEST-*.xml".replaceAll("//", "/")
 
-        if (testResultPattern.startsWith("./")) {
-            testResultPattern = testResultPattern.substring(2)
-        }
+        // NOTE: The pattern must not start with "./" and must not contain double slashes "//".
+        String testResultPattern = 'integration-tests/target/surefire-reports/TEST-*.xml'
 
-        String pattern = 's4hana_pipeline/reports/backend-integration/**'
         collectJUnitResults(script: script, testCategoryName: name, reportLocationPattern: testResultPattern) {
-            mavenExecute(mavenExecuteParameters)
+            mavenExecuteIntegration(script: script)
         }
 
         ReportAggregator.instance.reportTestExecution(QualityCheck.BackendIntegrationTests)

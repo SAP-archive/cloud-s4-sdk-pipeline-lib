@@ -116,10 +116,6 @@ steps:
 
 #Stage Specific Configurations
 stages:
-  backendIntegrationTests:
-    retry: 1
-    forkCount: 1C
-
   frontendIntegrationTests:
     runScripts: ['ci-it-frontend']
     virtualFrameBuffer: true
