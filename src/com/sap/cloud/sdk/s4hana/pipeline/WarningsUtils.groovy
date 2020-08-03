@@ -28,6 +28,7 @@ class WarningsUtils implements Serializable {
         script.recordIssues blameDisabled: true,
             enabledForFailure: true,
             aggregatingResults: false,
+            skipPublishingChecks: true,
             tool: script.checkStyle(id: scanToolId, name: scanToolName, pattern: scanToolPattern),
             qualityGates: [
                 [threshold: failedError, type: 'TOTAL_ERROR', unstable: false],
