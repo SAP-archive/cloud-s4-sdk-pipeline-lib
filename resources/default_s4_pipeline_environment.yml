@@ -114,20 +114,19 @@ steps:
   fortifyExecuteScan:
     buildTool: 'maven'
 
+  checkmarxExecuteScan:
+    filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
+    preset: "36"
+    vulnerabilityThresholdLow: 99999
+    vulnerabilityThresholdMedium: 0
+    vulnerabilityThresholdUnit: 'absolute'
+
+
 #Stage Specific Configurations
 stages:
   frontendIntegrationTests:
     runScripts: ['ci-it-frontend']
     virtualFrameBuffer: true
-
-  checkmarxScan:
-    filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
-    fullScansScheduled: true
-    generatePdfReport: true
-    incremental: true
-    preset: "36"
-    vulnerabilityThresholdLow: 99999
-    vulnerabilityThresholdMedium: 0
 
   s4SdkQualityChecks:
     disabledChecks: []

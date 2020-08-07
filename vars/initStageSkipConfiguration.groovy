@@ -91,6 +91,8 @@ def call(Map parameters) {
     if (script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS || script.commonPipelineEnvironment.configuration.runStage.PERFORMANCE_TESTS) {
         script.commonPipelineEnvironment.configuration.runStage.REMOTE_TESTS = true
     }
+// NOTE: Switch to upper version if decision is to make a breaking change and require user to move stage config to step.
+//    if (loadEffectiveStepConfiguration(script: script, stepName: 'checkmarxExecuteScan')?.teamId && isProductiveBranch(script: script)) {
     if (loadEffectiveStageConfiguration(script: script, stageName: 'checkmarxScan')?.groupId && isProductiveBranch(script: script)) {
         script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN = true
     }
