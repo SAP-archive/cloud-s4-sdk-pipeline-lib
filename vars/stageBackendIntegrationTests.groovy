@@ -3,6 +3,7 @@ import com.sap.cloud.sdk.s4hana.pipeline.NpmUtils
 import com.sap.cloud.sdk.s4hana.pipeline.QualityCheck
 import com.sap.cloud.sdk.s4hana.pipeline.ReportAggregator
 import com.sap.piper.ConfigurationLoader
+import com.sap.piper.TemporaryCredentialsUtils
 
 def call(Map parameters = [:]) {
     def stageName = 'backendIntegrationTests'
@@ -26,26 +27,27 @@ def call(Map parameters = [:]) {
             // 1.) In case sideCar is configured, so dockerExecute uses the configuration of the stage
             // 2.) So the piper binary pulls the correct stage configuration
             withEnv(["STAGE_NAME=$stageName"]) {
-                executeIntegrationTest(script, stageName, configuration)
+                executeIntegrationTest(script, configuration)
             }
         }
     }
 }
 
-private void executeIntegrationTest(def script, String stageName, Map configuration) {
+private void executeIntegrationTest(def script, Map configuration) {
+    TemporaryCredentialsUtils credUtils = new TemporaryCredentialsUtils(script)
     if (fileExists('integration-tests/pom.xml')) {
-        javaIntegrationTests(script, configuration)
+        javaIntegrationTests(script, configuration, credUtils)
     }
 
     if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-integration-test', 'ci-it-backend'])) {
-        jsIntegrationTests(script, configuration)
+        jsIntegrationTests(script, configuration, credUtils)
     }
 }
 
-private void jsIntegrationTests(Script script, Map configuration) {
+private void jsIntegrationTests(Script script, Map configuration, TemporaryCredentialsUtils credUtils) {
     String credentialsFilePath = "./"
 
-    writeTemporaryCredentials(configuration.credentials, credentialsFilePath) {
+    credUtils.handleTemporaryCredentials(configuration.credentials, credentialsFilePath) {
         Map executeNpmParameters = [script: script]
 
         // Disable the DL-cache in the integration-tests with sidecar with empty npm registry
@@ -84,10 +86,10 @@ private void jsIntegrationTests(Script script, Map configuration) {
     }
 }
 
-private void javaIntegrationTests(def script, Map configuration) {
-
+private void javaIntegrationTests(def script, Map configuration, TemporaryCredentialsUtils credUtils) {
     String credentialsFilePath = "integration-tests/src/test/resources"
-    writeTemporaryCredentials(configuration.credentials, credentialsFilePath) {
+
+    credUtils.handleTemporaryCredentials(configuration.credentials, credentialsFilePath) {
 
         injectQualityListenerDependencies(script: script, basePath: 'integration-tests')
 
