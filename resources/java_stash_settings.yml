@@ -77,6 +77,10 @@ fortifyScan:
   unstash: ["SOURCE", "M2", "TARGET"]
   stashes: []
 
+detect:
+  unstash: ["SOURCE", "M2", "TARGET"]
+  stashes: []
+
 npmAudit:
   unstash: ["SOURCE", "PACKAGE_LOCK"]
   stashes: []

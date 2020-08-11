@@ -69,6 +69,10 @@ checkmarxScan:
   unstash: ["SOURCE"]
   stashes: []
 
+detect:
+  unstash: ["SOURCE"]
+  stashes: []
+
 endToEndTests:
   unstash: ["SOURCE", "DEPLOYMENTARTIFACT", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []

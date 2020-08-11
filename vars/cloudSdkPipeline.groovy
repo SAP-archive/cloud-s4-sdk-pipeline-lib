@@ -89,6 +89,10 @@ void call(parameters) {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN } }
                         steps { stageFortifyScan script: parameters.script }
                     }
+                    stage("Detect Scan"){
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.DETECT_SCAN } }
+                        steps { stageDetect script: parameters.script }
+                    }
                     stage("Additional Tools") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS } }
                         steps { stageAdditionalTools script: parameters.script }
