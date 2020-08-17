@@ -1,3 +1,4 @@
+import com.sap.cloud.sdk.s4hana.pipeline.WarningsUtils
 import com.sap.piper.ConfigurationLoader
 import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 
@@ -19,6 +20,7 @@ def call(Map parameters) {
     checkGlobalExtensionConfiguration(script)
     checkTmsUpload(script)
     checkEndToEndTestsAppUrl(script)
+    checkSapNpmRegistry(script)
 }
 
 void checkGlobalExtensionConfiguration(Script script) {
@@ -174,6 +176,52 @@ void checkEndToEndTestsAppUrl(Script script) {
             }
         }
     }
+}
+
+void checkSapNpmRegistry(Script script){
+    Map executeNpmConfig = loadEffectiveStepConfiguration(script: script, stepName: 'executeNpm')
+    Map npmExecuteScriptsConfig = loadEffectiveStepConfiguration(script: script, stepName: 'npmExecuteScripts')
+    Map npmExecuteLintConfig = loadEffectiveStepConfiguration(script: script, stepName: 'npmExecuteLint')
+    Map mtaBuildConfig = loadEffectiveStepConfiguration(script: script, stepName: 'mtaBuild')
+    Map generalNpmConfig = loadEffectiveGeneralConfiguration(script: script)
+
+    if (executeNpmConfig?.sapNpmRegistry) {
+        warnAboutSapNpmRegistry(script, "executeNpm")
+    }
+
+    if (npmExecuteScriptsConfig?.sapNpmRegistry) {
+        warnAboutSapNpmRegistry(script, "npmExecuteScripts")
+    }
+
+    if (npmExecuteLintConfig?.sapNpmRegistry) {
+        warnAboutSapNpmRegistry(script, "npmExecuteLint")
+    }
+
+    if (mtaBuildConfig?.sapNpmRegistry) {
+        warnAboutSapNpmRegistry(script, "mtaBuild")
+    }
+
+    if (generalNpmConfig?.npm?.sapNpmRegistry) {
+        WarningsUtils.addPipelineWarning(
+            script,
+            "Deprecated configuration parameter sapNpmRegistry",
+                "Your pipeline configuration contains the obsolete configuration parameter sapNpmRegistry in npm part of the 'general' section of your configuration. " +
+                "The parameter will be ignored during execution. \n" +
+                "This configuration option was removed in version v41, since the packages of the public SAP NPM Registry were migrated to the default public registry at npmjs.org. \n" +
+                "Please configure the defaultNpmRegistry parameter instead, in case a custom NPM registry configuration is required."
+        )
+    }
+}
+
+private warnAboutSapNpmRegistry (Script script, String stepName) {
+    WarningsUtils.addPipelineWarning(
+        script,
+        "Deprecated configuration parameter sapNpmRegistry",
+            "Your pipeline configuration contains the obsolete configuration parameter sapNpmRegistry in the ${stepName} step configuration. " +
+            "The parameter will be ignored during execution. \n" +
+            "This configuration option was removed in version v41, since the packages of the public SAP NPM Registry were migrated to the default public registry at npmjs.org. \n" +
+            "Please configure the defaultNpmRegistry parameter instead, in case a custom NPM registry configuration is required."
+    )
 }
 
 private checkRenamedStep(Script script, String oldName, String newName) {
