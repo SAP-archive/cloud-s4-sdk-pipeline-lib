@@ -21,6 +21,8 @@ def call(Map parameters) {
     checkTmsUpload(script)
     checkEndToEndTestsAppUrl(script)
     checkSapNpmRegistry(script)
+    checkHdiContainer(script)
+    checkBackendITScript(script)
 }
 
 void checkGlobalExtensionConfiguration(Script script) {
@@ -213,7 +215,30 @@ void checkSapNpmRegistry(Script script){
     }
 }
 
-private warnAboutSapNpmRegistry (Script script, String stepName) {
+void checkHdiContainer(Script script) {
+    if (ConfigurationLoader.stepConfiguration(script, 'createHdiContainer')) {
+        failWithConfigError("Your pipeline configuration contains an entry for the step createHdiContainer. " +
+            "This configuration option was removed, since the step createHdiContainer is not used anymore. " +
+            "The backendIntegrationTests stage has been aligned with Project 'Piper' in version v41 and activation of the createHdiContainer step was not migrated. " +
+            "If you still need the functionalities provided by the createHdiContainer step, please open an issue at: https://github.com/SAP/cloud-s4-sdk-pipeline/issues/new?template=pipeline-issue.md " +
+            "Apart from that it is also possible to implement an extension for the backendIntegrationTests stage using the extensibility concept explained in the documentation: https://sap.github.io/jenkins-library/extensibility/ " +
+            "For the time being, the step createHdiContainer is still available in the Pipeline and can be called from an extension. " +
+            "The extension must pass all required options to the step via parameters, it cannot be configured in your .pipeline/config.yml."
+        )
+    }
+}
+
+void checkBackendITScript(Script script) {
+    runOverNpmModules(script: script, npmScripts: ['ci-integration-test']) { basePath ->
+        error("Your package.json file in ${basePath} contains an npm script using the deprecated name " +
+            "'ci-integration-test'. " +
+            "Please rename the script to 'ci-it-backend', since the script 'ci-integration-test' will not be " +
+            "executed during the backenIntegrationTests stage."
+        )
+    }
+}
+
+private warnAboutSapNpmRegistry(Script script, String stepName) {
     WarningsUtils.addPipelineWarning(
         script,
         "Deprecated configuration parameter sapNpmRegistry",

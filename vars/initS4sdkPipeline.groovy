@@ -51,8 +51,6 @@ def call(Map parameters) {
     script.commonPipelineEnvironment.configuration.performanceTestLock = "${prefix}/performanceTest"
     script.commonPipelineEnvironment.configuration.stashFiles = "${prefix}/stashFiles/${env.BUILD_TAG}"
 
-    initNpmModules()
-
     //todo load with customized default config for now until issue 8490 is resolved
     piperInitRunStageConfiguration script: script, stageConfigResource: 'com.sap.piper/pipeline/cloudSdkStageDefaults.yml'
 

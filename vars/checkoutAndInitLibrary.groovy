@@ -26,7 +26,9 @@ def call(Map parameters) {
 
     DebugReport.instance.setGitRepoInfo(scmCheckoutResult)
 
-    initAnalytics(script: script)
+    initAnalytics script: script
+
+    initNpmModules script: script
 
     checkLegacyConfiguration script: script
 
@@ -57,7 +59,7 @@ def call(Map parameters) {
 
     DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool
 
-    checkLegacyExtensions(script: script)
+    checkLegacyExtensions script: script
 
     if (!Boolean.valueOf(env.ON_K8S)) {
         checkDiskSpace script: script

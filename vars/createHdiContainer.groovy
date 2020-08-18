@@ -1,5 +1,4 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
-import com.sap.cloud.sdk.s4hana.pipeline.BuildToolEnvironment
 import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 import com.sap.cloud.sdk.s4hana.pipeline.ProjectUtils
 import com.sap.piper.ConfigurationHelper
@@ -18,7 +17,7 @@ import net.sf.json.JSONObject
     'broker'
 ])
 
-@Field Set PARAMETER_KEYS = STEP_CONFIG_KEYS.plus(['createHdiContainer'])
+@Field Set PARAMETER_KEYS = STEP_CONFIG_KEYS
 
 @Field String ENV_FILE = "./db/default-env.json"
 
@@ -38,7 +37,7 @@ def call(Map parameters = [:], Closure body) {
             .mixin(parameters, PARAMETER_KEYS)
             .use()
 
-        if (fileExists('integration-tests/pom.xml') && configuration.createHdiContainer) {
+        if (fileExists('integration-tests/pom.xml')) {
             assertPreconditions(configuration)
             String projectName = ProjectUtils.getProjectName(script)
             String hdiContainerName = generateHdiContainerName(projectName)

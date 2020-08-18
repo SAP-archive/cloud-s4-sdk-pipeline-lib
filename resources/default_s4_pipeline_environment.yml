@@ -52,7 +52,7 @@ steps:
   testsPublishResults:
     junit:
       active: true
-      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml,s4hana_pipeline/reports/e2e/*.xml'
+      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml,s4hana_pipeline/reports/e2e/*.xml,s4hana_pipeline/reports/backend-integration/**'
     jacoco:
       active: false
     cobertura:
@@ -65,9 +65,6 @@ steps:
     includeFilterFile: s4hana_findbugs_include_filter.xml
     scanModules:
       - "application"
-
-  createHdiContainer:
-    dockerImage: ppiper/cf-cli:v2
 
   checkPmd:
     scanModules:
@@ -126,6 +123,9 @@ stages:
   frontendIntegrationTests:
     runScripts: ['ci-it-frontend']
     virtualFrameBuffer: true
+
+  backendIntegrationTests:
+    runScripts: ['ci-it-backend']
 
   s4SdkQualityChecks:
     disabledChecks: []

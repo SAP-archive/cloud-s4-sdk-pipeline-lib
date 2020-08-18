@@ -17,7 +17,7 @@ def call(Map parameters) {
             script.commonPipelineEnvironment.configuration.runStage.BACKEND_UNIT_TESTS = true
         }
 
-        if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-integration-test', 'ci-it-backend'])) {
+        if (BuildToolEnvironment.instance.getNpmModulesWithScripts(['ci-it-backend'])) {
             script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS = true
         }
     }
