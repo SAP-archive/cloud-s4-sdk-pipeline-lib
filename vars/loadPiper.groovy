@@ -7,7 +7,7 @@ def call(Map parameters = [:]) {
 
     // If you change the version please also update the version in build.gradle. They must always be at the same commit/tag/version.
 
-    String piperOsVersion = 'v1.72.0'
+    String piperOsVersion = 'v1.75.0'
 
     String piperIdentifier = 'None'
 

@@ -80,6 +80,7 @@ steps:
   cloudFoundryDeploy:
     dockerImage: ppiper/cf-cli:v2
     keepOldInstance: true
+    useGoStep: true
     stashContent: []
 
   cloudFoundryCreateService:
