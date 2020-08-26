@@ -51,15 +51,13 @@ steps:
 
   testsPublishResults:
     junit:
-      active: true
-      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml,s4hana_pipeline/reports/e2e/*.xml,s4hana_pipeline/reports/backend-integration/**'
+      active: false
     jacoco:
       active: false
     cobertura:
       active: false
     cucumber:
       active: false
-      pattern: 's4hana_pipeline/reports/e2e/*.json'
 
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
@@ -121,12 +119,23 @@ steps:
 
 #Stage Specific Configurations
 stages:
+  build:
+    junit:
+      active: true
+      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**'
+
   frontendIntegrationTests:
     runScripts: ['ci-it-frontend']
     virtualFrameBuffer: true
+    junit:
+      active: true
+      pattern: 's4hana_pipeline/reports/frontend-integration/**/*.xml'
 
   backendIntegrationTests:
     runScripts: ['ci-it-backend']
+    junit:
+      active: true
+      pattern: 'integration-tests/target/surefire-reports/TEST-*.xml,s4hana_pipeline/reports/backend-integration/**'
 
   s4SdkQualityChecks:
     disabledChecks: []
@@ -134,6 +143,12 @@ stages:
   endToEndTests:
     stageLocking: true
     lockingResource: 'endToEndTest'
+    junit:
+      active: true
+      pattern: 's4hana_pipeline/reports/e2e/*.xml'
+    cucumber:
+      active: true
+      pattern: 's4hana_pipeline/reports/e2e/*.json'
 
   productionDeployment:
     stageLocking: true
