@@ -123,9 +123,7 @@ void call(parameters) {
             always {
                 script {
                     debugReportArchive script: parameters.script
-                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.SEND_NOTIFICATION) {
-                        postActionSendNotification script: parameters.script
-                    }
+                    postActionSendNotification script: parameters.script
                     postActionCleanupStashesLocks script: parameters.script
                     sendAnalytics script: parameters.script
 

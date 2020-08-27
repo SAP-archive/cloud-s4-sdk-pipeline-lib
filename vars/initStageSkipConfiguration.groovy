@@ -146,11 +146,6 @@ def call(Map parameters) {
         script.commonPipelineEnvironment.configuration.runStage.ARTIFACT_DEPLOYMENT = true
     }
 
-    def sendNotification = loadEffectivePostActionConfiguration(script: script, postAction: 'sendNotification')
-    if (sendNotification?.enabled && (!sendNotification.skipFeatureBranches || isProductiveBranch(script: script))) {
-        script.commonPipelineEnvironment.configuration.runStage.SEND_NOTIFICATION = true
-    }
-
     if (loadEffectiveStageConfiguration(script: script, stageName: 'postPipelineHook')) {
         script.commonPipelineEnvironment.configuration.runStage.POST_PIPELINE_HOOK = true
     }

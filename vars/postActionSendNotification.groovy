@@ -9,17 +9,24 @@ def call(Map parameters = [:]) {
     handleStepErrors(stepName: 'postActionSendNotification', stepParameters: parameters) {
         def script = parameters.script
 
-        Map postActionConfiguration = ConfigurationLoader.postActionConfiguration(script, 'sendNotification')
-        Set postActionConfigurationKeys = ['recipients']
-        Set parameterKeys = []
-        Map defaults = [recipients: ['']]
-        Map configuration = ConfigurationMerger.merge(parameters, parameterKeys, postActionConfiguration, postActionConfigurationKeys, defaults)
+        Set postActionConfigKeys = [ 'enabled', 'skipFeatureBranches', 'recipients' ]
+        Map config = loadEffectivePostActionConfiguration(
+            script: script,
+            postAction: 'sendNotification',
+            postActionConfigKeys: postActionConfigKeys)
+
+        if (config.enabled != true) {
+            return
+        }
+        if (config.skipFeatureBranches && !isProductiveBranch(script: script)) {
+            return
+        }
 
         Result currentBuildResult = Result.fromString(currentBuild.currentResult)
         Result previousBuildResult = latestBuildResult(currentBuild)
 
         if (isBackToSuccess(currentBuildResult, previousBuildResult) || isUnsuccessful(currentBuildResult)) {
-            sendEmail(currentBuildResult, previousBuildResult, configuration.recipients)
+            sendEmail(currentBuildResult, previousBuildResult, config.recipients ?: [''])
         }
     }
 }
