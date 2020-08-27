@@ -50,6 +50,8 @@ class StageSonarQubeScanTest extends BaseCloudSdkTest {
             actualProperties = parameters.options
         })
 
+        helper.registerAllowedMethod('isProductiveBranch', [Object.class], {return true})
+
         Script script = loadScript("vars/stageSonarQubeScan.groovy")
         script.commonPipelineEnvironment = [configuration: [stages: [ sonarQubeScan : [
             projectKey: 'testProject',
@@ -79,6 +81,8 @@ class StageSonarQubeScanTest extends BaseCloudSdkTest {
         helper.registerAllowedMethod('sonarExecuteScan', [Map.class], { Map parameters ->
             actualInstance = parameters.instance
         })
+
+        helper.registerAllowedMethod('isProductiveBranch', [Object.class], {return true})
 
         Script script = loadScript("vars/stageSonarQubeScan.groovy")
 
