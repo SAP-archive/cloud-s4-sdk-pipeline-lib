@@ -26,48 +26,48 @@ void call(parameters) {
             stage('Local Tests') {
                 parallel {
                     stage("Static Code Checks") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.STATIC_CODE_CHECKS } }
-                        steps { piperPipelineStageMavenStaticCodeChecks script: parameters.script }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.mavenExecuteStaticCodeChecks } }
+                        steps { piperPipelineStageMavenStaticCodeChecks script: parameters.script, stageName: "mavenExecuteStaticCodeChecks" }
                     }
                     stage("Lint") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.LINT } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.lint } }
                         steps { stageLint script: parameters.script }
                     }
                     stage("Backend Integration Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.BACKEND_INTEGRATION_TESTS } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.backendIntegrationTests } }
                         steps { stageBackendIntegrationTests script: parameters.script }
                     }
                     stage("Frontend Integration Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.FRONTEND_INTEGRATION_TESTS } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.frontendIntegrationTests } }
                         steps { stageFrontendIntegrationTests script: parameters.script }
                     }
                     stage("Frontend Unit Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.FRONTEND_UNIT_TESTS } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.frontendUnitTests } }
                         steps { stageFrontendUnitTests script: parameters.script }
                     }
                     stage("NPM Dependency Audit") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.NPM_AUDIT } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.npmAudit } }
                         steps { stageNpmAudit script: parameters.script }
                     }
                 }
             }
 
             stage('Remote Tests') {
-                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.REMOTE_TESTS } }
+                when { anyOf { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests };
+                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests } } }
                 parallel {
                     stage("End to End Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.E2E_TESTS } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests } }
                         steps { piperPipelineStageAcceptance script: parameters.script, stageName: 'endToEndTests' }
                     }
                     stage("Performance Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.PERFORMANCE_TESTS } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests } }
                         steps { stagePerformanceTests script: parameters.script }
                     }
                 }
             }
 
             stage('Quality Checks') {
-                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.QUALITY_CHECKS } }
                 steps {
                     milestone 50
                     stageS4SdkQualityChecks script: parameters.script
@@ -75,37 +75,43 @@ void call(parameters) {
             }
 
             stage('Third-party Checks') {
-                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.THIRD_PARTY_CHECKS } }
+                when { anyOf { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.checkmarxScan };
+                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.whitesourceScan };
+                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.fortifyScan };
+                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.detectScan };
+                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalTools };
+                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.sonarQubeScan }
+                } }
                 parallel {
                     stage("Checkmarx Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.CHECKMARX_SCAN } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.checkmarxScan } }
                         steps { stageCheckmarxScan script: parameters.script }
                     }
                     stage("WhiteSource Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.WHITESOURCE_SCAN } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.whitesourceScan } }
                         steps { stageWhitesourceScan script: parameters.script }
                     }
                     stage("Fortify Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.FORTIFY_SCAN } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.fortifyScan } }
                         steps { stageFortifyScan script: parameters.script }
                     }
                     stage("Detect Scan"){
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.DETECT_SCAN } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.detectScan } }
                         steps { stageDetect script: parameters.script }
                     }
                     stage("Additional Tools") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.ADDITIONAL_TOOLS } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalTools } }
                         steps { stageAdditionalTools script: parameters.script }
                     }
                     stage('SonarQube Scan') {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.SONARQUBE_SCAN } }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.sonarQubeScan } }
                         steps { stageSonarQubeScan script: parameters.script }
                     }
                 }
             }
 
             stage('Artifact Deployment') {
-                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.ARTIFACT_DEPLOYMENT } }
+                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.artifactDeployment } }
                 steps {
                     milestone 70
                     piperPipelineStageArtifactDeployment script: parameters.script
@@ -113,7 +119,7 @@ void call(parameters) {
             }
 
             stage('Production Deployment') {
-                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.PRODUCTION_DEPLOYMENT } }
+                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.productionDeployment } }
                 // "ordinal 80" is configured for stage "productionDeployment" in pipeline defaults
                 steps { piperPipelineStageRelease script: parameters.script, stageName: 'productionDeployment' }
             }
@@ -127,7 +133,7 @@ void call(parameters) {
                     postActionCleanupStashesLocks script: parameters.script
                     sendAnalytics script: parameters.script
 
-                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.POST_PIPELINE_HOOK) {
+                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.postPipelineHook) {
                         stage('Post Pipeline Hook') {
                             stagePostPipelineHook script: parameters.script
                         }
@@ -136,7 +142,7 @@ void call(parameters) {
             }
             success {
                 script {
-                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.ARCHIVE_REPORT) {
+                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.archiveReport) {
                         postActionArchiveReport script: parameters.script
                     }
                 }
