@@ -5,9 +5,7 @@ def call(Map parameters = [:]) {
     def stageName = 'checkmarxScan'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
-        withEnv(["STAGE_NAME=$stageName"]) {
-            checkmarxExecuteScan script: script, stageName: stageName
-            ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
-        }
+        checkmarxExecuteScan script: script
+        ReportAggregator.instance.reportVulnerabilityScanExecution(QualityCheck.CheckmarxScan)
     }
 }

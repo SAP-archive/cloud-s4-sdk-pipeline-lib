@@ -6,7 +6,7 @@ def call(Map parameters = [:]) {
     Script script = parameters.script
 
     // If you change the version please also update the version in build.gradle. They must always be at the same commit/tag/version.
-    String piperOsVersion = 'v1.78.0'
+    String piperOsVersion = 'v1.79.0'
 
     String piperIdentifier = 'None'
 
@@ -23,7 +23,7 @@ def call(Map parameters = [:]) {
     library "${piperIdentifier}@${piperOsVersion}"
     Analytics.instance.setPiperIdentifier(piperIdentifier)
 
-    unstashPiperBinInNonReleaseVersions(piperVersion: piperOsVersion)
+//    unstashPiperBinInNonReleaseVersions(piperVersion: piperOsVersion)
 }
 
 private boolean isLibraryConfigured(String libName){

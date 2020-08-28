@@ -19,7 +19,7 @@ void call(parameters) {
             stage('Build and Test') {
                 steps {
                     milestone 20
-                    piperPipelineStageBuild script: parameters.script, stageName: 'build'
+                    piperPipelineStageBuild script: parameters.script
                 }
             }
 
@@ -27,7 +27,7 @@ void call(parameters) {
                 parallel {
                     stage("Static Code Checks") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.mavenExecuteStaticCodeChecks } }
-                        steps { piperPipelineStageMavenStaticCodeChecks script: parameters.script, stageName: "mavenExecuteStaticCodeChecks" }
+                        steps { piperPipelineStageMavenStaticCodeChecks script: parameters.script }
                     }
                     stage("Lint") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.lint } }
@@ -58,7 +58,7 @@ void call(parameters) {
                 parallel {
                     stage("End to End Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests } }
-                        steps { piperPipelineStageAcceptance script: parameters.script, stageName: 'endToEndTests' }
+                        steps { piperPipelineStageAcceptance script: parameters.script }
                     }
                     stage("Performance Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests } }
@@ -121,7 +121,7 @@ void call(parameters) {
             stage('Production Deployment') {
                 when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.productionDeployment } }
                 // "ordinal 80" is configured for stage "productionDeployment" in pipeline defaults
-                steps { piperPipelineStageRelease script: parameters.script, stageName: 'productionDeployment' }
+                steps { piperPipelineStageRelease script: parameters.script }
             }
 
         }
