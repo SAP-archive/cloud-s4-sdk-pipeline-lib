@@ -151,6 +151,7 @@ stages:
       pattern: 's4hana_pipeline/reports/e2e/*.json'
 
   productionDeployment:
+    enableZeroDowntimeDeployment: true
     stageLocking: true
     lockingResource: 'productionDeployment'
     ordinal: 80
