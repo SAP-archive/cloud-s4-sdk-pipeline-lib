@@ -23,6 +23,7 @@ def call(Map parameters) {
     checkSapNpmRegistry(script)
     checkHdiContainer(script)
     checkBackendITScript(script)
+    checkFrontendUnitTestsScript(script)
 }
 
 void checkGlobalExtensionConfiguration(Script script) {
@@ -233,7 +234,19 @@ void checkBackendITScript(Script script) {
         error("Your package.json file in ${basePath} contains an npm script using the deprecated name " +
             "'ci-integration-test'. " +
             "Please rename the script to 'ci-it-backend', since the script 'ci-integration-test' will not be " +
-            "executed during the backenIntegrationTests stage."
+            "executed during the backendIntegrationTests stage."
+        )
+    }
+}
+
+void checkFrontendUnitTestsScript(Script script) {
+    runOverNpmModules(script: script, npmScripts: ['ci-test']) { basePath ->
+        WarningsUtils.addPipelineWarning(
+            script,
+            "Deprecated npm script ci-test",
+            "Your package.json file in ${basePath}/ contains an npm script using the deprecated name 'ci-test'. \n" +
+                "Please rename the script to 'ci-frontend-unit-test', since the script 'ci-test' will not be " +
+                "executed during the frontendUnitTests stage."
         )
     }
 }

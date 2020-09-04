@@ -137,6 +137,19 @@ stages:
       active: true
       pattern: 'integration-tests/target/surefire-reports/TEST-*.xml,s4hana_pipeline/reports/backend-integration/**'
 
+  frontendUnitTests:
+    runScripts: ['ci-frontend-unit-test']
+    virtualFrameBuffer: true
+    junit:
+      active: true
+      allowEmptyResults: true
+      pattern: 's4hana_pipeline/reports/frontend-unit/**/Test*.xml'
+    htmlPublisher:
+      active: true
+      reportDir: ""
+      pattern: "s4hana_pipeline/reports/**/report-html/ut/index.html"
+      reportName: "Frontend Unit Test Coverage"
+
   s4SdkQualityChecks:
     disabledChecks: []
 
