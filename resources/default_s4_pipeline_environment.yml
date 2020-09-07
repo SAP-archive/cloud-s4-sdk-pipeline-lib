@@ -6,6 +6,7 @@ general:
   defaultNode: ""
   runStageInPod: true
   globalExtensionsDirectory: 's4hana_pipeline/extensions/'
+  inferBuildTool: true
 
   maven:
     m2Path: s4hana_pipeline/maven_local_repo
