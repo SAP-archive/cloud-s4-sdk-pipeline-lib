@@ -1,7 +1,10 @@
-import com.sap.piper.DebugReport
+import com.sap.piper.StageNameProvider
 
 def call(Map parameters) {
     handleStepErrors(stepName: 'initS4SdkPipelineLibrary', stepParameters: parameters) {
+
+        StageNameProvider.instance.useTechnicalStageNames = true
+
         def script = parameters.script
         if (!parameters.configFile) {
             parameters.configFile = getConfigLocation(script: script)

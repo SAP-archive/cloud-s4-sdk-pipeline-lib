@@ -6,6 +6,7 @@ general:
   defaultNode: ""
   runStageInPod: true
   globalExtensionsDirectory: 's4hana_pipeline/extensions/'
+  inferBuildTool: true
 
   maven:
     m2Path: s4hana_pipeline/maven_local_repo
@@ -51,23 +52,18 @@ steps:
 
   testsPublishResults:
     junit:
-      active: true
-      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**,s4hana_pipeline/reports/frontend-integration/**/*.xml,s4hana_pipeline/reports/e2e/*.xml'
+      active: false
     jacoco:
       active: false
     cobertura:
       active: false
     cucumber:
       active: false
-      pattern: 's4hana_pipeline/reports/e2e/*.json'
 
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
     scanModules:
       - "application"
-
-  createHdiContainer:
-    dockerImage: ppiper/cf-cli:v2
 
   checkPmd:
     scanModules:
@@ -83,6 +79,7 @@ steps:
   cloudFoundryDeploy:
     dockerImage: ppiper/cf-cli:v2
     keepOldInstance: true
+    useGoStep: true
     stashContent: []
 
   cloudFoundryCreateService:
@@ -123,9 +120,36 @@ steps:
 
 #Stage Specific Configurations
 stages:
+  build:
+    junit:
+      active: true
+      pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**'
+
   frontendIntegrationTests:
     runScripts: ['ci-it-frontend']
     virtualFrameBuffer: true
+    junit:
+      active: true
+      pattern: 's4hana_pipeline/reports/frontend-integration/**/*.xml'
+
+  backendIntegrationTests:
+    runScripts: ['ci-it-backend']
+    junit:
+      active: true
+      pattern: 'integration-tests/target/surefire-reports/TEST-*.xml,s4hana_pipeline/reports/backend-integration/**'
+
+  frontendUnitTests:
+    runScripts: ['ci-frontend-unit-test']
+    virtualFrameBuffer: true
+    junit:
+      active: true
+      allowEmptyResults: true
+      pattern: 's4hana_pipeline/reports/frontend-unit/**/Test*.xml'
+    htmlPublisher:
+      active: true
+      reportDir: ""
+      pattern: "s4hana_pipeline/reports/**/report-html/ut/index.html"
+      reportName: "Frontend Unit Test Coverage"
 
   s4SdkQualityChecks:
     disabledChecks: []
@@ -133,8 +157,15 @@ stages:
   endToEndTests:
     stageLocking: true
     lockingResource: 'endToEndTest'
+    junit:
+      active: true
+      pattern: 's4hana_pipeline/reports/e2e/*.xml'
+    cucumber:
+      active: true
+      pattern: 's4hana_pipeline/reports/e2e/*.json'
 
   productionDeployment:
+    enableZeroDowntimeDeployment: true
     stageLocking: true
     lockingResource: 'productionDeployment'
     ordinal: 80

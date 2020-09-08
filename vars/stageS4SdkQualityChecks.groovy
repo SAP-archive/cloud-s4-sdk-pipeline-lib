@@ -17,21 +17,8 @@ def call(Map parameters = [:]) {
         }
 
         if (BuildToolEnvironment.instance.isMaven() || BuildToolEnvironment.instance.isMta()) {
-
             if (!disabledChecks?.contains("checkDeploymentDescriptors")) {
                 checkDeploymentDescriptors script: script
-            }
-
-            aggregateListenerLogs script: script
-
-            if (!disabledChecks?.contains("checkResilience")) {
-                checkResilience script: script
-                ReportAggregator.instance.reportResilienceCheck()
-            }
-
-            if (!disabledChecks?.contains("checkServices")) {
-                checkServices script: script, nonErpDestinations: stageConfiguration.nonErpDestinations, customODataServices: stageConfiguration.customODataServices
-                ReportAggregator.instance.reportServicesCheck(stageConfiguration.nonErpDestinations, stageConfiguration.customODataServices)
             }
         }
 

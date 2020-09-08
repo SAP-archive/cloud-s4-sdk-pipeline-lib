@@ -16,6 +16,7 @@ class CheckCodeCoverageTest extends BaseCloudSdkTest {
         setUp()
 
         this.binding.setVariable('s4SdkGlobals', new s4SdkGlobals())
+        this.binding.setVariable('env', [:])
         helper.registerAllowedMethod('handleStepErrors', [Map.class, Closure.class], { Map parameters, Closure closure ->
             closure.call()
 

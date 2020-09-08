@@ -46,7 +46,9 @@ test {
 }
 
 task downloadPiper(type: Download) {
-    src 'https://github.com/SAP/jenkins-library/releases/download/v1.71.0/jenkins-library.jar'
+
+    src 'https://github.com/SAP/jenkins-library/releases/download/v1.82.0/jenkins-library.jar'
+
     dest 'libs/jenkins-library.jar'
     onlyIfModified true
 }

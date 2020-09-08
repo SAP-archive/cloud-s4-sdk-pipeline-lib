@@ -33,6 +33,10 @@ def call(Map parameters = [:]) {
             error("Configure the option 'instance' in your stage configuration for 'sonarQubeScan'")
         }
 
+        if (!stageConfiguration.runInAllBranches && !isProductiveBranch(script: script)) {
+            return
+        }
+
         if (stageConfiguration.runInAllBranches && !isProductiveBranch(script: script) && !isPullRequest()) {
             sonarExecuteScan([
                 script     : script,

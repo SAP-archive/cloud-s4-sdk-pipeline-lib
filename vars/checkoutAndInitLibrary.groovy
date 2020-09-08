@@ -26,7 +26,9 @@ def call(Map parameters) {
 
     DebugReport.instance.setGitRepoInfo(scmCheckoutResult)
 
-    initAnalytics(script: script)
+    initAnalytics script: script
+
+    initNpmModules script: script
 
     checkLegacyConfiguration script: script
 
@@ -34,21 +36,10 @@ def call(Map parameters) {
 
     checkMultibranchPipeline script: script
 
-    boolean isMtaProject = fileExists('mta.yaml')
-    def isMaven = fileExists('pom.xml')
-    def isNpm = fileExists('package.json')
-
-    if (isMtaProject) {
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
-    } else if (isMaven) {
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MAVEN)
-    } else if (isNpm) {
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.NPM)
-    } else {
+    if (!script.commonPipelineEnvironment.buildTool) {
         throw new Exception("No pom.xml, mta.yaml or package.json has been found in the root of the project. Currently the pipeline only supports Maven, Mta and JavaScript projects.")
     }
-
-    script.commonPipelineEnvironment.setBuildTool(BuildToolEnvironment.instance.getBuildTool().getPiperBuildTool())
+    BuildToolEnvironment.instance.setBuildTool(BuildTool.valueOf(script.commonPipelineEnvironment.buildTool.toUpperCase()))
 
     if (Boolean.valueOf(env.ON_K8S)) {
         String buildTool = BuildToolEnvironment.instance.getBuildTool().toString().toLowerCase()
@@ -57,7 +48,7 @@ def call(Map parameters) {
 
     DebugReport.instance.buildTool = BuildToolEnvironment.instance.buildTool
 
-    checkLegacyExtensions(script: script)
+    checkLegacyExtensions script: script
 
     if (!Boolean.valueOf(env.ON_K8S)) {
         checkDiskSpace script: script
