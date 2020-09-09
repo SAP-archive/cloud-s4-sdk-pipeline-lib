@@ -29,6 +29,9 @@ build:
       includes: "**/src/main/resources/edmx/**, db/src/gen/**, gen/**"
     - name: "EXEC_FILES"
       includes: "**/target/**/*.exec"
+    - name: "REPORTS"
+      merge: true
+      includes: "s4hana_pipeline/reports/**"
 
 backendIntegrationTests:
   unstash: ["SOURCE", "M2", "TARGET", "NODE_MODULES", "GENERATED_CAP_FILES"]
@@ -46,16 +49,6 @@ frontendIntegrationTests:
     - name: "REPORTS"
       merge: true
       includes: "s4hana_pipeline/reports/**"
-
-mavenExecuteStaticCodeChecks:
-  unstash: ["SOURCE", "TARGET", "REPORTS", "M2"]
-  stashes:
-    - name: "REPORTS"
-      merge: true
-      includes: "s4hana_pipeline/reports/**"
-
-lint:
-  unstash: ["SOURCE", "NODE_MODULES"]
 
 checkmarxScan:
   unstash: ["SOURCE", "TARGET"]

@@ -25,14 +25,6 @@ void call(parameters) {
 
             stage('Local Tests') {
                 parallel {
-                    stage("Static Code Checks") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.mavenExecuteStaticCodeChecks } }
-                        steps { piperPipelineStageMavenStaticCodeChecks script: parameters.script }
-                    }
-                    stage("Lint") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.lint } }
-                        steps { stageLint script: parameters.script }
-                    }
                     stage("Backend Integration Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.backendIntegrationTests } }
                         steps { stageBackendIntegrationTests script: parameters.script }

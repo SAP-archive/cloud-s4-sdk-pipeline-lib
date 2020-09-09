@@ -23,11 +23,8 @@ containerMaps:
     - mavenExecute
     - executeNpm
     - mtaBuild
-  mavenExecuteStaticCodeChecks:
     - mavenExecuteStaticCodeChecks
-  lint:
     - npmExecuteLint
-    - executeNpm
   backendIntegrationTests:
     - mavenExecute
     - executeNpm
