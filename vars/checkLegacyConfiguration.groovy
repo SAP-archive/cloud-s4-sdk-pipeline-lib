@@ -24,6 +24,7 @@ def call(Map parameters) {
     checkHdiContainer(script)
     checkBackendITScript(script)
     checkFrontendUnitTestsScript(script)
+    checkLintConfig(script)
 }
 
 void checkGlobalExtensionConfiguration(Script script) {
@@ -248,6 +249,15 @@ void checkFrontendUnitTestsScript(Script script) {
                 "Please rename the script to 'ci-frontend-unit-test', since the script 'ci-test' will not be " +
                 "executed during the frontendUnitTests stage."
         )
+    }
+}
+
+void checkLintConfig(Script script) {
+    if (loadEffectiveStageConfiguration(script: script, stageName: 'lint')) {
+        failWithConfigError("Your pipeline configuration contains an entry for the stage lint. " +
+            "This configuration option was removed in version v43. " +
+            "Please configure the step npmExecuteLint instead. " +
+            "Details can be found in the release notes as well as in the step documentation: https://sap.github.io/jenkins-library/steps/npmExecuteLint/.")
     }
 }
 
