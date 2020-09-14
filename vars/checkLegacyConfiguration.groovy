@@ -26,6 +26,7 @@ def call(Map parameters) {
     checkFrontendUnitTestsScript(script)
     checkLintConfig(script)
     checkRenamedFrontendUnitTests(script)
+    checkRenamedSonarQube(script)
 }
 
 void checkGlobalExtensionConfiguration(Script script) {
@@ -264,6 +265,10 @@ void checkLintConfig(Script script) {
 
 void checkRenamedFrontendUnitTests(Script script) {
     checkRenamedStage(script, 'frontendUnitTests', 'additionalUnitTests')
+}
+
+void checkRenamedSonarQube(Script script) {
+    checkRenamedStage(script, 'sonarQubeScan', 'compliance')
 }
 
 private warnAboutSapNpmRegistry(Script script, String stepName) {

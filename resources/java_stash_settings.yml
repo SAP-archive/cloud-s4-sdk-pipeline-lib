@@ -31,14 +31,14 @@ build:
       includes: "**/target/**/*.exec"
     - name: "REPORTS"
       merge: true
-      includes: "s4hana_pipeline/reports/**"
+      includes: "s4hana_pipeline/reports/**, **/target/site/**/jacoco.xml"
 
 backendIntegrationTests:
   unstash: ["SOURCE", "M2", "TARGET", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
       merge: true
-      includes: "s4hana_pipeline/reports/**"
+      includes: "s4hana_pipeline/reports/**, **/target/site/**/jacoco.xml"
     - name: "EXEC_FILES"
       merge: true
       includes: "**/target/**/*.exec"
@@ -48,7 +48,7 @@ frontendIntegrationTests:
   stashes:
     - name: "REPORTS"
       merge: true
-      includes: "s4hana_pipeline/reports/**"
+      includes: "s4hana_pipeline/reports/**, **/target/site/**/jacoco.xml"
 
 checkmarxScan:
   unstash: ["SOURCE", "TARGET"]
@@ -62,7 +62,7 @@ additionalTools:
   unstash: ["SOURCE", "M2", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes: []
 
-sonarQubeScan:
+compliance:
   unstash: ['SOURCE', 'M2', 'REPORTS', 'TARGET', 'EXEC_FILES']
   stashes: []
 
@@ -83,7 +83,7 @@ additionalUnitTests:
   stashes:
     - name: "REPORTS"
       merge: true
-      includes: "s4hana_pipeline/reports/**"
+      includes: "s4hana_pipeline/reports/**, **/target/site/**/jacoco.xml"
 
 endToEndTests:
   unstash: ["SOURCE", "TARGET", "NODE_MODULES", "GENERATED_CAP_FILES"]

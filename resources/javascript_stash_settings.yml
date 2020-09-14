@@ -47,7 +47,7 @@ frontendIntegrationTests:
       merge: true
       includes: "s4hana_pipeline/reports/**"
 
-sonarQubeScan:
+compliance:
   unstash: ['SOURCE', 'NODE_MODULES', 'DIST']
   stashes: []
 

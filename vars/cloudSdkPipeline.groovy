@@ -72,7 +72,7 @@ void call(parameters) {
                     expression { parameters.script.commonPipelineEnvironment.configuration.runStage.fortifyScan };
                     expression { parameters.script.commonPipelineEnvironment.configuration.runStage.detectScan };
                     expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalTools };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.sonarQubeScan }
+                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.compliance }
                 } }
                 parallel {
                     stage("Checkmarx Scan") {
@@ -96,8 +96,8 @@ void call(parameters) {
                         steps { stageAdditionalTools script: parameters.script }
                     }
                     stage('SonarQube Scan') {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.sonarQubeScan } }
-                        steps { stageSonarQubeScan script: parameters.script }
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.compliance } }
+                        steps { piperPipelineStageCompliance script: parameters.script }
                     }
                 }
             }

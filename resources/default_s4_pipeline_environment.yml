@@ -103,6 +103,10 @@ steps:
     namedUser: "CLOUD_SDK_PIPELINE"
 
   sonarExecuteScan:
+    coverageExclusions: ["**.js", "unit-tests/**", "integration-tests/**", "performance-tests/**", "**.xml", "**/target/**"]
+    inferJavaLibraries: true
+    inferJavaBinaries: true
+    inferBranchName: true
     dockerImage: 'ppiper/node-browsers:v3'
 
   fortifyExecuteScan:

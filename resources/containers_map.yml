@@ -55,7 +55,7 @@ containerMaps:
   whitesourceScan:
     - mavenExecute
     - executeNpm
-  sonarQubeScan:
+  compliance:
     - sonarExecuteScan
   productionDeployment:
     - mavenExecute
