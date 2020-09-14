@@ -78,7 +78,7 @@ npmAudit:
   unstash: ["SOURCE", "PACKAGE_LOCK"]
   stashes: []
 
-frontendUnitTests:
+additionalUnitTests:
   unstash: ["SOURCE", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"

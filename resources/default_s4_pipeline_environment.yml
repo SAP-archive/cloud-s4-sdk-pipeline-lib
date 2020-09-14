@@ -16,7 +16,7 @@ general:
     - "backendIntegrationTests"
     - "unitTests"
     - "npmAudit"
-    - "frontendUnitTests"
+    - "additionalUnitTests"
     - "frontendIntegrationTests"
     - "s4SdkQualityChecks"
     - "artifactDeployment"
@@ -136,7 +136,7 @@ stages:
       active: true
       pattern: 'integration-tests/target/surefire-reports/TEST-*.xml,s4hana_pipeline/reports/backend-integration/**'
 
-  frontendUnitTests:
+  additionalUnitTests:
     runScripts: ['ci-frontend-unit-test']
     virtualFrameBuffer: true
     junit:

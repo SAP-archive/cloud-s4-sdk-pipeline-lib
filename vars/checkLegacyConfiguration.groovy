@@ -25,6 +25,7 @@ def call(Map parameters) {
     checkBackendITScript(script)
     checkFrontendUnitTestsScript(script)
     checkLintConfig(script)
+    checkRenamedFrontendUnitTests(script)
 }
 
 void checkGlobalExtensionConfiguration(Script script) {
@@ -259,6 +260,10 @@ void checkLintConfig(Script script) {
             "Please configure the step npmExecuteLint instead. " +
             "Details can be found in the release notes as well as in the step documentation: https://sap.github.io/jenkins-library/steps/npmExecuteLint/.")
     }
+}
+
+void checkRenamedFrontendUnitTests(Script script) {
+    checkRenamedStage(script, 'frontendUnitTests', 'additionalUnitTests')
 }
 
 private warnAboutSapNpmRegistry(Script script, String stepName) {

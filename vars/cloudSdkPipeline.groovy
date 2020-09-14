@@ -33,9 +33,9 @@ void call(parameters) {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.frontendIntegrationTests } }
                         steps { stageFrontendIntegrationTests script: parameters.script }
                     }
-                    stage("Frontend Unit Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.frontendUnitTests } }
-                        steps { piperPipelineStageAdditionalUnitTests script: parameters.script, stageName: "frontendUnitTests" }
+                    stage("Additional Unit Tests") {
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalUnitTests } }
+                        steps { piperPipelineStageAdditionalUnitTests script: parameters.script }
                     }
                     stage("NPM Dependency Audit") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.npmAudit } }

@@ -31,7 +31,7 @@ containerMaps:
     - createHdiContainer
   frontendIntegrationTests:
     - npmExecuteScripts
-  frontendUnitTests:
+  additionalUnitTests:
     - npmExecuteScripts
   fortifyScan:
     - fortifyExecuteScan

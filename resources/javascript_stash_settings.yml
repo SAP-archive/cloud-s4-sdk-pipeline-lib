@@ -26,7 +26,7 @@ build:
     - name: "DEPLOYMENTARTIFACT"
       includes: "deployment/**"
 
-frontendUnitTests:
+additionalUnitTests:
   unstash: ["SOURCE", "DIST", "NODE_MODULES", "GENERATED_CAP_FILES"]
   stashes:
     - name: "REPORTS"
