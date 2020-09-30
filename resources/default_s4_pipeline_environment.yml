@@ -112,6 +112,10 @@ steps:
   fortifyExecuteScan:
     buildTool: 'maven'
 
+  whitesourceExecuteScan:
+    useGoStep: true
+    dockerImage: 'devxci/mbtci:1.0.14' #contains mvn, npm, npx -> the mtaBuild image for classic contains no npx!
+
   checkmarxExecuteScan:
     filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
     preset: "36"

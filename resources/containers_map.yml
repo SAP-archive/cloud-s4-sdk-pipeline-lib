@@ -9,6 +9,7 @@ stepMetadata:
   npmExecuteScripts: npmExecuteScripts.yaml
   npmExecuteLint: npmExecuteLint.yaml
   sonarExecuteScan: sonar.yaml
+  whitesourceExecuteScan: whitesource.yaml
 
 # Mapping of stages to the steps (and by extension Docker images) they use
 containerMaps:
@@ -53,8 +54,7 @@ containerMaps:
   artifactDeployment:
     - nexusUpload
   whitesourceScan:
-    - mavenExecute
-    - executeNpm
+    - whitesourceExecuteScan
   compliance:
     - sonarExecuteScan
   productionDeployment:
