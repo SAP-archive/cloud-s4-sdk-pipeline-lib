@@ -7,6 +7,10 @@ general:
   runStageInPod: true
   globalExtensionsDirectory: 's4hana_pipeline/extensions/'
   inferBuildTool: true
+  initCloudSdkStashSettings: true
+  containerMapResource: 'com.sap.piper/pipeline/cloudSdkContainersMap.yml'
+  legacyConfigSettings: 'com.sap.piper/pipeline/cloudSdkLegacyConfigSettings.yml'
+  stageConfigResource: 'com.sap.piper/pipeline/cloudSdkStageDefaults.yml'
 
   maven:
     m2Path: s4hana_pipeline/maven_local_repo
@@ -14,11 +18,8 @@ general:
     - "initS4sdkPipeline"
     - "build"
     - "backendIntegrationTests"
-    - "unitTests"
-    - "npmAudit"
     - "additionalUnitTests"
     - "frontendIntegrationTests"
-    - "s4SdkQualityChecks"
     - "artifactDeployment"
     - "productionDeployment"
 
@@ -156,9 +157,6 @@ stages:
       reportDir: ""
       pattern: "s4hana_pipeline/reports/**/report-html/ut/index.html"
       reportName: "Frontend Unit Test Coverage"
-
-  s4SdkQualityChecks:
-    disabledChecks: []
 
   endToEndTests:
     stageLocking: true

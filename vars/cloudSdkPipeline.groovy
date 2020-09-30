@@ -10,8 +10,8 @@ void call(parameters) {
         stages {
             stage('Init') {
                 steps {
-                    milestone 10
-                    stageInitS4sdkPipeline script: parameters.script, nodeLabel: parameters.initNodeLabel
+                    loadPiper script: parameters.script
+                    piperPipelineStageInit script: parameters.script, customDefaults: ['default_s4_pipeline_environment.yml'], useTechnicalStageNames: true
                     abortOldBuilds script: parameters.script
                 }
             }
@@ -37,10 +37,6 @@ void call(parameters) {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalUnitTests } }
                         steps { piperPipelineStageAdditionalUnitTests script: parameters.script }
                     }
-                    stage("NPM Dependency Audit") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.npmAudit } }
-                        steps { stageNpmAudit script: parameters.script }
-                    }
                 }
             }
 
@@ -56,13 +52,6 @@ void call(parameters) {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests } }
                         steps { stagePerformanceTests script: parameters.script }
                     }
-                }
-            }
-
-            stage('Quality Checks') {
-                steps {
-                    milestone 50
-                    stageS4SdkQualityChecks script: parameters.script
                 }
             }
 
@@ -121,21 +110,11 @@ void call(parameters) {
             always {
                 script {
                     debugReportArchive script: parameters.script
-                    postActionSendNotification script: parameters.script
-                    postActionCleanupStashesLocks script: parameters.script
-                    sendAnalytics script: parameters.script
 
                     if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.postPipelineHook) {
                         stage('Post Pipeline Hook') {
                             stagePostPipelineHook script: parameters.script
                         }
-                    }
-                }
-            }
-            success {
-                script {
-                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.archiveReport) {
-                        postActionArchiveReport script: parameters.script
                     }
                 }
             }
