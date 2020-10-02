@@ -55,40 +55,14 @@ void call(parameters) {
                 }
             }
 
-            stage('Third-party Checks') {
-                when { anyOf { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.checkmarxScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.whitesourceScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.fortifyScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.detectScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalTools };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.compliance }
-                } }
-                parallel {
-                    stage("Checkmarx Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.checkmarxScan } }
-                        steps { stageCheckmarxScan script: parameters.script }
-                    }
-                    stage("WhiteSource Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.whitesourceScan } }
-                        steps { stageWhitesourceScan script: parameters.script }
-                    }
-                    stage("Fortify Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.fortifyScan } }
-                        steps { stageFortifyScan script: parameters.script }
-                    }
-                    stage("Detect Scan"){
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.detectScan } }
-                        steps { stageDetect script: parameters.script }
-                    }
-                    stage("Additional Tools") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalTools } }
-                        steps { stageAdditionalTools script: parameters.script }
-                    }
-                    stage('SonarQube Scan') {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.compliance } }
-                        steps { piperPipelineStageCompliance script: parameters.script }
-                    }
-                }
+            stage('Security') {
+                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.security } }
+                steps { piperPipelineStageSecurity script: parameters.script }
+            }
+            
+            stage('Compliance') {
+                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.compliance } }
+                steps { piperPipelineStageCompliance script: parameters.script }
             }
 
             stage('Artifact Deployment') {

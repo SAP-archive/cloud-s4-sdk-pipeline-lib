@@ -112,10 +112,19 @@ steps:
 
   fortifyExecuteScan:
     buildTool: 'maven'
+    stashContent:
+      - "SOURCE"
+      - "M2"
+      - "TARGET"
 
   whitesourceExecuteScan:
     useGoStep: true
     dockerImage: 'devxci/mbtci:1.0.14' #contains mvn, npm, npx -> the mtaBuild image for classic contains no npx!
+    stashContent:
+      - "SOURCE"
+      - "M2"
+      - "NODE_MODULES"
+      - "PACKAGE_LOCK"
 
   checkmarxExecuteScan:
     filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
@@ -123,7 +132,9 @@ steps:
     vulnerabilityThresholdLow: 99999
     vulnerabilityThresholdMedium: 0
     vulnerabilityThresholdUnit: 'absolute'
-
+    stashContent:
+      - "SOURCE"
+      - "TARGET"
 
 #Stage Specific Configurations
 stages:
@@ -173,3 +184,6 @@ stages:
     stageLocking: true
     lockingResource: 'productionDeployment'
     ordinal: 80
+
+  security:
+    runStageInPod: false
