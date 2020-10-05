@@ -1,4 +1,3 @@
-import com.sap.cloud.sdk.s4hana.pipeline.Analytics
 import org.jenkinsci.plugins.workflow.libs.GlobalLibraries
 import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
 
@@ -21,7 +20,6 @@ def call(Map parameters = [:]) {
     }
 
     library "${piperIdentifier}@${piperOsVersion}"
-    Analytics.instance.setPiperIdentifier(piperIdentifier)
 
     unstashPiperBinInNonReleaseVersions(piperVersion: piperOsVersion)
 }
