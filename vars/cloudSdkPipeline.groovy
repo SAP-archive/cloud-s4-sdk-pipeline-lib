@@ -41,8 +41,12 @@ void call(parameters) {
             }
 
             stage('Remote Tests') {
-                when { anyOf { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests } } }
+                when {
+                    anyOf {
+                        expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests };
+                        expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests }
+                    }
+                }
                 parallel {
                     stage("End to End Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests } }
@@ -59,7 +63,7 @@ void call(parameters) {
                 when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.security } }
                 steps { piperPipelineStageSecurity script: parameters.script }
             }
-            
+
             stage('Compliance') {
                 when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.compliance } }
                 steps { piperPipelineStageCompliance script: parameters.script }
@@ -81,18 +85,13 @@ void call(parameters) {
 
         }
         post {
-            always {
-                script {
-                    debugReportArchive script: parameters.script
-
-                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.postPipelineHook) {
-                        stage('Post Pipeline Hook') {
-                            stagePostPipelineHook script: parameters.script
-                        }
-                    }
-                }
-            }
-            failure {
+            /* https://jenkins.io/doc/book/pipeline/syntax/#post */
+            success { buildSetResult(currentBuild) }
+            aborted { buildSetResult(currentBuild, 'ABORTED') }
+            failure { buildSetResult(currentBuild, 'FAILURE') }
+            unstable { buildSetResult(currentBuild, 'UNSTABLE') }
+            cleanup {
+                piperPipelineStagePost script: parameters.script
                 deleteDir()
             }
         }
