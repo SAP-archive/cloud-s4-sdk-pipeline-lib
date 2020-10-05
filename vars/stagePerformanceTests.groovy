@@ -1,7 +1,7 @@
 import com.sap.piper.ConfigurationLoader
 
 def call(Map parameters = [:]) {
-    def stageName = 'performanceTests'
+    def stageName = parameters.stageName ?: 'performanceTests'
     def script = parameters.script
     piperStageWrapper(stageName: stageName, script: script) {
 

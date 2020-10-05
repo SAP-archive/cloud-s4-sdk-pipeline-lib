@@ -11,7 +11,7 @@ void call(parameters) {
             stage('Init') {
                 steps {
                     loadPiper script: parameters.script
-                    piperPipelineStageInit script: parameters.script, customDefaults: ['default_s4_pipeline_environment.yml'], useTechnicalStageNames: true
+                    piperPipelineStageInit script: parameters.script, customDefaults: ['default_s4_pipeline_environment.yml'], useTechnicalStageNames: true, configFile: parameters.configFile
                     abortOldBuilds script: parameters.script
                 }
             }
