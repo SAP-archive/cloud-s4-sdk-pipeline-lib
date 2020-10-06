@@ -7,6 +7,11 @@ general:
   runStageInPod: true
   globalExtensionsDirectory: 's4hana_pipeline/extensions/'
   inferBuildTool: true
+  inferProjectName: true
+  initCloudSdkStashSettings: true
+  containerMapResource: 'com.sap.piper/pipeline/cloudSdkContainersMap.yml'
+  legacyConfigSettings: 'com.sap.piper/pipeline/cloudSdkLegacyConfigSettings.yml'
+  stageConfigResource: 'com.sap.piper/pipeline/cloudSdkStageDefaults.yml'
 
   maven:
     m2Path: s4hana_pipeline/maven_local_repo
@@ -14,13 +19,8 @@ general:
     - "initS4sdkPipeline"
     - "build"
     - "backendIntegrationTests"
-    - "staticCodeChecks"
-    - "unitTests"
-    - "npmAudit"
-    - "lint"
-    - "frontendUnitTests"
+    - "additionalUnitTests"
     - "frontendIntegrationTests"
-    - "s4SdkQualityChecks"
     - "artifactDeployment"
     - "productionDeployment"
 
@@ -105,10 +105,27 @@ steps:
     namedUser: "CLOUD_SDK_PIPELINE"
 
   sonarExecuteScan:
+    coverageExclusions: ["**.js", "unit-tests/**", "integration-tests/**", "performance-tests/**", "**.xml", "**/target/**"]
+    inferJavaLibraries: true
+    inferJavaBinaries: true
+    inferBranchName: true
     dockerImage: 'ppiper/node-browsers:v3'
 
   fortifyExecuteScan:
     buildTool: 'maven'
+    stashContent:
+      - "SOURCE"
+      - "M2"
+      - "TARGET"
+
+  whitesourceExecuteScan:
+    useGoStep: true
+    dockerImage: 'devxci/mbtci:1.0.14' #contains mvn, npm, npx -> the mtaBuild image for classic contains no npx!
+    stashContent:
+      - "SOURCE"
+      - "M2"
+      - "NODE_MODULES"
+      - "PACKAGE_LOCK"
 
   checkmarxExecuteScan:
     filterPattern: "!**/*.log, !**/*.lock, !**/*.json, !**/*.html, !**/Cx*, !**/test/**, !s4hana_pipeline/**, !**/unit-tests/**, !**/integration-tests/**, !**/frontend-unit-tests/**, !**/e2e-tests/**, !**/performance-tests/**, **/*.js, **/*.java, **/*.ts"
@@ -116,7 +133,9 @@ steps:
     vulnerabilityThresholdLow: 99999
     vulnerabilityThresholdMedium: 0
     vulnerabilityThresholdUnit: 'absolute'
-
+    stashContent:
+      - "SOURCE"
+      - "TARGET"
 
 #Stage Specific Configurations
 stages:
@@ -138,7 +157,7 @@ stages:
       active: true
       pattern: 'integration-tests/target/surefire-reports/TEST-*.xml,s4hana_pipeline/reports/backend-integration/**'
 
-  frontendUnitTests:
+  additionalUnitTests:
     runScripts: ['ci-frontend-unit-test']
     virtualFrameBuffer: true
     junit:
@@ -151,9 +170,6 @@ stages:
       pattern: "s4hana_pipeline/reports/**/report-html/ut/index.html"
       reportName: "Frontend Unit Test Coverage"
 
-  s4SdkQualityChecks:
-    disabledChecks: []
-
   endToEndTests:
     stageLocking: true
     lockingResource: 'endToEndTest'
@@ -164,8 +180,15 @@ stages:
       active: true
       pattern: 's4hana_pipeline/reports/e2e/*.json'
 
+  performanceTests:
+    stageLocking: true
+    lockingResource: 'performanceTests'
+
   productionDeployment:
     enableZeroDowntimeDeployment: true
     stageLocking: true
     lockingResource: 'productionDeployment'
     ordinal: 80
+
+  security:
+    runStageInPod: false

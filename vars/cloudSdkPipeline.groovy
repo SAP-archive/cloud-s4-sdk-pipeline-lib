@@ -10,8 +10,8 @@ void call(parameters) {
         stages {
             stage('Init') {
                 steps {
-                    milestone 10
-                    stageInitS4sdkPipeline script: parameters.script, nodeLabel: parameters.initNodeLabel
+                    loadPiper script: parameters.script
+                    piperPipelineStageInit script: parameters.script, customDefaults: ['default_s4_pipeline_environment.yml'], useTechnicalStageNames: true, configFile: parameters.configFile
                     abortOldBuilds script: parameters.script
                 }
             }
@@ -25,14 +25,6 @@ void call(parameters) {
 
             stage('Local Tests') {
                 parallel {
-                    stage("Static Code Checks") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.mavenExecuteStaticCodeChecks } }
-                        steps { piperPipelineStageMavenStaticCodeChecks script: parameters.script }
-                    }
-                    stage("Lint") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.lint } }
-                        steps { stageLint script: parameters.script }
-                    }
                     stage("Backend Integration Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.backendIntegrationTests } }
                         steps { stageBackendIntegrationTests script: parameters.script }
@@ -41,20 +33,20 @@ void call(parameters) {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.frontendIntegrationTests } }
                         steps { stageFrontendIntegrationTests script: parameters.script }
                     }
-                    stage("Frontend Unit Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.frontendUnitTests } }
-                        steps { piperPipelineStageAdditionalUnitTests script: parameters.script, stageName: "frontendUnitTests" }
-                    }
-                    stage("NPM Dependency Audit") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.npmAudit } }
-                        steps { stageNpmAudit script: parameters.script }
+                    stage("Additional Unit Tests") {
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalUnitTests } }
+                        steps { piperPipelineStageAdditionalUnitTests script: parameters.script }
                     }
                 }
             }
 
             stage('Remote Tests') {
-                when { anyOf { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests } } }
+                when {
+                    anyOf {
+                        expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests };
+                        expression { parameters.script.commonPipelineEnvironment.configuration.runStage.performanceTests }
+                    }
+                }
                 parallel {
                     stage("End to End Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.endToEndTests } }
@@ -67,47 +59,14 @@ void call(parameters) {
                 }
             }
 
-            stage('Quality Checks') {
-                steps {
-                    milestone 50
-                    stageS4SdkQualityChecks script: parameters.script
-                }
+            stage('Security') {
+                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.security } }
+                steps { piperPipelineStageSecurity script: parameters.script }
             }
 
-            stage('Third-party Checks') {
-                when { anyOf { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.checkmarxScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.whitesourceScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.fortifyScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.detectScan };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalTools };
-                    expression { parameters.script.commonPipelineEnvironment.configuration.runStage.sonarQubeScan }
-                } }
-                parallel {
-                    stage("Checkmarx Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.checkmarxScan } }
-                        steps { stageCheckmarxScan script: parameters.script }
-                    }
-                    stage("WhiteSource Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.whitesourceScan } }
-                        steps { stageWhitesourceScan script: parameters.script }
-                    }
-                    stage("Fortify Scan") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.fortifyScan } }
-                        steps { stageFortifyScan script: parameters.script }
-                    }
-                    stage("Detect Scan"){
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.detectScan } }
-                        steps { stageDetect script: parameters.script }
-                    }
-                    stage("Additional Tools") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalTools } }
-                        steps { stageAdditionalTools script: parameters.script }
-                    }
-                    stage('SonarQube Scan') {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.sonarQubeScan } }
-                        steps { stageSonarQubeScan script: parameters.script }
-                    }
-                }
+            stage('Compliance') {
+                when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.compliance } }
+                steps { piperPipelineStageCompliance script: parameters.script }
             }
 
             stage('Artifact Deployment') {
@@ -126,28 +85,13 @@ void call(parameters) {
 
         }
         post {
-            always {
-                script {
-                    debugReportArchive script: parameters.script
-                    postActionSendNotification script: parameters.script
-                    postActionCleanupStashesLocks script: parameters.script
-                    sendAnalytics script: parameters.script
-
-                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.postPipelineHook) {
-                        stage('Post Pipeline Hook') {
-                            stagePostPipelineHook script: parameters.script
-                        }
-                    }
-                }
-            }
-            success {
-                script {
-                    if (parameters.script.commonPipelineEnvironment?.configuration?.runStage?.archiveReport) {
-                        postActionArchiveReport script: parameters.script
-                    }
-                }
-            }
-            failure {
+            /* https://jenkins.io/doc/book/pipeline/syntax/#post */
+            success { buildSetResult(currentBuild) }
+            aborted { buildSetResult(currentBuild, 'ABORTED') }
+            failure { buildSetResult(currentBuild, 'FAILURE') }
+            unstable { buildSetResult(currentBuild, 'UNSTABLE') }
+            cleanup {
+                piperPipelineStagePost script: parameters.script
                 deleteDir()
             }
         }
