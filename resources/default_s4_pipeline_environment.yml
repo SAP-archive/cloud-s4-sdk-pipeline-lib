@@ -7,6 +7,7 @@ general:
   runStageInPod: true
   globalExtensionsDirectory: 's4hana_pipeline/extensions/'
   inferBuildTool: true
+  inferProjectName: true
   initCloudSdkStashSettings: true
   containerMapResource: 'com.sap.piper/pipeline/cloudSdkContainersMap.yml'
   legacyConfigSettings: 'com.sap.piper/pipeline/cloudSdkLegacyConfigSettings.yml'
@@ -178,6 +179,10 @@ stages:
     cucumber:
       active: true
       pattern: 's4hana_pipeline/reports/e2e/*.json'
+
+  performanceTests:
+    stageLocking: true
+    lockingResource: 'performanceTests'
 
   productionDeployment:
     enableZeroDowntimeDeployment: true
