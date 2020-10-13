@@ -60,6 +60,27 @@ steps:
     cucumber:
       active: false
 
+  # Disable checks that require outdated/legacy/unmaintained Jenkins plugins
+  checksPublishResults:
+    pmd:
+      active: false
+    cpd:
+      active: false
+    findbugs:
+      active: false
+    checkstyle:
+      active: false
+    warnings:
+      active: false
+    eslint:
+      active: false
+    pylint:
+      active: false
+    tasks:
+      active: false
+    aggregation:
+      active: false
+
   checkFindbugs:
     includeFilterFile: s4hana_findbugs_include_filter.xml
     scanModules:
