@@ -25,13 +25,9 @@ void call(parameters) {
 
             stage('Local Tests') {
                 parallel {
-                    stage("Backend Integration Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.backendIntegrationTests } }
-                        steps { stageBackendIntegrationTests script: parameters.script }
-                    }
-                    stage("Frontend Integration Tests") {
-                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.frontendIntegrationTests } }
-                        steps { stageFrontendIntegrationTests script: parameters.script }
+                    stage("Integration Tests") {
+                        when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.integration } }
+                        steps { piperPipelineStageIntegration script: parameters.script }
                     }
                     stage("Additional Unit Tests") {
                         when { expression { parameters.script.commonPipelineEnvironment.configuration.runStage.additionalUnitTests } }

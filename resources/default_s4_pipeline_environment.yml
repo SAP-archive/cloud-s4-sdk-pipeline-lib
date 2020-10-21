@@ -165,18 +165,12 @@ stages:
       active: true
       pattern: '**/target/surefire-reports/*.xml,s4hana_pipeline/reports/backend-unit/**'
 
-  frontendIntegrationTests:
-    runScripts: ['ci-it-frontend']
+  integration:
+    runScripts: ['ci-it-backend', 'ci-it-frontend']
     virtualFrameBuffer: true
     junit:
       active: true
-      pattern: 's4hana_pipeline/reports/frontend-integration/**/*.xml'
-
-  backendIntegrationTests:
-    runScripts: ['ci-it-backend']
-    junit:
-      active: true
-      pattern: 'integration-tests/target/surefire-reports/TEST-*.xml,s4hana_pipeline/reports/backend-integration/**'
+      pattern: 'integration-tests/target/surefire-reports/TEST-*.xml,s4hana_pipeline/reports/backend-integration/**,s4hana_pipeline/reports/frontend-integration/**/*.xml'
 
   additionalUnitTests:
     runScripts: ['ci-frontend-unit-test']
