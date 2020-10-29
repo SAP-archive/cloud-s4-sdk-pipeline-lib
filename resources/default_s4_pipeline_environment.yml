@@ -200,10 +200,19 @@ stages:
     lockingResource: 'performanceTests'
 
   productionDeployment:
+    runInAllBranches: false
     enableZeroDowntimeDeployment: true
     stageLocking: true
     lockingResource: 'productionDeployment'
     ordinal: 80
 
+  artifactDeployment:
+    runInAllBranches: false
+
+  compliance:
+    runInAllBranches: false
+
   security:
+    runInAllBranches: false
     runStageInPod: false
+
