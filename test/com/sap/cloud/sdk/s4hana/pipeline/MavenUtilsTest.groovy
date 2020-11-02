@@ -51,8 +51,6 @@ class MavenUtilsTest extends BaseCloudSdkTest {
             packaging: 'pom'
         ])
 
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
-
         MavenUtils.installMavenArtifacts(dummyScript, 'srv')
 
         assertEquals(mavenExecuteCalls.size(), 1)
@@ -75,8 +73,6 @@ class MavenUtilsTest extends BaseCloudSdkTest {
             packaging: 'pom'
         ])
 
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
-
         MavenUtils.installMavenArtifacts(dummyScript, 'srv')
 
         assertEquals(mavenExecuteCalls.size(), 1)
@@ -94,8 +90,6 @@ class MavenUtilsTest extends BaseCloudSdkTest {
             artifactId: 'service',
             packaging: 'war'
         ])
-
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
 
         helper.registerAllowedMethod("findFiles", [Map.class], { parameters ->
             if(parameters.glob.endsWith("target/service*-classes.jar")){
@@ -134,8 +128,6 @@ class MavenUtilsTest extends BaseCloudSdkTest {
             packaging: 'war'
         ])
 
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
-
         helper.registerAllowedMethod("findFiles", [Map.class], { parameters ->
             if(parameters.glob.endsWith("target/service*-classes.jar")){
                 return [new FileWrapperMock("srv/target/service-classes.jar")]
@@ -161,8 +153,6 @@ class MavenUtilsTest extends BaseCloudSdkTest {
             artifactId: 'service',
             packaging: 'jar'
         ])
-
-        BuildToolEnvironment.instance.setBuildTool(BuildTool.MTA)
 
         helper.registerAllowedMethod("findFiles", [Map.class], { parameters ->
             if(parameters.glob.endsWith("target/service*.jar")){

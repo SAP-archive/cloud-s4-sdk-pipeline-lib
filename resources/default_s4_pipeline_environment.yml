@@ -37,9 +37,6 @@ steps:
     dockerImage: maven:3.6.3-jdk-8-slim
     dockerOptions: ""
 
-  executeNpm:
-    dockerImage: ppiper/node-browsers:v3
-
   executeGradle:
     dockerImage: gradle:6.0.0-jdk8
 
@@ -81,15 +78,6 @@ steps:
     aggregation:
       active: false
 
-  checkFindbugs:
-    includeFilterFile: s4hana_findbugs_include_filter.xml
-    scanModules:
-      - "application"
-
-  checkPmd:
-    scanModules:
-      - "application"
-
   checkJMeter:
     dockerImage: famiko/jmeter-base
     testPlan: ./performance-tests/*
@@ -116,11 +104,6 @@ steps:
     buildTarget: "CF"
     mtaBuildTool: "cloudMbt"
     installArtifacts: true
-
-  checkFrontendCodeCoverage:
-    codeCoverageFrontend:
-      unstable: 0
-      failing: 0
 
   tmsUpload:
     namedUser: "CLOUD_SDK_PIPELINE"

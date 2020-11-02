@@ -1,5 +1,4 @@
 import com.sap.cloud.sdk.s4hana.pipeline.BashUtils
-import com.sap.cloud.sdk.s4hana.pipeline.DownloadCacheUtils
 import com.sap.cloud.sdk.s4hana.pipeline.ProjectUtils
 import com.sap.piper.ConfigurationHelper
 import groovy.transform.Field
@@ -160,11 +159,7 @@ private createContainer(Script script, Map configuration, String hdiContainer) {
 private initializeDatabase(Script script, String hdiContainer) {
     dir('db') {
         echo "Deploying content"
-        def dockerOptions = []
-        DownloadCacheUtils.appendDownloadCacheNetworkOption(script, dockerOptions)
-        executeNpm(script: script, dockerOptions: dockerOptions) {
-            sh "npm start -- --exit"
-        }
+        npmExecuteScripts script: script, runScripts: ['start'], scriptOptions: ['--exit'], virtualFrameBuffer: false
     }
 }
 

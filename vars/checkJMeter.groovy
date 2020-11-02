@@ -37,14 +37,12 @@ def call(Map parameters = [:]) {
             sh command
         }
 
-        executeWithLockedCurrentBuildResult(script: script, errorStatus: 'FAILURE', errorHandler: script.buildFailureReason.setFailureReason, errorHandlerParameter: 'Check JMeter', errorMessage: "Please examine Performance Test results.") {
-            performanceReport(parsers: [[$class: 'JMeterParser', glob: "JMeter-report.jtl"]],
-                errorFailedThreshold: configuration.failThreshold,
-                errorUnstableThreshold: configuration.unstableThreshold,
-                ignoreUnstableBuild: false,
-                ignoreFailedBuild: false)
+        performanceReport(parsers: [[$class: 'JMeterParser', glob: "JMeter-report.jtl"]],
+            errorFailedThreshold: configuration.failThreshold,
+            errorUnstableThreshold: configuration.unstableThreshold,
+            ignoreUnstableBuild: false,
+            ignoreFailedBuild: false)
 
-            step([$class: 'ArtifactArchiver', artifacts: "**/*.jtl,${configuration.reportDirectory}", fingerprint: true])
-        }
+        step([$class: 'ArtifactArchiver', artifacts: "**/*.jtl,${configuration.reportDirectory}", fingerprint: true])
     }
 }
