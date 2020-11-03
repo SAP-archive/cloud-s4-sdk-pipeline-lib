@@ -37,6 +37,9 @@ steps:
     dockerImage: maven:3.6.3-jdk-8-slim
     dockerOptions: ""
 
+  npmExecuteScripts:
+    dockerImage: ppiper/node-browsers:v3
+
   executeGradle:
     dockerImage: gradle:6.0.0-jdk8
 
