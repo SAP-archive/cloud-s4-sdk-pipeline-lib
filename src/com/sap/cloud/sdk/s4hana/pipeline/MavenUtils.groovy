@@ -52,28 +52,6 @@ class MavenUtils implements Serializable {
         }
     }
 
-    //TODO Deprecated. Remove once not used in extensions.
-    static void installMavenArtifacts(Script script, def pom, String basePath, String pathToPom) {
-        // ToDo: remove dependency to BuildToolEnv
-        String pathToApplication = BuildToolEnvironment.instance.getApplicationPath(basePath)
-        String pathToTargetDirectory = PathUtils.normalize(pathToApplication, '/target')
-
-        if (pom.packaging == "war") {
-            List<String> classesJars = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*-classes.jar")
-            if (classesJars.size() != 1) {
-                script.error "Expected exactly one *-classes.jar file in $pathToTargetDirectory, but found ${classesJars?.join(', ')}"
-            }
-            installFile(script, pathToPom, classesJars[0].getPath(), ["-Dpackaging=jar", "-Dclassifier=classes"])
-        }
-
-        if (pom.packaging == "pom") {
-            installFile(script, pathToPom, PathUtils.normalize(pathToApplication, 'pom.xml'))
-        } else {
-            List packagingFiles = script.findFiles(glob: "$pathToTargetDirectory/${pom.artifactId}*.${pom.packaging}")
-            packagingFiles.each { def file -> installFile(script, pathToPom, file.getPath()) }
-        }
-    }
-
     static void installFile(Script script, String pathToPom, String file, List additionalDefines = []) {
         script.mavenExecute(
             script: script,
