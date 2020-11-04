@@ -19,8 +19,9 @@ def call(Map parameters = [:]) {
                 checkJMeter script: script, reportDirectory: performanceTestReports
             }
 
-            if (ConfigurationLoader.stepConfiguration(script, 'checkGatling')?.enabled) {
-                checkGatling script: script, appUrls: stageConfiguration.appUrls
+            def gatlingConfig = ConfigurationLoader.stepConfiguration(script, 'gatlingExecuteTests')
+            if (gatlingConfig && gatlingConfig.enabled != false) {
+                gatlingExecuteTests script: script
             }
         } else {
             echo "Performance tests have not been enabled. Skipping the stage."
