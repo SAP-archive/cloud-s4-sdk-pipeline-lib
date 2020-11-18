@@ -88,6 +88,10 @@ steps:
     failThreshold: 100
     unstableThreshold: 90
 
+  gatlingExecuteTests:
+    pomPath: 'performance-tests/pom.xml'
+    stashContent: []
+
   cloudFoundryDeploy:
     dockerImage: ppiper/cf-cli:v2
     keepOldInstance: true

@@ -44,7 +44,7 @@ def call(Map parameters = [:], Closure body) {
             echo "Creating a new HDI container ${hdiContainerName}"
             try {
                 createContainer(script, configuration, hdiContainerName)
-                initializeDatabase(script, hdiContainerName)
+                initializeDatabase(script)
                 body()
             } finally {
                 deleteContainer(script, configuration, hdiContainerName)
@@ -156,11 +156,9 @@ private createContainer(Script script, Map configuration, String hdiContainer) {
     }
 }
 
-private initializeDatabase(Script script, String hdiContainer) {
-    dir('db') {
-        echo "Deploying content"
-        npmExecuteScripts script: script, runScripts: ['start'], scriptOptions: ['--exit'], virtualFrameBuffer: false
-    }
+private initializeDatabase(Script script) {
+    echo "Deploying content"
+    npmExecuteScripts script: script, buildDescriptorList: ['db/package.json'], runScripts: ['start'], scriptOptions: ['--exit'], virtualFrameBuffer: false
 }
 
 private deleteContainer(Script script, Map configuration, String hdiContainerName) {
