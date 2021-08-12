@@ -1,5 +1,7 @@
 # Pipeline Library for the SAP Cloud SDK - DEPRECATED!
 
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP/cloud-s4-sdk-pipeline-lib)](https://api.reuse.software/info/github.com/SAP/cloud-s4-sdk-pipeline-lib)
+
 ## Description
 
 **WARNING:** This repository should not be used anymore.
